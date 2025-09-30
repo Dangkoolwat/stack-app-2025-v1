@@ -69,3 +69,8 @@ cd stack-app-2025
 # 빌드 및 실행
 ./mvnw clean package
 java -jar target/app.jar
+
+
+## 📜 안내
+이 프로젝트는 제 개발 여정의 마지막 발자취이자,  
+그동안 쌓아온 경험과 열정을 정리하는 개인 Legacy Project입니다.
