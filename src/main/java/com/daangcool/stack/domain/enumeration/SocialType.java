@@ -1,4 +1,4 @@
-package com.eden.hitech.domain.enumeration;
+package com.daangcool.stack.domain.enumeration;
 
 public enum SocialType {
 

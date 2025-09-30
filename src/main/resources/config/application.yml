@@ -1,14 +1,3 @@
-# ===================================================================
-# Spring Boot configuration.
-#
-# This configuration will be overridden by the Spring profile you use,
-# for example application-dev.yml if you use the "dev" profile.
-#
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-# ===================================================================
 # Standard Spring Boot properties.
 # Full reference is available at:
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
@@ -106,9 +95,10 @@ spring:
     group:
       dev:
         - dev
+        - local-tls
         - api-docs
         # Uncomment to activate TLS for the dev profile
-        #- tls
+        #- data
   jmx:
     enabled: false
   data:
@@ -118,13 +108,14 @@ spring:
   jpa:
     open-in-view: false
     properties:
-      hibernate.jdbc.time_zone: UTC
+      hibernate.jdbc.time_zone: Asia/Seoul
       hibernate.timezone.default_storage: NORMALIZE
       hibernate.type.preferred_instant_jdbc_type: TIMESTAMP
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: false
+      hibernate.cache.region.factory_class: org.redisson.hibernate.RedissonRegionFactory
       hibernate.generate_statistics: false
       # modify batch size as necessary
       hibernate.jdbc.batch_size: 25
@@ -138,7 +129,8 @@ spring:
     hibernate:
       ddl-auto: none
       naming:
-        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+#        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages

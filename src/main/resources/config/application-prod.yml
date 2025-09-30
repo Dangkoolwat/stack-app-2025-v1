@@ -39,7 +39,20 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
-  # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.OracleDialect
+      hibernate.legacy_limit_handler: true
+      hibernate.show_sql: false
+      hibernate.format_sql: false
+      hibernate.use_sql_comments: false
+      hibernate.ddl-auto: update
+    generate-ddl: true
+
+
+    # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
   mail:
@@ -124,4 +137,9 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  logging:
+    file-path: /home/opc/www/log
+    max-file-size: 50MB
+    max-history: 30
+    total-size-cap: 1GB

@@ -4,12 +4,13 @@ import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.service.dto.AdminUserDTO;
 import com.daangcool.stack.service.dto.UserDTO;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Mapper for the entity {@link User} and its DTO called {@link UserDTO}.

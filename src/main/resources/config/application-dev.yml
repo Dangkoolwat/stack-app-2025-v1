@@ -17,8 +17,11 @@ logging:
   level:
     ROOT: DEBUG
     tech.jhipster: DEBUG
-    org.hibernate.SQL: DEBUG
     com.daangcool.stack: DEBUG
+    org.springframework: INFO   # Spring Boot 기본값 유지
+    org.hibernate.SQL: DEBUG    # 실행된 SQL 보여주기
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Hibernate 5.x 파라미터
+    org.hibernate.orm.jdbc.bind: TRACE # Hibernate 6.x 파라미터
 
 spring:
   devtools:
@@ -32,15 +35,23 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: system
-    password: oracle
+    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+    username: dizzyUncle
+    password: Docker#2020
     hikari:
       poolName: Hikari
       auto-commit: false
-  liquibase:
-    # Remove 'faker' if you do not want the sample data to be loaded automatically
-    contexts: dev, faker
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true       # SQL 보기 좋게 줄바꿈/들여쓰기
+        highlight_sql: true    # 콘솔에서 색상 강조
+        use_sql_comments: true # SQL에 주석 포함
+        generate_statistics: true # (선택) 실행 통계
+    show-sql: false            # System.out 출력은 끄고, 로깅으로만
+
   mail:
     host: localhost
     port: 25
@@ -52,7 +63,7 @@ spring:
     cache: false
 
 server:
-  port: 8080
+  port: 8443
   # make sure requests the proxy uri instead of the server one
   forward-headers-strategy: native
 
@@ -73,7 +84,7 @@ jhipster:
   # CORS is only enabled by default with the "dev" profile
   cors:
     # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
-    allowed-origins: 'http://localhost:8100,https://localhost:8100,http://localhost:9000,https://localhost:9000'
+    allowed-origins: 'http://localhost:8100,https://localhost:8443,http://localhost:9000,https://localhost:9000'
     # Enable CORS when running in GitHub Codespaces
     allowed-origin-patterns: 'https://*.githubpreview.dev'
     allowed-methods: '*'
@@ -107,4 +118,9 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  logging:
+    file-path: ./logs/dev
+    max-file-size: 5MB
+    max-history: 7
+    total-size-cap: 200MB

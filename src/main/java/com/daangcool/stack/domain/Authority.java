@@ -2,18 +2,20 @@ package com.daangcool.stack.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import java.io.Serializable;
-import java.util.Objects;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.domain.Persistable;
+
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * A Authority.
  */
 @Entity
-@Table(name = "jhi_authority")
+@Table(name = "stack_authority")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties(value = { "new", "id" })
 @SuppressWarnings("common-java:DuplicatedBlocks")
@@ -93,5 +95,11 @@ public class Authority implements Serializable, Persistable<String> {
         return "Authority{" +
             "name=" + getName() +
             "}";
+    }
+    public Authority() {
+
+    }
+    public Authority(String name) {
+        this.name = name;
     }
 }
