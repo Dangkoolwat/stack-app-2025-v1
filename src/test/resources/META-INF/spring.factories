@@ -1,0 +1,4 @@
+org.springframework.test.context.ContextCustomizerFactory = \
+    com.daangcool.stack.config.\
+    SqlTestContainersSpringContextCustomizerFactory,com.daangcool.stack.config.\
+    RedisTestContainersSpringContextCustomizerFactory
