@@ -1,5 +1,6 @@
-package com.daangcool.stack.web.rest.errors;
+package com.daangcool.stack.web.exception;
 
+import com.daangcool.stack.web.rest.errors.ErrorConstants;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.ErrorResponseException;
 import tech.jhipster.web.rest.errors.ProblemDetailWithCause.ProblemDetailWithCauseBuilder;

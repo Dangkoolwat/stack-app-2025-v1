@@ -31,19 +31,21 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/concurrency-failure"))
             .andExpect(status().isConflict())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value(ErrorConstants.ERR_CONCURRENCY_FAILURE));
+            .andExpect(jsonPath("$.title").value("Conflict"));
     }
 
     @Test
     void testMethodArgumentNotValid() throws Exception {
         mockMvc
-            .perform(post("/api/exception-translator-test/method-argument").content("{}").contentType(MediaType.APPLICATION_JSON))
+            .perform(post("/api/exception-translator-test/method-argument")
+                .content("{}")
+                .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value(ErrorConstants.ERR_VALIDATION))
-            .andExpect(jsonPath("$.fieldErrors.[0].objectName").value("test"))
-            .andExpect(jsonPath("$.fieldErrors.[0].field").value("test"))
-            .andExpect(jsonPath("$.fieldErrors.[0].message").value("must not be null"));
+            .andExpect(jsonPath("$.title").value("Validation Error"))
+            .andExpect(jsonPath("$.errors[0].objectName").value("test"))
+            .andExpect(jsonPath("$.errors[0].field").value("test"))
+            .andExpect(jsonPath("$.errors[0].message").value("must not be null"));
     }
 
     @Test
@@ -52,7 +54,7 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/missing-servlet-request-part"))
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.400"));
+            .andExpect(jsonPath("$.title").value("Bad Request"));
     }
 
     @Test
@@ -61,7 +63,7 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/missing-servlet-request-parameter"))
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.400"));
+            .andExpect(jsonPath("$.title").value("Bad Request"));
     }
 
     @Test
@@ -70,7 +72,7 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/access-denied"))
             .andExpect(status().isForbidden())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.403"))
+            .andExpect(jsonPath("$.title").value("Forbidden"))
             .andExpect(jsonPath("$.detail").value("test access denied!"));
     }
 
@@ -80,8 +82,8 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/unauthorized"))
             .andExpect(status().isUnauthorized())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.401"))
-            .andExpect(jsonPath("$.path").value("/api/exception-translator-test/unauthorized"))
+            .andExpect(jsonPath("$.title").value("Unauthorized"))
+            .andExpect(jsonPath("$.instance").value("/api/exception-translator-test/unauthorized"))
             .andExpect(jsonPath("$.detail").value("test authentication failed!"));
     }
 
@@ -91,7 +93,7 @@ class ExceptionTranslatorIT {
             .perform(post("/api/exception-translator-test/access-denied"))
             .andExpect(status().isMethodNotAllowed())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.405"))
+            .andExpect(jsonPath("$.title").value("Method Not Allowed"))
             .andExpect(jsonPath("$.detail").value("Request method 'POST' is not supported"));
     }
 
@@ -101,7 +103,6 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/response-status"))
             .andExpect(status().isBadRequest())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.400"))
             .andExpect(jsonPath("$.title").value("test response status"));
     }
 
@@ -111,7 +112,6 @@ class ExceptionTranslatorIT {
             .perform(get("/api/exception-translator-test/internal-server-error"))
             .andExpect(status().isInternalServerError())
             .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-            .andExpect(jsonPath("$.message").value("error.http.500"))
             .andExpect(jsonPath("$.title").value("Internal Server Error"));
     }
 }

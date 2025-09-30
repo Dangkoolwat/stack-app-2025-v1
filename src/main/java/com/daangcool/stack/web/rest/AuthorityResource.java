@@ -2,12 +2,8 @@ package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.repository.AuthorityRepository;
-import com.daangcool.stack.web.rest.errors.BadRequestAlertException;
+import com.daangcool.stack.web.exception.BadRequestAlertException;
 import jakarta.validation.Valid;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST controller for managing {@link com.daangcool.stack.domain.Authority}.
