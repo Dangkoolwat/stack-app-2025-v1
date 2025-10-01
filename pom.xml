@@ -218,7 +218,7 @@
         <!--Spring Doc -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc-openapi-starter-webmvc-api.version}</version>
         </dependency>
 
@@ -338,10 +338,6 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-jcache</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
             <scope>provided</scope>
         </dependency>
@@ -349,8 +345,12 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
+      <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-jcache</artifactId>
+      </dependency>
 
-        <!-- open API -->
+      <!-- open API -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>

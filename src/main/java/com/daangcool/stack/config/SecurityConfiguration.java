@@ -62,8 +62,16 @@ public class SecurityConfiguration {
                     // JHipster가 추가로 서빙하는 정적 리소스
                     .requestMatchers("/content/**", "/i18n/*").permitAll()
 
+                    // Swagger/OpenAPI 허용 경로
+                    .requestMatchers(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "/api-docs/**"
+                    ).permitAll()
+
                     // 나머지 API / 관리 / 인증 규칙
-                    .requestMatchers("/swagger-ui/**").permitAll()
+
                     .requestMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/authenticate").permitAll()
                     .requestMatchers("/api/register").permitAll()
@@ -73,7 +81,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/api/**").authenticated()
                     .requestMatchers("/websocket/**").authenticated()
-                    .requestMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
+//                    .requestMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/management/health", "/management/health/**", "/management/info", "/management/prometheus").permitAll()
                     .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
             )

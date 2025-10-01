@@ -82,11 +82,6 @@ management:
 spring:
   application:
     name: stack
-  docker:
-    compose:
-      enabled: true
-      lifecycle-management: start-only
-      file: src/main/docker/services.yml
   profiles:
     # The commented value for `active` can be replaced with valid Spring profiles to load.
     # Otherwise, it will be filled in by maven when building the JAR file
@@ -114,8 +109,7 @@ spring:
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: true
-      hibernate.cache.use_query_cache: false
-      hibernate.cache.region.factory_class: org.redisson.hibernate.RedissonRegionFactory
+      hibernate.cache.use_query_cache: true
       hibernate.generate_statistics: false
       # modify batch size as necessary
       hibernate.jdbc.batch_size: 25
@@ -170,7 +164,14 @@ server:
 
 springdoc:
   show-actuator: true
-
+  api-docs:
+    path: /api-docs          # OpenAPI JSON 문서 엔드포인트
+  swagger-ui:
+    path: /swagger-ui.html   # Swagger UI 접근 경로
+    operations-sorter: method
+    tags-sorter: alpha
+    tryItOutEnabled: true
+    display-request-duration: true
 # Properties to be exposed on the /info management endpoint
 info:
   # Comma separated list of profiles that will trigger the ribbon to show
@@ -200,7 +201,7 @@ jhipster:
     management-include-pattern: /management/**
     title: Stack API
     description: Stack API documentation
-    version: 0.0.1
+    version: 1.0.0
     terms-of-service-url:
     contact-name:
     contact-url:

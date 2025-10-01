@@ -1,13 +1,25 @@
 package com.daangcool.stack.config;
 
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.tags.Tag;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
 import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.apidoc.customizer.JHipsterOpenApiCustomizer;
+
 
 @Configuration
 @Profile(JHipsterConstants.SPRING_PROFILE_API_DOCS)
@@ -22,11 +34,50 @@ public class OpenApiConfiguration {
         JHipsterProperties jHipsterProperties
     ) {
         JHipsterProperties.ApiDocs properties = jHipsterProperties.getApiDocs();
+
         return GroupedOpenApi.builder()
             .group("openapi")
             .addOpenApiCustomizer(jhipsterOpenApiCustomizer)
             .packagesToScan(API_FIRST_PACKAGE)
             .pathsToMatch(properties.getDefaultIncludePattern())
+            .addOpenApiCustomizer(openApi -> openApi
+                // JWT 인증 스키마 추가
+                .components(new Components()
+                    .addSecuritySchemes("bearerAuth",
+                        new SecurityScheme()
+                            .type(SecurityScheme.Type.HTTP)
+                            .scheme("bearer")
+                            .bearerFormat("JWT")
+                            .in(SecurityScheme.In.HEADER)
+                            .name(HttpHeaders.AUTHORIZATION))
+                    // RFC7807 Problem 응답 스키마 추가
+                    .addSchemas("Problem", new Schema<>()
+                        .type("object")
+                        .addProperty("type", new StringSchema().description("Problem type (URI)").example("about:blank"))
+                        .addProperty("title", new StringSchema().description("Summary of the problem").example("Service Unavailable"))
+                        .addProperty("status", new IntegerSchema().description("HTTP status code").example(503))
+                        .addProperty("detail", new StringSchema().description("Detailed explanation").example("Connection to database timed out"))
+                        .addProperty("instance", new StringSchema().description("Specific occurrence URI").example("/api/users/123"))
+                    )
+                )
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                // 문서 정보 보강
+                .info(new Info()
+                    .title("Stack App 2025 API")
+                    .description("Spring Boot 3.x / JHipster 기반 REST API 문서\nJWT 인증과 RFC7807 오류 응답을 지원합니다.")
+                    .version("v1.0.0")
+                    .contact(new Contact()
+                        .name("Stack API Support")
+                        .email("support@stackapp.com")
+                        .url("https://stackapp.com"))
+                    .license(new License()
+                        .name("Apache 2.0")
+                        .url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+                )
+                // 태그 예시 추가 (선택)
+                .addTagsItem(new Tag().name("User Management").description("사용자 관리 관련 API"))
+                .addTagsItem(new Tag().name("Auth").description("인증/인가 관련 API"))
+            )
             .build();
     }
 }
