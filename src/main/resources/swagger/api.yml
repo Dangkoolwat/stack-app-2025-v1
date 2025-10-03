@@ -3,13 +3,13 @@
 openapi: '3.0.1'
 info:
   title: 'Stack App 2025 REST API'
-  version: 0.0.1
+  version: 1.0.0
   description: >
     Spring Boot 3.5.x / API-first 개발 명세.
     JWT 인증과 RFC7807 오류 응답을 지원합니다.
   contact:
     name: Stack API Support
-    email: support@stackapp.com
+    email: chingoo2@naver.com
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html

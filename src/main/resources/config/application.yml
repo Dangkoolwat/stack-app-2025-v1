@@ -110,7 +110,7 @@ spring:
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: true
-      hibernate.generate_statistics: false
+      hibernate.generate_statistics: true
       # modify batch size as necessary
       hibernate.jdbc.batch_size: 25
       hibernate.order_inserts: true
@@ -155,6 +155,11 @@ spring:
   output:
     ansi:
       console-available: true
+
+logging:
+  level:
+    org.hibernate.cache: TRACE
+    org.hibernate.stat: DEBUG
 
 server:
   servlet:
