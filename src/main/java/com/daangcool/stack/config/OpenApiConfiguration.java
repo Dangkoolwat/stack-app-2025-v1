@@ -64,7 +64,7 @@ public class OpenApiConfiguration {
                 // 문서 정보 보강
                 .info(new Info()
                     .title("Stack App 2025 API")
-                    .description("Spring Boot 3.x / JHipster 기반 REST API 문서\nJWT 인증과 RFC7807 오류 응답을 지원합니다.")
+                    .description("Spring Boot 3.5.x / Stack App REST API 문서\nJWT 인증과 RFC7807 오류 응답을 지원합니다.")
                     .version("v1.0.0")
                     .contact(new Contact()
                         .name("Stack API Support")
