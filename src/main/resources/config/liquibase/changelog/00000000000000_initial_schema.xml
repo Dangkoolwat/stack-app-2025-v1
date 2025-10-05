@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="00000000000000-1" author="jhipster">
+        <!-- Create user sequence -->
+        <createSequence sequenceName="user_sequence_generator" startValue="1050" incrementBy="1"/>
+
+        <!-- User Table -->
+        <createTable tableName="stack_user">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="login" type="varchar(50)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="ux_user_login"/>
+            </column>
+            <column name="password_hash" type="varchar(60)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(50)"/>
+            <column name="last_name" type="varchar(50)"/>
+            <column name="email" type="varchar(254)">
+                <constraints unique="true" nullable="true" uniqueConstraintName="ux_user_email"/>
+            </column>
+            <column name="social_type" type="varchar(255)"/>
+            <column name="provider_id" type="varchar(200)">
+                <constraints unique="true" nullable="true" uniqueConstraintName="ux_user_provider_id"/>
+            </column>
+            <column name="last_login_date" type="timestamp"/>
+            <column name="login_failure_count" type="int" defaultValue="0"/>
+            <column name="lock_reason" type="varchar(255)"/>
+            <column name="activated" type="boolean" valueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="boolean" valueBoolean="true"/>
+            <column name="account_non_expired" type="boolean" valueBoolean="true"/>
+            <column name="account_non_locked" type="boolean" valueBoolean="true"/>
+            <column name="credentials_non_expired" type="boolean" valueBoolean="true"/>
+            <column name="lang_key" type="varchar(10)"/>
+            <column name="image_url" type="varchar(256)"/>
+            <column name="activation_key" type="varchar(20)"/>
+            <column name="reset_key" type="varchar(20)"/>
+            <column name="reset_date" type="timestamp"/>
+            <column name="description" type="varchar(255)"/>
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+
+        <!-- Authority Table -->
+        <createTable tableName="stack_authority">
+            <column name="name" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- User-Authority Join Table -->
+        <createTable tableName="stack_user_authority">
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authority_name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="user_id, authority_name" tableName="stack_user_authority"/>
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="stack_user_authority" constraintName="fk_user_authority_user_id" referencedColumnNames="id" referencedTableName="stack_user"/>
+        <addForeignKeyConstraint baseColumnNames="authority_name" baseTableName="stack_user_authority" constraintName="fk_user_authority_authority_name" referencedColumnNames="name" referencedTableName="stack_authority"/>
+    </changeSet>
+
+    <!-- Load Initial Data -->
+    <changeSet id="00000000000000-2" author="jhipster">
+        <loadData
+            file="config/liquibase/data/authorities.csv"
+            separator=","
+            tableName="stack_authority"/>
+        <loadData
+            file="config/liquibase/data/users.csv"
+            separator=";"
+            tableName="stack_user">
+            <column name="activated" type="boolean"/>
+            <column name="created_date" type="timestamp"/>
+        </loadData>
+        <loadData
+            file="config/liquibase/data/users_authorities.csv"
+            separator=";"
+            tableName="stack_user_authority"/>
+    </changeSet>
+
+</databaseChangeLog>
