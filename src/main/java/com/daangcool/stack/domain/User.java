@@ -65,6 +65,20 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @Enumerated(EnumType.STRING)
     private SocialType socialType ;
 
+    //소셜 사용자 고유 ID (providerId)
+    @Column(name = "provider_id", length = 200, unique = true)
+    private String providerId;
+
+    //마지막 로그인 시간
+    @Column(name = "last_login_date")
+    private Instant lastLoginDate;
+
+    @Column(name = "login_failure_count")
+    private int loginFailureCount = 0;
+
+    @Column(name = "lock_reason", length = 255)
+    private String lockReason;
+
     @NotNull
     @Column(nullable = false)
     private boolean activated = false;
@@ -92,6 +106,7 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @JsonIgnore
     private String activationKey;
 
+    //OPT 발송 및 비번 찾기
     @Size(max = 20)
     @Column(name = "reset_key", length = 20)
     @JsonIgnore
@@ -99,6 +114,9 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Column(name = "reset_date")
     private Instant resetDate = null;
+
+    //extra
+    private String description;
 
     @JsonIgnore
     @ManyToMany

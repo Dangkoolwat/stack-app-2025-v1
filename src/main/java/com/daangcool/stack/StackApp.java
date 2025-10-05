@@ -2,6 +2,7 @@ package com.daangcool.stack;
 
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.config.CRLFLogConverter;
+import com.daangcool.stack.config.StackAppConstants;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
 import tech.jhipster.config.DefaultProfileUtil;
-import tech.jhipster.config.JHipsterConstants;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -43,16 +43,16 @@ public class StackApp {
     public void initApplication() {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)
+            activeProfiles.contains(StackAppConstants.SPRING_PROFILE_DEVELOPMENT) &&
+            activeProfiles.contains(StackAppConstants.SPRING_PROFILE_PRODUCTION)
         ) {
             LOG.error(
                 "You have misconfigured your application! It should not run " + "with both the 'dev' and 'prod' profiles at the same time."
             );
         }
         if (
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) &&
-            activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_CLOUD)
+            activeProfiles.contains(StackAppConstants.SPRING_PROFILE_DEVELOPMENT) &&
+            activeProfiles.contains(StackAppConstants.SPRING_PROFILE_CLOUD)
         ) {
             LOG.error(
                 "You have misconfigured your application! It should not " + "run with both the 'dev' and 'cloud' profiles at the same time."

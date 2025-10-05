@@ -16,13 +16,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
-import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.apidoc.customizer.JHipsterOpenApiCustomizer;
 
 
 @Configuration
-@Profile(JHipsterConstants.SPRING_PROFILE_API_DOCS)
+@Profile(StackAppConstants.SPRING_PROFILE_API_DOCS)
 public class OpenApiConfiguration {
 
     public static final String API_FIRST_PACKAGE = "com.daangcool.stack.web.api";

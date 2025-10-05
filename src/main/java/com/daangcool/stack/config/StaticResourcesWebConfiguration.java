@@ -10,7 +10,7 @@ import tech.jhipster.config.JHipsterProperties;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-//@Profile({ JHipsterConstants.SPRING_PROFILE_PRODUCTION })
+//@Profile({ StackAppConstants.SPRING_PROFILE_PRODUCTION })
 public class StaticResourcesWebConfiguration implements WebMvcConfigurer {
 
     protected static final String[] RESOURCE_LOCATIONS = { "classpath:/static/", "classpath:/static/content/", "classpath:/static/i18n/" };
