@@ -1,9 +1,8 @@
 package com.daangcool.stack;
 
-import com.daangcool.stack.config.AsyncSyncConfiguration;
 import com.daangcool.stack.config.EmbeddedRedis;
 import com.daangcool.stack.config.EmbeddedSQL;
-import com.daangcool.stack.config.JacksonConfiguration;
+import com.daangcool.stack.config.LiquibaseTestConfiguration;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -15,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringBootTest(classes = { StackApp.class, JacksonConfiguration.class, AsyncSyncConfiguration.class })
+@SpringBootTest(classes = {StackApp.class, LiquibaseTestConfiguration.class})
 @EmbeddedRedis
 @EmbeddedSQL
 public @interface IntegrationTest {
