@@ -1,20 +1,12 @@
 package com.daangcool.stack.web.rest;
 
-import static com.daangcool.stack.security.SecurityUtils.AUTHORITIES_CLAIM;
-import static com.daangcool.stack.security.SecurityUtils.JWT_ALGORITHM;
-import static com.daangcool.stack.security.SecurityUtils.USER_ID_CLAIM;
-
 import com.daangcool.stack.security.DomainUserDetailsService.UserWithId;
+import com.daangcool.stack.service.GlobalSettingsService;
 import com.daangcool.stack.web.rest.vm.LoginVM;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
-import java.security.Principal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +21,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
+
+import static com.daangcool.stack.security.SecurityUtils.*;
+
 /**
  * Controller to authenticate users.
  */
@@ -39,18 +38,17 @@ public class AuthenticateController {
     private static final Logger LOG = LoggerFactory.getLogger(AuthenticateController.class);
 
     private final JwtEncoder jwtEncoder;
-
-    @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds:0}")
-    private long tokenValidityInSeconds;
-
-    @Value("${jhipster.security.authentication.jwt.token-validity-in-seconds-for-remember-me:0}")
-    private long tokenValidityInSecondsForRememberMe;
-
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final GlobalSettingsService globalSettingsService;
 
-    public AuthenticateController(JwtEncoder jwtEncoder, AuthenticationManagerBuilder authenticationManagerBuilder) {
+    public AuthenticateController(
+        JwtEncoder jwtEncoder,
+        AuthenticationManagerBuilder authenticationManagerBuilder,
+        GlobalSettingsService globalSettingsService
+    ) {
         this.jwtEncoder = jwtEncoder;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.globalSettingsService = globalSettingsService;
     }
 
     @PostMapping("/authenticate")
@@ -86,9 +84,9 @@ public class AuthenticateController {
         Instant now = Instant.now();
         Instant validity;
         if (rememberMe) {
-            validity = now.plus(this.tokenValidityInSecondsForRememberMe, ChronoUnit.SECONDS);
+            validity = now.plus(globalSettingsService.getTokenValidityInSecondsForRememberMe(), ChronoUnit.SECONDS);
         } else {
-            validity = now.plus(this.tokenValidityInSeconds, ChronoUnit.SECONDS);
+            validity = now.plus(globalSettingsService.getTokenValidityInSeconds(), ChronoUnit.SECONDS);
         }
 
         // @formatter:off

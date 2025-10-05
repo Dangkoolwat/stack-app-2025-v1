@@ -25,8 +25,8 @@ public final class Constants {
     public static final String DEFAULT_LANGUAGE = "ko";
 
 
-    public static final Integer MAX_CAPTCHA_TRIES = 0;
-    public static final Integer MAX_ATTEMPT = 5;
+    public static final Integer MAX_CAPTCHA_TRIES = 3; //CAPTCHA 최대 시도 횟수
+    public static final Integer MAX_ATTEMPT = 5; //일반 최대 시도 횟수
 
     public static final String LATITUDE_PATTERN="^[+-]?((90\\.?0*$)|(([0-8]?[0-9])\\.?[0-9]*$))";
 

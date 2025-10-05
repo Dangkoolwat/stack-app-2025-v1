@@ -88,6 +88,8 @@ public class CacheConfiguration {
             createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), jcacheConfiguration);
             createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", jcacheConfiguration);
 
+            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), jcacheConfiguration);
+
             // Hibernate Query Cache 기본 리전 추가
             createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
             createCache(cm, "default-query-results-region", jcacheConfiguration);
