@@ -37,7 +37,7 @@ public final class ProblemUtils {
 //        problem.setProperty("timestamp", OffsetDateTime.now().toString());
         // ✅ 한국 시간 (KST, UTC+9) 고정
         problem.setProperty("timestamp", OffsetDateTime.now(KOREA_ZONE).toString());
-        problem.setProperty("path", req.getRequestURI());
+//        problem.setProperty("path", req.getRequestURI());
 
         return problem;
     }
