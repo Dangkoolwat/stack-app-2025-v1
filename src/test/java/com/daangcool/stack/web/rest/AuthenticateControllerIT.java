@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.daangcool.stack.IntegrationTest;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
+import com.daangcool.stack.service.GlobalSettingsService;
 import com.daangcool.stack.web.rest.vm.LoginVM;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class AuthenticateControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private GlobalSettingsService globalSettingsService; // Add this dependency
 
     @Test
     @Transactional
