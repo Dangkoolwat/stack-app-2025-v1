@@ -16,9 +16,14 @@ public class TestContainer implements SqlTestContainer, InitializingBean, Dispos
     @Override
     public void afterPropertiesSet() throws Exception {
         if (null == oracleContainer) {
-            oracleContainer = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim-faststart"));
+            oracleContainer = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim-faststart"))
+                .withDatabaseName("ORCLTEST")
+                .withPassword("oracle")
+                .withEnv("ORACLE_PASSWORD", "oracle")
+                .withReuse(true)
+                .withStartupTimeoutSeconds(300);
             oracleContainer.start();
-            log.info("Started Oracle Testcontainer");
+            log.info("Started Oracle Testcontainer with URL: {}", oracleContainer.getJdbcUrl());
         }
     }
 
