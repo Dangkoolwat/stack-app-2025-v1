@@ -10,14 +10,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.config.JHipsterProperties;
 
-import java.util.Optional;
-
-
 @Service
 @Transactional
 public class GlobalSettingsService {
 
-    private static final Long SETTINGS_ID = 1L; // Assuming a single row for settings
+    private static final Long SETTINGS_ID = 1L;
 
     private final SettingsRepository settingsRepository;
     private final JHipsterProperties jHipsterProperties;
@@ -36,20 +33,12 @@ public class GlobalSettingsService {
             settings.getTokenValiditySecondsForRememberMe(),
             settings.getLoginMaxFailureAttempts(),
             settings.getDescription()
-        )).orElse(new SettingsDTO(
-            jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds(),
-            jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe(),
-            Constants.MAX_ATTEMPT, // Default max attempts
-            "Default settings"
-        ));
+        )).orElseThrow(() -> new IllegalStateException("Settings with ID 1 not found. The database schema may be inconsistent."));
     }
 
     public void updateSettings(SettingsDTO settingsDTO) {
-        Settings settings = settingsRepository.findById(SETTINGS_ID).orElseGet(() -> {
-            Settings newSettings = new Settings();
-            newSettings.setId(SETTINGS_ID);
-            return newSettings;
-        });
+        Settings settings = settingsRepository.findById(SETTINGS_ID)
+            .orElseThrow(() -> new IllegalStateException("Settings with ID 1 not found. Cannot update non-existent settings."));
 
         settings.setTokenValiditySeconds(settingsDTO.getTokenValiditySeconds());
         settings.setTokenValiditySecondsForRememberMe(settingsDTO.getTokenValiditySecondsForRememberMe());
@@ -60,29 +49,25 @@ public class GlobalSettingsService {
         clearSettingsCache();
     }
 
-    private Optional<Settings> getSettingsFromRepository() {
-        return settingsRepository.findById(SETTINGS_ID);
-    }
-
     @Transactional(readOnly = true)
     public long getTokenValidityInSeconds() {
-        return getSettingsFromRepository()
+        return settingsRepository.findById(SETTINGS_ID)
             .map(Settings::getTokenValiditySeconds)
             .orElse(jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSeconds());
     }
 
     @Transactional(readOnly = true)
     public long getTokenValidityInSecondsForRememberMe() {
-        return getSettingsFromRepository()
+        return settingsRepository.findById(SETTINGS_ID)
             .map(Settings::getTokenValiditySecondsForRememberMe)
             .orElse(jHipsterProperties.getSecurity().getAuthentication().getJwt().getTokenValidityInSecondsForRememberMe());
     }
 
     @Transactional(readOnly = true)
     public int getLoginMaxFailureAttempts() {
-        return getSettingsFromRepository()
+        return settingsRepository.findById(SETTINGS_ID)
             .map(Settings::getLoginMaxFailureAttempts)
-            .orElse(5); // Default value
+            .orElse(Constants.MAX_ATTEMPT);
     }
 
     private void clearSettingsCache() {
