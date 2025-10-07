@@ -6,10 +6,16 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="00000000000000-1" author="jhipster">
-        <!-- Create user sequence -->
-        <createSequence sequenceName="user_sequence_generator" startValue="1050" incrementBy="1"/>
+  <changeSet id="00000000000000" author="jhipster">
+    <createSequence
+        sequenceName="USER_SEQUENCE_GENERATOR"
+        startValue="1050"
+        incrementBy="50"
+        ordered="true"
+        cycle="false"/>
+  </changeSet>
 
+  <changeSet id="00000000000000-1" author="jhipster">
         <!-- User Table -->
         <createTable tableName="stack_user">
             <column name="id" type="bigint">
@@ -82,17 +88,17 @@
             file="config/liquibase/data/authorities.csv"
             separator=","
             tableName="stack_authority"/>
-        <loadData
-            file="config/liquibase/data/users.csv"
-            separator=";"
-            tableName="stack_user">
-            <column name="activated" type="boolean"/>
-            <column name="created_date" type="timestamp"/>
-        </loadData>
-        <loadData
-            file="config/liquibase/data/users_authorities.csv"
-            separator=";"
-            tableName="stack_user_authority"/>
+<!--        <loadData-->
+<!--            file="config/liquibase/data/users.csv"-->
+<!--            separator=";"-->
+<!--            tableName="stack_user">-->
+<!--            <column name="activated" type="boolean"/>-->
+<!--            <column name="created_date" type="timestamp"/>-->
+<!--        </loadData>-->
+<!--        <loadData-->
+<!--            file="config/liquibase/data/users_authorities.csv"-->
+<!--            separator=";"-->
+<!--            tableName="stack_user_authority"/>-->
     </changeSet>
 
 </databaseChangeLog>

@@ -6,6 +6,8 @@
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20251005203000_added_entity_Settings.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20251005203000_added_entity_date_time_wrapper.xml" relativeToChangelogFile="false"/>
+
     <!--
         JHipster will add liquibase changelogs here, do not remove this line.
         To add your own changelog, add it below this line.
