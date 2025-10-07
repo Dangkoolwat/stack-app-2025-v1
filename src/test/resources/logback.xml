@@ -5,10 +5,6 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
     <!-- Enable detailed logs for debugging -->
-    <logger name="liquibase" level="WARN"/>
-    <logger name="org.hibernate.SQL" level="DEBUG"/>
-    <logger name="com.daangcool.stack" level="DEBUG"/>
-
     <logger name="tech.jhipster" level="WARN"/>
 
     <!-- https://www.testcontainers.org/supported_docker_environment/logging_config/ -->
@@ -42,7 +38,18 @@
     <logger name="sun.rmi.transport" level="WARN"/>
     <logger name="com.tngtech.archunit.core.importer" level="ERROR"/>
     <logger name="org.hibernate.orm.incubating" level="ERROR"/>
-    <logger name="LiquibaseSchemaResolver" level="INFO"/>
+    <logger name="LiquibaseSchemaResolver" level="DEBUG"/>
     <!-- jhipster-needle-logback-add-log - JHipster will add a new log with level -->
+    <logger name="angus.activation" level="WARN"/>
+    <logger name="io.undertow" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="org.xnio" level="WARN"/>
+    <logger name="jdk.event.security" level="WARN"/>
+    <logger name="org.redisson" level="WARN"/>
+    <logger name="liquibase" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="com.daangcool.stack" level="DEBUG"/>
+    <logger name="sun.net.www.protocol.http.HttpURLConnection" level="WARN"/>
+    <logger name="com.daangcool.stack.config.RedisTestContainer" level="WARN"/>
 
 </configuration>
