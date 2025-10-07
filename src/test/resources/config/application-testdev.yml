@@ -14,20 +14,26 @@
 spring:
   liquibase:
     change-log: classpath:config/liquibase/master.xml
+    drop-first: true
+    enabled: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
+#    driver-class-name: oracle.jdbc.OracleDriver
     hikari:
       auto-commit: false
       poolName: Hikari
       maximum-pool-size: 10
   jpa:
     open-in-view: false
+#    database-platform: org.hibernate.dialect.OracleDialect
+    show-sql: true
     hibernate:
       ddl-auto: none
       naming:
         physical-strategy: com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     properties:
+      hibernate.show_sql: true
       hibernate.id.new_generator_mappings: true
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: false
