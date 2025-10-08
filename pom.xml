@@ -408,8 +408,15 @@
               <defaultSchemaName/>
               <username>${liquibase-plugin.username}</username>
               <password>${liquibase-plugin.password}</password>
+              <systemProperties>
+                <property>
+                  <name>liquibase.objectQuotingStrategy</name>
+                  <value>LEGACY</value>
+                </property>
+              </systemProperties>
               <referenceUrl>
-                hibernate:spring:com.daangcool.stack.domain?dialect=org.hibernate.dialect.Oracle12cDialect&amp;
+                hibernate:spring:com.daangcool.stack.domain?
+                dialect=org.hibernate.dialect.Oracle12cDialect&amp;
                 hibernate.physical_naming_strategy=com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy&amp;
                 hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
               </referenceUrl>
