@@ -34,7 +34,10 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "userSequenceGenerator")
-    @SequenceGenerator(name = "userSequenceGenerator", sequenceName = "user_sequence_generator")
+    @SequenceGenerator(name = "userSequenceGenerator",
+        sequenceName = "user_sequence_generator",
+        allocationSize = 1
+    )
     private Long id;
 
     @NotNull
