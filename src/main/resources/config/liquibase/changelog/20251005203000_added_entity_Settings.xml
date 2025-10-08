@@ -6,16 +6,6 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <property name="now" value="now()" dbms="h2"/>
-    <property name="now" value="sysdate" dbms="oracle"/>
-    <property name="floatType" value="float4" dbms="postgresql, h2"/>
-    <property name="floatType" value="float" dbms="mysql, oracle, mssql, mariadb"/>
-    <property name="clobType" value="clob" dbms="h2, oracle"/>
-    <property name="clobType" value="longtext" dbms="mysql, mariadb"/>
-    <property name="uuidType" value="uuid" dbms="h2, postgresql"/>
-    <property name="datetimeType" value="datetime(6)" dbms="mysql, mariadb"/>
-    <property name="datetimeType" value="datetime" dbms="oracle, mssql, postgresql, h2"/>
-
     <changeSet id="20251005203000-1" author="jhipster">
         <createTable tableName="stack_settings">
             <column name="id" type="bigint">
@@ -36,9 +26,9 @@
             <column name="created_by" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_date" type="timestamp"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
             <column name="last_modified_by" type="varchar(50)"/>
-            <column name="last_modified_date" type="timestamp"/>
+            <column name="last_modified_date" type="${datetimeType}" defaultValueComputed="${now}"/>
         </createTable>
     </changeSet>
 
@@ -50,7 +40,6 @@
             <column name="login_nmax_failure_attempts" value="5"/>
             <column name="description" value="Initial default settings"/>
             <column name="created_by" value="system"/>
-            <column name="created_date" valueDate="${now}"/>
         </insert>
     </changeSet>
 </databaseChangeLog>
