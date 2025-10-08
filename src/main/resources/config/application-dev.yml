@@ -44,9 +44,10 @@ spring:
   liquibase:
     contexts: dev
     enabled: false  # Hibernate 개발용 자동 반영만 사용
-    jpa:
+    drop-first: false
+  jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true       # SQL 보기 좋게 줄바꿈/들여쓰기
