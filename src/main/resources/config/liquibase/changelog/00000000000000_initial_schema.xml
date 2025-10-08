@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+==========================================================================
+ Liquibase Master Changelog
+--------------------------------------------------------------------------
+ 🧩 Object Quoting Strategy 설명
+
+ Liquibase는 기본적으로 모든 객체명(tableName, columnName, sequenceName 등)을
+ SQL 생성 시 따옴표("")로 감싸지 않으면, 사용하는 데이터베이스의 규칙을 그대로 따릅니다.
+
+  ⚙️ objectQuotingStrategy = LEGACY
+   - Liquibase가 객체명에 따옴표를 붙이지 않고,
+     각 DB의 고유 규칙(대/소문자 변환)을 그대로 따르게 하는 모드입니다.
+   - DB별 동작:
+       • Oracle: 따옴표 없는 식별자 → 자동 대문자화 (USER_TABLE)
+       • PostgreSQL: 따옴표 없는 식별자 → 자동 소문자화 (user_table)
+       • MySQL / MariaDB: 대소문자 구분 없음 (user_table)
+       • SQL Server: 대소문자 구분 없음 (user_table)
+       • H2: Oracle과 동일하게 자동 대문자화 (USER_TABLE)
+
+  ✅ 권장 이유:
+   - XML에서 소문자/대문자 혼용해도 DB마다 자동 정규화됨.
+   - Oracle과 PostgreSQL을 동시에 지원하는 JHipster 프로젝트에 가장 안전함.
+   - 따옴표로 인한 대소문자 충돌(“sequence not found”) 문제 방지.
+
+========================================================================== -->
 <databaseChangeLog
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
@@ -6,11 +31,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
                         http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <!-- “따옴표를 붙이지 않고, 데이터베이스의 고유 대소문자 규칙을 그대로 따르는” Liquibase 동작 모드 -->
+  <!-- 따라서 Oracle에서는 —XML에서 소문자로 적어도 자동으로 대문자 객체(USER_TABLE, USER_SEQUENCE) 로 생성. -->
+  <property name="liquibase.objectQuotingStrategy" value="LEGACY"/>
+
   <changeSet id="00000000000000" author="jhipster">
     <createSequence
-        sequenceName="USER_SEQUENCE_GENERATOR"
+        sequenceName="user_sequence_generator"
         startValue="1050"
-        incrementBy="50"
+        incrementBy="1"
         ordered="true"
         cycle="false"/>
   </changeSet>
@@ -42,22 +71,22 @@
             <column name="activated" type="boolean" valueBoolean="false">
                 <constraints nullable="false"/>
             </column>
-            <column name="enabled" type="boolean" valueBoolean="true"/>
-            <column name="account_non_expired" type="boolean" valueBoolean="true"/>
-            <column name="account_non_locked" type="boolean" valueBoolean="true"/>
-            <column name="credentials_non_expired" type="boolean" valueBoolean="true"/>
             <column name="lang_key" type="varchar(10)"/>
             <column name="image_url" type="varchar(256)"/>
             <column name="activation_key" type="varchar(20)"/>
             <column name="reset_key" type="varchar(20)"/>
             <column name="reset_date" type="timestamp"/>
-            <column name="description" type="varchar(255)"/>
+            <column name="enabled" type="boolean" valueBoolean="true"/>
+            <column name="account_non_expired" type="boolean" valueBoolean="true"/>
+            <column name="account_non_locked" type="boolean" valueBoolean="true"/>
+            <column name="credentials_non_expired" type="boolean" valueBoolean="true"/>
             <column name="created_by" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="created_date" type="timestamp"/>
             <column name="last_modified_by" type="varchar(50)"/>
             <column name="last_modified_date" type="timestamp"/>
+          <column name="description" type="varchar(255)"/>
         </createTable>
 
         <!-- Authority Table -->
