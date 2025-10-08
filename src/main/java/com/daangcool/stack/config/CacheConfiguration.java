@@ -23,6 +23,8 @@ import javax.cache.expiry.Duration;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import static com.daangcool.stack.service.common.CommonCodeService.*;
+
 @Configuration
 @EnableCaching
 public class CacheConfiguration {
@@ -90,10 +92,18 @@ public class CacheConfiguration {
 
             createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), jcacheConfiguration);
 
+
             // Hibernate Query Cache 기본 리전 추가
             createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
             createCache(cm, "default-query-results-region", jcacheConfiguration);
 
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", jcacheConfiguration);
+            createCache(cm, COMMON_GROUP_CACHE, jcacheConfiguration);
+            createCache(cm, COMMON_GROUP_LIST_CACHE, jcacheConfiguration);
+            createCache(cm, COMMON_DETAIL_CACHE, jcacheConfiguration);
+            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }
