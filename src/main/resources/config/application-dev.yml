@@ -41,6 +41,9 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+  liquibase:
+    contexts: dev
+    enabled: false  # Hibernate 개발용 자동 반영만 사용
   jpa:
     hibernate:
       ddl-auto: update

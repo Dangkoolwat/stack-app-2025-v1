@@ -26,14 +26,15 @@
         <tag/>
         <url/>
     </scm>
+
     <properties>
         <java.version>17</java.version>
+        <spring-boot.version>3.5.6</spring-boot.version>
         <jhipster-framework.version>8.11.0</jhipster-framework.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
         <resource.delimiter>@</resource.delimiter>
-        <spring.profiles.activer>dev</spring.profiles.activer>
+        <spring.profiles.active>dev</spring.profiles.active>
 
         <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -48,11 +49,14 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
         <com.oracle.database.jdbc-version>21.17.0.0</com.oracle.database.jdbc-version>
+        <liquibase.version>4.29.2</liquibase.version>
+        <jakarta-validation.version>3.0.2</jakarta-validation.version>
 
-        <profile.data/>
+
         <profile.api-docs/>
         <profile.test/>
         <profile.local-tls/>
+        <profile.no-liquibase/>
     </properties>
 
     <dependencyManagement>
@@ -66,6 +70,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 
     <dependencies>
         <dependency>
@@ -208,11 +213,7 @@
             <artifactId>testcontainers</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+
 
         <!--Spring Doc -->
         <dependency>
@@ -250,6 +251,22 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
         </dependency>
+
+        <!-- Liquibase Core -->
+        <dependency>
+          <groupId>org.liquibase</groupId>
+          <artifactId>liquibase-core</artifactId>
+          <version>${liquibase.version}</version>
+        </dependency>
+
+        <!-- Liquibase Hibernate Integration -->
+        <dependency>
+          <groupId>org.liquibase.ext</groupId>
+          <artifactId>liquibase-hibernate6</artifactId>
+          <version>${liquibase.version}</version>
+        </dependency>
+
+
         <!-- For Oracle Wallet, get the oraclepki, osdt_core and osdt_cert artifacts;
                  these are not needed for JKS -->
         <dependency>
@@ -356,6 +373,7 @@
             <version>${jackson-databind-nullable.version}</version>
         </dependency>
 
+
     </dependencies>
 
     <build>
@@ -378,6 +396,82 @@
             </resource>
         </resources>
         <plugins>
+          <plugin>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-maven-plugin</artifactId>
+            <version>${liquibase.version}</version>
+            <configuration>
+              <changeLogFile>config/liquibase/master.xml</changeLogFile>
+              <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
+              <driver>oracle.jdbc.OracleDriver</driver>
+              <url>${liquibase-plugin.url}</url>
+              <defaultSchemaName/>
+              <username>${liquibase-plugin.username}</username>
+              <password>${liquibase-plugin.password}</password>
+              <referenceUrl>
+                hibernate:spring:com.daangcool.stack.domain?dialect=org.hibernate.dialect.Oracle12cDialect&amp;
+                hibernate.physical_naming_strategy=com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy&amp;
+                hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+              </referenceUrl>
+              <verbose>true</verbose>
+              <contexts>!test</contexts>
+            </configuration>
+            <executions>
+              <execution>
+                <id>generateChangeLog</id>
+                <phase>none</phase>
+                <goals>
+                  <goal>generateChangeLog</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>diff</id>
+                <phase>none</phase>
+                <goals>
+                  <goal>diff</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>update</id>
+                <phase>none</phase>
+                <goals>
+                  <goal>update</goal>
+                </goals>
+              </execution>
+
+              <execution>
+                <id>dropAll</id>
+                <phase>none</phase>
+                <goals>
+                  <goal>dropAll</goal>
+                </goals>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-core</artifactId>
+                <version>${liquibase.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.liquibase.ext</groupId>
+                <artifactId>liquibase-hibernate6</artifactId>
+                <version>${liquibase.version}</version>
+               </dependency>
+              <dependency>
+                <groupId>jakarta.validation</groupId>
+                <artifactId>jakarta.validation-api</artifactId>
+                <version>${jakarta-validation.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-jpa</artifactId>
+                <version>${spring-boot.version}</version>
+              </dependency>
+            </dependencies>
+          </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -409,18 +503,13 @@
         </plugins>
     </build>
     <profiles>
-        <profile>
-            <id>database</id>
-            <properties>
-                <profile.database>,database</profile.database>
-            </properties>
-        </profile>
-        <profile>
-            <id>data</id>
-            <properties>
-                <profile.data>,data</profile.data>
-            </properties>
-        </profile>
+      <profile>
+        <id>no-liquibase</id>
+        <properties>
+          <profile.no-liquibase>,no-liquibase</profile.no-liquibase>
+          <spring.profiles.active>no-liquibase</spring.profiles.active>
+        </properties>
+      </profile>
         <profile>
             <id>local-tls</id>
             <properties>
@@ -445,12 +534,12 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-              <liquibase-plugin.password>oracle</liquibase-plugin.password>
-              <liquibase-plugin.url>jdbc:oracle:thin:@localhost:1521:xe</liquibase-plugin.url>
-              <liquibase-plugin.username>system</liquibase-plugin.username>
+                <liquibase-plugin.url>jdbc:oracle:thin:@//localhost:1521/FREEPDB1</liquibase-plugin.url>
+                <liquibase-plugin.username>dizzyUncle</liquibase-plugin.username>
+                <liquibase-plugin.password>Docker#2020</liquibase-plugin.password>
                 <profile.test>test,testdev</profile.test>
                 <!-- default Spring profiles -->
-                <spring.profiles.active>dev</spring.profiles.active>
+                <spring.profiles.active>dev{profile.local-tls}${profile.api-docs}${profile.no-liquibase}</spring.profiles.active>
             </properties>
             <dependencies>
                 <dependency>
@@ -494,8 +583,12 @@
                 </plugins>
             </build>
             <properties>
-                <!-- default Spring profiles -->
-                <spring.profiles.active>prod</spring.profiles.active>
+              <!-- default Spring profiles -->
+              <liquibase-plugin.url>jdbc:oracle:thin:@localhost:1521:xe</liquibase-plugin.url>
+              <liquibase-plugin.username>system</liquibase-plugin.username>
+              <liquibase-plugin.password>oracle</liquibase-plugin.password>
+              <profile.test>test,testprod</profile.test>
+              <spring.profiles.active>prod${profile.api-docs}${profile.no-liquibase}</spring.profiles.active>
             </properties>
         </profile>
         <profile>

@@ -14,6 +14,26 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+
+    //Liquibase
+    private final Liquibase liquibase = new Liquibase();
+
+    public Liquibase getLiquibase() {
+        return liquibase;
+    }
+
+    @Getter
+    public static class Liquibase {
+
+        private Boolean asyncStart = true;
+
+        public void setAsyncStart(Boolean asyncStart) {
+            this.asyncStart = asyncStart;
+        }
+    }
+
+
+    //Logging
     private final Logging logging = new Logging();
 
     public Logging getLogging() {
@@ -29,6 +49,8 @@ public class ApplicationProperties {
         private String totalSizeCap;
 
     }
+
+
 
 
 }
