@@ -88,17 +88,17 @@
             file="config/liquibase/data/authorities.csv"
             separator=","
             tableName="stack_authority"/>
-<!--        <loadData-->
-<!--            file="config/liquibase/data/users.csv"-->
-<!--            separator=";"-->
-<!--            tableName="stack_user">-->
-<!--            <column name="activated" type="boolean"/>-->
-<!--            <column name="created_date" type="timestamp"/>-->
-<!--        </loadData>-->
-<!--        <loadData-->
-<!--            file="config/liquibase/data/users_authorities.csv"-->
-<!--            separator=";"-->
-<!--            tableName="stack_user_authority"/>-->
+        <loadData
+            file="config/liquibase/data/users.csv"
+            separator=";"
+            tableName="stack_user">
+            <column name="activated" type="boolean"/>
+            <column name="created_date" type="timestamp"/>
+        </loadData>
+        <loadData
+            file="config/liquibase/data/users_authorities.csv"
+            separator=";"
+            tableName="stack_user_authority"/>
     </changeSet>
 
 </databaseChangeLog>
