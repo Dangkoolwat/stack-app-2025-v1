@@ -1,4 +1,4 @@
-﻿# 🧩 Liquibase + Oracle + Maven 정리 가이드  
+﻿# 🧩 _Liquibase + Oracle + Maven 정리 가이드_  
 **Daangcool Stack Project | 2025 Edition**
 
 ---
