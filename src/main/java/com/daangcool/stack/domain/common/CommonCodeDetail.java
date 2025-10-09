@@ -31,8 +31,8 @@ public class CommonCodeDetail extends AbstractAuditingEntity<Long> implements Se
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CommonDetailSequenceGenerator")
-    @SequenceGenerator(name = "CommonDetailSequenceGenerator",
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator",
         sequenceName = "common_detail_sequence_generator",
         allocationSize = 1
     )

@@ -224,11 +224,12 @@
       <column name="group_name" value="대한민국 행정구역"/>
       <column name="description" value="특별시, 광역시, 특별자치시, 도 단위 행정구역"/>
       <column name="is_deleted" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <!-- ===== 특별시 ===== -->
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2101"/>
+      <column name="id" valueNumeric="5"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="SEOUL"/>
       <column name="name" value="서울특별시"/>
@@ -237,11 +238,12 @@
       <column name="sort_order" valueNumeric="1"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <!-- ===== 광역시 ===== -->
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2102"/>
+      <column name="id" valueNumeric="6"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="BUSAN"/>
       <column name="name" value="부산광역시"/>
@@ -250,10 +252,11 @@
       <column name="sort_order" valueNumeric="2"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2103"/>
+      <column name="id" valueNumeric="7"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="DAEGU"/>
       <column name="name" value="대구광역시"/>
@@ -262,10 +265,11 @@
       <column name="sort_order" valueNumeric="3"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2104"/>
+      <column name="id" valueNumeric="8"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="INCHEON"/>
       <column name="name" value="인천광역시"/>
@@ -274,10 +278,11 @@
       <column name="sort_order" valueNumeric="4"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2105"/>
+      <column name="id" valueNumeric="9"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="GWANGJU"/>
       <column name="name" value="광주광역시"/>
@@ -286,10 +291,11 @@
       <column name="sort_order" valueNumeric="5"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2106"/>
+      <column name="id" valueNumeric="10"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="DAEJEON"/>
       <column name="name" value="대전광역시"/>
@@ -298,10 +304,11 @@
       <column name="sort_order" valueNumeric="6"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2107"/>
+      <column name="id" valueNumeric="11"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="ULSAN"/>
       <column name="name" value="울산광역시"/>
@@ -310,11 +317,12 @@
       <column name="sort_order" valueNumeric="7"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <!-- ===== 특별자치시 ===== -->
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2108"/>
+      <column name="id" valueNumeric="12"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="SEJONG"/>
       <column name="name" value="세종특별자치시"/>
@@ -323,11 +331,12 @@
       <column name="sort_order" valueNumeric="8"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <!-- ===== 도(Province) ===== -->
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2109"/>
+      <column name="id" valueNumeric="13"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="GYEONGGI"/>
       <column name="name" value="경기도"/>
@@ -336,10 +345,11 @@
       <column name="sort_order" valueNumeric="9"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2110"/>
+      <column name="id" valueNumeric="14"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="GANGWON"/>
       <column name="name" value="강원특별자치도"/>
@@ -348,10 +358,11 @@
       <column name="sort_order" valueNumeric="10"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2111"/>
+      <column name="id" valueNumeric="15"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="CHUNGBUK"/>
       <column name="name" value="충청북도"/>
@@ -360,10 +371,11 @@
       <column name="sort_order" valueNumeric="11"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2112"/>
+      <column name="id" valueNumeric="16"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="CHUNGNAM"/>
       <column name="name" value="충청남도"/>
@@ -372,10 +384,11 @@
       <column name="sort_order" valueNumeric="12"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2113"/>
+      <column name="id" valueNumeric="17"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="JEONBUK"/>
       <column name="name" value="전라북도"/>
@@ -384,10 +397,11 @@
       <column name="sort_order" valueNumeric="13"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2114"/>
+      <column name="id" valueNumeric="18"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="JEONNAM"/>
       <column name="name" value="전라남도"/>
@@ -396,10 +410,11 @@
       <column name="sort_order" valueNumeric="14"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2115"/>
+      <column name="id" valueNumeric="19"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="GYEONGBUK"/>
       <column name="name" value="경상북도"/>
@@ -408,10 +423,11 @@
       <column name="sort_order" valueNumeric="15"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2116"/>
+      <column name="id" valueNumeric="20"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="GYEONGNAM"/>
       <column name="name" value="경상남도"/>
@@ -420,10 +436,11 @@
       <column name="sort_order" valueNumeric="16"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
 
     <insert tableName="stack_common_code_detail">
-      <column name="id" valueNumeric="2117"/>
+      <column name="id" valueNumeric="21"/>
       <column name="group_code" value="KOR_REGION"/>
       <column name="code" value="JEJU"/>
       <column name="name" value="제주특별자치도"/>
@@ -432,6 +449,7 @@
       <column name="sort_order" valueNumeric="17"/>
       <column name="is_deleted" valueNumeric="0"/>
       <column name="version" valueNumeric="0"/>
+      <column name="created_by" value="system"/>
     </insert>
   </changeSet>
 
