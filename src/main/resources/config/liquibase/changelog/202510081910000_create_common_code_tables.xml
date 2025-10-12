@@ -86,7 +86,7 @@
       </column>
 
       <column name="code" type="VARCHAR2(50)">
-        <constraints nullable="false"/>
+        <constraints nullable="false" unique="true" uniqueConstraintName="uk_stack_common_detail_code"/>
       </column>
 
       <column name="name" type="VARCHAR2(100)">
@@ -121,12 +121,6 @@
       <column name="last_modified_date" type="${datetimeType}" defaultValueComputed="${now}"/>
 
     </createTable>
-
-    <!-- Unique constraint (GROUP_CODE + CODE) -->
-    <addUniqueConstraint
-      tableName="stack_common_code_detail"
-      columnNames="group_code, code"
-      constraintName="uk_stack_group_code_detail"/>
 
     <!-- Foreign key -->
     <addForeignKeyConstraint

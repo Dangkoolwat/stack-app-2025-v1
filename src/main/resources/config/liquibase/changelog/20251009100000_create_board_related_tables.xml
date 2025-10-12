@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="20251009100000-1-sequences" author="gemini">
+        <createSequence sequenceName="tag_sequence_generator" startValue="1" incrementBy="1" cacheSize="20"/>
+        <createSequence sequenceName="board_sequence_generator" startValue="1" incrementBy="1" cacheSize="20"/>
+        <createSequence sequenceName="comment_sequence_generator" startValue="1" incrementBy="1" cacheSize="20"/>
+        <createSequence sequenceName="upload_sequence_generator" startValue="1" incrementBy="1" cacheSize="20"/>
+        <createSequence sequenceName="board_tag_sequence_generator" startValue="1" incrementBy="1" cacheSize="20"/>
+    </changeSet>
+
+    <changeSet id="20251009100000-2-tables" author="gemini">
+        <!-- Tag Master Table -->
+        <createTable tableName="stack_tag">
+            <column name="id" type="bigint" defaultValueSequenceNext="tag_sequence_generator">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="usage_count" type="bigint" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
+        </createTable>
+
+        <!-- Board Table -->
+        <createTable tableName="stack_board">
+            <column name="id" type="bigint" defaultValueSequenceNext="board_sequence_generator">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="${clobType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_count" type="bigint" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_notice" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="board_description" type="varchar(255)"/>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="board_type_code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
+        </createTable>
+
+        <!-- Comment Table -->
+        <createTable tableName="stack_comment">
+            <column name="id" type="bigint" defaultValueSequenceNext="comment_sequence_generator">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="content" type="${clobType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="star" type="bigint" defaultValue="0"/>
+            <column name="reply_count" type="bigint" defaultValue="0"/>
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment_description" type="varchar(255)"/>
+            <column name="board_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
+        </createTable>
+
+        <!-- Upload File Table -->
+        <createTable tableName="stack_upload_file">
+            <column name="id" type="bigint" defaultValueSequenceNext="upload_sequence_generator">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="storage_key" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_public" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="source_filename" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="storage_filename" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_path" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_size" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_extension" type="varchar(50)"/>
+            <column name="mime_type" type="varchar(255)"/>
+            <column name="download_count" type="bigint" defaultValue="0"/>
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="upload_description" type="varchar(255)"/>
+            <column name="board_id" type="bigint"/>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
+        </createTable>
+
+        <!-- Board-Tag Junction Table -->
+        <createTable tableName="stack_board_tag">
+            <column name="id" type="bigint" defaultValueSequenceNext="board_tag_sequence_generator">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="is_deleted" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="board_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(50)"/>
+            <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_by" type="varchar(50)"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
+        </createTable>
+
+        <addUniqueConstraint tableName="stack_board_tag" columnNames="board_id, tag_id"/>
+
+    </changeSet>
+
+    <changeSet id="20251009100000-3-foreign-keys" author="gemini">
+        <!-- Foreign Key Constraints -->
+        <addForeignKeyConstraint baseTableName="stack_board" baseColumnNames="user_id" constraintName="fk_stack_board_user_id" referencedTableName="stack_user" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="stack_board" baseColumnNames="board_type_code" constraintName="fk_stack_board_board_type_code" referencedTableName="stack_common_code_detail" referencedColumnNames="code"/>
+
+        <addForeignKeyConstraint baseTableName="stack_comment" baseColumnNames="board_id" constraintName="fk_stack_comment_board_id" referencedTableName="stack_board" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="stack_comment" baseColumnNames="user_id" constraintName="fk_stack_comment_user_id" referencedTableName="stack_user" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="stack_upload_file" baseColumnNames="board_id" constraintName="fk_stack_upload_file_board_id" referencedTableName="stack_board" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="stack_board_tag" baseColumnNames="board_id" constraintName="fk_stack_board_tag_board_id" referencedTableName="stack_board" referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="stack_board_tag" baseColumnNames="tag_id" constraintName="fk_stack_board_tag_tag_id" referencedTableName="stack_tag" referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

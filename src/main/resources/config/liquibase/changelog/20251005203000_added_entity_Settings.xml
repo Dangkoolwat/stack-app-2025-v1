@@ -28,7 +28,7 @@
             </column>
             <column name="created_date" type="${datetimeType}" defaultValueComputed="${now}"/>
             <column name="last_modified_by" type="varchar(50)"/>
-            <column name="last_modified_date" type="${datetimeType}" defaultValueComputed="${now}"/>
+            <column name="last_modified_date" type="${datetimeType}"/>
         </createTable>
     </changeSet>
 
