@@ -7,7 +7,8 @@ import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
 import com.daangcool.stack.web.exception.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.CacheManager; // CacheManager 추가
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,14 +104,14 @@ public class CommonCodeService {
 
     @Transactional(readOnly = true)
     // 전체 그룹 리스트 조회 시 캐싱 적용 (키는 사용하지 않음 - 리스트 전체)
-    @org.springframework.cache.annotation.Cacheable(value = COMMON_GROUP_LIST_CACHE, unless = "#result.isEmpty()")
+    @Cacheable(value = COMMON_GROUP_LIST_CACHE, unless = "#result.isEmpty()")
     public List<CommonCodeGroup> findAllGroups() {
         return groupRepository.findAllByDeletedIsFalseOrderByDisplayOrderAsc();
     }
 
     @Transactional(readOnly = true)
     // 단일 그룹 코드 조회 시 캐싱 적용 (groupCode를 키로 사용)
-    @org.springframework.cache.annotation.Cacheable(value = COMMON_GROUP_CACHE, key = "#groupCode", unless = "#result == null")
+    @Cacheable(value = COMMON_GROUP_CACHE, key = "#groupCode", unless = "#result == null")
     public Optional<CommonCodeGroup> findGroup(String groupCode) {
         return groupRepository.findOneByGroupCodeAndDeletedIsFalse(groupCode);
     }
@@ -188,14 +189,14 @@ public class CommonCodeService {
 
     @Transactional(readOnly = true)
     // 단일 상세 코드 조회 시 캐싱 적용 (ID를 키로 사용)
-    @org.springframework.cache.annotation.Cacheable(value = COMMON_DETAIL_CACHE, key = "#id", unless = "#result == null")
+    @Cacheable(value = COMMON_DETAIL_CACHE, key = "#id", unless = "#result == null")
     public Optional<CommonCodeDetail> findDetail(Long id) {
         return detailRepository.findById(id).filter(detail -> !detail.isDeleted());
     }
 
     @Transactional(readOnly = true)
     // 그룹별 상세 코드 리스트 조회 시 캐싱 적용 (groupCode를 키로 사용)
-    @org.springframework.cache.annotation.Cacheable(value = COMMON_DETAIL_LIST_BY_GROUP_CACHE, key = "#groupCode", unless = "#result.isEmpty()")
+    @Cacheable(value = COMMON_DETAIL_LIST_BY_GROUP_CACHE, key = "#groupCode", unless = "#result.isEmpty()")
     public List<CommonCodeDetail> findAllDetailsByGroup(String groupCode) {
         return detailRepository.findAllByGroupGroupCodeAndDeletedIsFalseOrderBySortOrderAsc(groupCode);
     }
