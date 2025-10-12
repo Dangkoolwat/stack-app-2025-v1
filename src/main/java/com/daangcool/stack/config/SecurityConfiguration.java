@@ -27,9 +27,15 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfiguration {
 
     private final JHipsterProperties jHipsterProperties;
+    private final ApplicationProperties fileStorageProperties;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    public SecurityConfiguration(JHipsterProperties jHipsterProperties) {
+    public SecurityConfiguration(JHipsterProperties jHipsterProperties, ApplicationProperties fileStorageProperties, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.jHipsterProperties = jHipsterProperties;
+        this.fileStorageProperties = fileStorageProperties;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     @Bean
@@ -71,6 +77,13 @@ public class SecurityConfiguration {
                         "/api-docs/**"
                     ).permitAll()
 
+                    // 1. 공개 파일 경로: 인증 없이 접근 허용 (Static Resource Handler가 서빙)
+                    // 예: /uploads/public/**
+                    .requestMatchers(fileStorageProperties.getFile().getPublicPath() + "/**").permitAll()
+
+                    // 2.  비공개 파일 폴더 접근 완전 차단
+                    .requestMatchers(fileStorageProperties.getFile().getPrivatePath() + "/**").denyAll()
+
                     // 나머지 API / 관리 / 인증 규칙
 
                     .requestMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
@@ -80,22 +93,32 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/account/reset-password/init").permitAll()
                     .requestMatchers("/api/account/reset-password/finish").permitAll()
                     .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
+                    //  파일 업로드/다운로드 API 보호
+                    .requestMatchers(HttpMethod.GET, "/api/uploads/**").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/uploads/**").authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
+                    // 관리자 전용 API
+                    .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
                     .requestMatchers("/api/**").authenticated()
                     .requestMatchers("/websocket/**").authenticated()
 //                    .requestMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/management/health", "/management/health/**", "/management/info", "/management/prometheus").permitAll()
                     .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions ->
                 exceptions
-                    .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                    .accessDeniedHandler(new CustomAccessDeniedHandler())
+                    .authenticationEntryPoint(customAuthenticationEntryPoint)
+                    .accessDeniedHandler(customAccessDeniedHandler)
             )
             .oauth2ResourceServer(oauth2 -> oauth2
-                // ❶ CustomAuthenticationEntryPoint를 등록
-                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                // ❷ JWT 디코더/인코더는 기존과 동일
+                //  CustomAuthenticationEntryPoint를 등록
+                .authenticationEntryPoint(customAuthenticationEntryPoint)
+                //  JWT 디코더/인코더는 기존과 동일
                 .jwt(Customizer.withDefaults())
             );
         return http.build();
