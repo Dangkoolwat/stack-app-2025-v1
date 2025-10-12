@@ -61,6 +61,8 @@ spring:
     port: 25
     username:
     password:
+  messages:
+    cache-duration: PT1H # 1 hour, see the ISO 8601 standard
   thymeleaf:
     cache: true
 
@@ -144,3 +146,9 @@ application:
     max-file-size: 50MB
     max-history: 30
     total-size-cap: 1GB
+  file:
+    storage-type: SHARE         # 💡 storage-type을 LOCAL로 명시하거나, 아예 생략해도 됩니다. (기본값)
+    upload-dir: /share         # DB에 저장될 웹 접근 경로 접두사  💡 upload-dir만 지정하면 됩니다.
+    public-path: /share/public     #  Public 파일 URL prefix (permitAll)
+    private-path: /share/private   #  Private 파일 URL prefix (Controller 접근
+

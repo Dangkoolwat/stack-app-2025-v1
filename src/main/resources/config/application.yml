@@ -129,6 +129,8 @@ spring:
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages
+    encoding: UTF-8
+    fallback-to-system-locale: false
   main:
     allow-bean-definition-overriding: true
   mvc:
