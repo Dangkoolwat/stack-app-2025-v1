@@ -1,9 +1,7 @@
 package com.daangcool.stack.web.rest.errors;
 
-import com.daangcool.stack.web.exception.BadRequestAlertException;
-import com.daangcool.stack.web.exception.EmailAlreadyUsedException;
-import com.daangcool.stack.web.exception.InvalidPasswordException;
-import com.daangcool.stack.web.exception.LoginAlreadyUsedException;
+import com.daangcool.stack.web.exception.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,21 +9,32 @@ import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * ExceptionTranslator
+ * -----------------------------------------------------------
+ * 애플리케이션 전역 예외를 RFC 7807 기반 ProblemDetail JSON으로 변환합니다.
+ * - Spring Boot 3.x 표준 ProblemDetail 통합
+ * - ErrorConstants URI 기반 에러 식별자
+ * - ProblemUtils를 통한 i18n 메시지 및 시간대 일관성 유지
+ * -----------------------------------------------------------
+ */
+@RestControllerAdvice
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
-
-    private static final Logger LOG = LoggerFactory.getLogger(ExceptionTranslator.class);
+    private static final Logger log = LoggerFactory.getLogger(ExceptionTranslator.class);
 
     /**
-     * @Valid 검증 실패 처리 (400 Bad Request)
-     * - 필드 오류 리스트를 properties.errors 로 내려줌
+     * @Valid 유효성 검증 실패 (400 Bad Request)
+     * - 필드별 오류 리스트를 "errors" 확장 필드로 포함
      */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -36,19 +45,8 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     ) {
         HttpServletRequest servletRequest = ((ServletWebRequest) request).getRequest();
 
-        // 공통 ProblemDetail 생성
-        var problem = ProblemUtils.build(
-            HttpStatus.BAD_REQUEST,
-            "https://stack-app.com/probs/validation-error",
-            "Validation Error",
-            "One or more fields are invalid",
-            servletRequest
-        );
-
-        // FieldError → DTO 변환 후 확장필드에 추가
-        List<FieldErrorVM> errors = ex.getBindingResult()
-            .getFieldErrors()
-            .stream()
+        // 필드별 오류 리스트 수집
+        List<FieldErrorVM> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
             .map(f -> new FieldErrorVM(
                 f.getObjectName().replaceFirst("DTO$", ""),
                 f.getField(),
@@ -56,7 +54,15 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             ))
             .collect(Collectors.toList());
 
-        problem.setProperty("errors", errors);
+        var problem = ProblemUtils.build(
+            HttpStatus.BAD_REQUEST,
+            ErrorConstants.CONSTRAINT_VIOLATION_TYPE.toString(),
+            "problem.validationError",
+            "problem.validationError.detail",
+            servletRequest
+        );
+
+        problem.setProperty("errors", fieldErrors);
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -64,8 +70,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * JSON 파싱 오류 처리 (400 Bad Request)
-     * - ex.getMostSpecificCause().getMessage() 로 detail 제공
+     * JSON 요청 본문 파싱 실패 (400 Bad Request)
      */
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
@@ -78,8 +83,8 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
         var problem = ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
-            "https://stack-app.com/probs/bad-request",
-            "Invalid Request",
+            ErrorConstants.BAD_REQUEST_TYPE.toString(),
+            "problem.invalidJson",
             ex.getMostSpecificCause().getMessage(),
             servletRequest
         );
@@ -90,89 +95,142 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     /**
-     * 커스텀 예외: 이메일 중복
+     * 이메일 중복 (400 Bad Request)
      */
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ResponseEntity<Object> handleEmailAlreadyUsed(EmailAlreadyUsedException ex, HttpServletRequest request) {
         var problem = ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
-            "https://stack-app.com/probs/email-used",
-            "Email Already Used",
+            ErrorConstants.EMAIL_ALREADY_USED_TYPE.toString(),
+            "problem.emailUsed",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.badRequest()
             .contentType(MediaType.APPLICATION_PROBLEM_JSON)
             .body(problem);
     }
 
     /**
-     * 커스텀 예외: 비밀번호 유효성 실패
-     */
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<Object> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
-            HttpStatus.BAD_REQUEST,
-            "https://stack-app.com/probs/invalid-password",
-            "Invalid Password",
-            ex.getMessage(),
-            request
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
-    }
-
-    /**
-     * 커스텀 예외: 로그인 중복
+     * 로그인 중복 (400 Bad Request)
      */
     @ExceptionHandler(LoginAlreadyUsedException.class)
     public ResponseEntity<Object> handleLoginAlreadyUsed(LoginAlreadyUsedException ex, HttpServletRequest request) {
         var problem = ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
-            "https://stack-app.com/probs/login-used",
-            "Login Already Used",
+            ErrorConstants.LOGIN_ALREADY_USED_TYPE.toString(),
+            "problem.loginUsed",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.badRequest()
             .contentType(MediaType.APPLICATION_PROBLEM_JSON)
             .body(problem);
     }
 
     /**
-     * 커스텀 예외: BadRequestAlertException
-     * - 이 예외는 내부적으로 ProblemDetail 변환 지원
+     * 잘못된 비밀번호 (400 Bad Request)
+     */
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<Object> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest request) {
+        var problem = ProblemUtils.build(
+            HttpStatus.BAD_REQUEST,
+            ErrorConstants.INVALID_PASSWORD_TYPE.toString(),
+            "problem.invalidPassword",
+            ex.getMessage(),
+            request
+        );
+        return ResponseEntity.badRequest()
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
+    }
+
+    /**
+     * 엔티티를 찾을 수 없음 (404 Not Found)
+     */
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
+        var problem = ProblemUtils.build(
+            HttpStatus.NOT_FOUND,
+            ErrorConstants.ENTITY_NOT_FOUND_TYPE.toString(),
+            "problem.entityNotFound",
+            ex.getMessage(),
+            request
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
+    }
+
+    /**
+     * 파일 저장/조회 관련 오류
+     */
+    @ExceptionHandler({ FileStorageException.class, UploadNotFoundException.class })
+    public ResponseEntity<Object> handleFileExceptions(RuntimeException ex, HttpServletRequest request) {
+        URI type = ex instanceof UploadNotFoundException
+            ? ErrorConstants.FILE_NOT_FOUND_TYPE
+            : ErrorConstants.FILE_STORAGE_ERROR_TYPE;
+
+        var problem = ProblemUtils.build(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            type.toString(),
+            "problem.fileError",
+            ex.getMessage(),
+            request
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
+    }
+
+    /**
+     * BadRequestAlertException (서비스/리소스 단위 유효성 실패)
      */
     @ExceptionHandler(BadRequestAlertException.class)
     public ResponseEntity<Object> handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
         var problem = ex.toProblemDetail(request.getRequestURI());
-        // 공통 확장 필드 추가
         problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         problem.setProperty("path", request.getRequestURI());
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_PROBLEM_JSON)
             .body(problem);
     }
 
     /**
-     * 그 외 모든 예외 처리 (500 Internal Server Error)
-     * - 운영환경에서는 민감한 메시지 숨김
+     * 접근 권한 거부 (403 Forbidden)
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<Object> handleAccessDenied(Exception ex, HttpServletRequest request) {
+        var problem = ProblemUtils.build(
+            HttpStatus.FORBIDDEN,
+            ErrorConstants.ACCESS_DENIED_TYPE.toString(),
+            "problem.accessDenied",
+            ex.getMessage(),
+            request
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
+    }
+
+    /**
+     * 처리되지 않은 예외 (500 Internal Server Error)
+     * - 내부 스택트레이스 메시지는 감춤
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAll(Exception ex, HttpServletRequest request) {
-        LOG.error("Unexpected error", ex);
+        log.error("Unexpected error", ex);
 
         String safeDetail = ex.getMessage();
         if (safeDetail != null && safeDetail.contains("org.")) {
-            safeDetail = "Unexpected server error";
+            safeDetail = "problem.internalServerError";
         }
 
         var problem = ProblemUtils.build(
             HttpStatus.INTERNAL_SERVER_ERROR,
-            "https://stack-app.com/probs/internal-error",
-            "Internal Server Error",
+            ErrorConstants.DEFAULT_TYPE.toString(),
+            "problem.internalError",
             safeDetail,
             request
         );

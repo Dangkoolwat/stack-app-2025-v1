@@ -6,23 +6,26 @@ import org.springframework.http.ProblemDetail;
 
 import java.net.URI;
 
+/**
+ * 400 Bad Request 상황에서 사용되는 공통 예외 클래스.
+ * - 주로 잘못된 입력 데이터나 검증 실패 시 발생합니다.
+ * - Entity 이름과 오류 키를 함께 내려 클라이언트 단에서 메시지 매핑을 쉽게 합니다.
+ */
 public class BadRequestAlertException extends RuntimeException {
 
     private final URI type;
     private final String entityName;
     private final String errorKey;
 
-    // 전체 파라미터 생성자
-    public BadRequestAlertException(URI type, String defaultMessage, String entityName, String errorKey) {
-        super(defaultMessage);
+    public BadRequestAlertException(URI type, String message, String entityName, String errorKey) {
+        super(message);
         this.type = type;
         this.entityName = entityName;
         this.errorKey = errorKey;
     }
 
-    // 편의 생성자 (type은 DEFAULT_TYPE 고정)
-    public BadRequestAlertException(String defaultMessage, String entityName, String errorKey) {
-        this(ErrorConstants.DEFAULT_TYPE, defaultMessage, entityName, errorKey);
+    public BadRequestAlertException(String message, String entityName, String errorKey) {
+        this(ErrorConstants.BAD_REQUEST_TYPE, message, entityName, errorKey);
     }
 
     public ProblemDetail toProblemDetail(String instance) {
@@ -30,12 +33,10 @@ public class BadRequestAlertException extends RuntimeException {
         problem.setType(type);
         problem.setTitle("Bad Request");
         problem.setDetail(getMessage());
-        problem.setProperty("instance", instance);
-
-        // 확장 필드
+        problem.setInstance(URI.create(instance));
         problem.setProperty("entityName", entityName);
         problem.setProperty("errorKey", errorKey);
-
+        problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         return problem;
     }
 }
