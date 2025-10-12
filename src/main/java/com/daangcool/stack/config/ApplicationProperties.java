@@ -1,5 +1,6 @@
 package com.daangcool.stack.config;
 
+import com.daangcool.stack.domain.enumeration.FileStorageType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * See {@link tech.jhipster.config.JHipsterProperties} for a good example.
  */
 
+@Getter
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
@@ -18,27 +20,17 @@ public class ApplicationProperties {
     //Liquibase
     private final Liquibase liquibase = new Liquibase();
 
-    public Liquibase getLiquibase() {
-        return liquibase;
-    }
-
+    @Setter
     @Getter
     public static class Liquibase {
 
         private Boolean asyncStart = true;
 
-        public void setAsyncStart(Boolean asyncStart) {
-            this.asyncStart = asyncStart;
-        }
     }
 
 
     //Logging
     private final Logging logging = new Logging();
-
-    public Logging getLogging() {
-        return logging;
-    }
 
     @Getter
     @Setter
@@ -50,7 +42,20 @@ public class ApplicationProperties {
 
     }
 
+    private final File file = new File();
 
+
+    @Getter
+    @Setter
+    public static class File {
+        private FileStorageType storageType = FileStorageType.LOCAL;    // 기본값: LOCAL
+        private String uploadDir = "/uploads";              // 웹 접근 경로 및 로컬 저장소 접미사 (기본값: /uploads)
+        private String sharePath = "/share";                 // 공유 폴더 경로 또는 클라우드 버킷 이름 (기본값: /share)
+        private String publicPath = "/uploads/public";       //  공개 리소스 경로 (정적 매핑 대상)
+        private String privatePath = "/uploads/private";     //  비공개 리소스 경로 (Controller 접근 대상)
+
+        public String getUploadResourceDir() { return uploadDir; }
+    }
 
 
 }
