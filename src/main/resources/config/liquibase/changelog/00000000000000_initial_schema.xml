@@ -66,7 +66,7 @@
             <column name="last_login_date" type="timestamp"/>
             <column name="login_failure_count" type="int" defaultValue="0"/>
             <column name="lock_reason" type="varchar(255)"/>
-            <column name="activated" type="boolean" valueBoolean="false">
+            <column name="activated" type="boolean" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="lang_key" type="varchar(10)"/>
@@ -74,10 +74,18 @@
             <column name="activation_key" type="varchar(20)"/>
             <column name="reset_key" type="varchar(20)"/>
             <column name="reset_date" type="timestamp"/>
-            <column name="enabled" type="boolean" valueBoolean="true"/>
-            <column name="account_non_expired" type="boolean" valueBoolean="true"/>
-            <column name="account_non_locked" type="boolean" valueBoolean="true"/>
-            <column name="credentials_non_expired" type="boolean" valueBoolean="true"/>
+            <column name="enabled" type="boolean" defaultValueBoolean="true"  remarks="계정 사용 여부">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_non_expired" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_non_locked" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="credentials_non_expired" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
             <column name="created_by" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
