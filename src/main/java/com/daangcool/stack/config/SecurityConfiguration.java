@@ -95,7 +95,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
 
                     //  파일 업로드/다운로드 API 보호
-                    .requestMatchers(HttpMethod.GET, "/api/uploads/**").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll() // Changed from authenticated() to permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/uploads/**").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").hasAuthority(AuthoritiesConstants.ADMIN)
 
