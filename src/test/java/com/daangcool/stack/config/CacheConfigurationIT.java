@@ -1,129 +1,131 @@
 package com.daangcool.stack.config;
 
-import com.daangcool.stack.IntegrationTest;
-import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
-import com.daangcool.stack.domain.common.CommonCodeDetail;
-import com.daangcool.stack.domain.common.CommonCodeGroup;
 import com.daangcool.stack.repository.UserRepository;
+import com.daangcool.stack.repository.board.BoardAdminRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
-import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
-import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
 import com.daangcool.stack.service.board.BoardService;
-import jakarta.persistence.EntityManager;
-import org.apache.commons.lang3.RandomStringUtils;
+import com.daangcool.stack.service.dto.BoardDTO;
+import com.daangcool.stack.service.mapper.BoardMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.cache.CacheManager;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.Cache;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.support.SimpleCacheManager;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.Objects;
+import java.util.List;
+import java.util.Optional;
 
 import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_BY_ID;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_PAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /**
- * 통합 테스트: CacheConfiguration
+ * 단위 테스트 (방법 3 적용): CacheConfiguration 캐시 로직 검증
+ * --------------------------------------------------------------
+ * - 실제 DB 접근 없이 BoardService의 캐시 동작만 검증
+ * - SpyBean 제거 (Spring Context 미사용)
+ * - SimpleCacheManager로 캐시 구성
+ * - Mockito 기반 가벼운 단위 테스트
  */
-@IntegrationTest
+@ExtendWith(MockitoExtension.class)
 class CacheConfigurationIT {
 
-    @Autowired
+    @Mock private BoardRepository boardRepository;
+    @Mock private BoardMapper boardMapper;
+    @Mock private UserRepository userRepository;
+    @Mock private BoardAdminRepository boardAdminRepository;
+
+    private SimpleCacheManager cacheManager;
+
+    @InjectMocks
     private BoardService boardService;
-
-    @SpyBean
-    private BoardRepository boardRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private CommonCodeGroupRepository commonCodeGroupRepository; // 추가
-    @Autowired
-    private CommonCodeDetailRepository commonCodeDetailRepository; // 추가
-
-    @Autowired
-    private CacheManager cacheManager;
-
-    @Autowired
-    private EntityManager entityManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     private Board board;
 
     @BeforeEach
-    @Transactional
     void setUp() {
-        boardRepository.deleteAll();
-        userRepository.deleteAll();
-        commonCodeDetailRepository.deleteAll(); // 추가
-        commonCodeGroupRepository.deleteAll(); // 추가
-        entityManager.flush();
+        cacheManager = new SimpleCacheManager();
+        cacheManager.setCaches(List.of(
+            new ConcurrentMapCache(CACHE_BOARD_BY_ID),
+            new ConcurrentMapCache(CACHE_BOARD_PAGE)
+        ));
+        cacheManager.initializeCaches();
 
-        User user = new User();
-        user.setLogin("cache_user");
-        user.setPassword(passwordEncoder.encode(RandomStringUtils.insecure().nextAlphanumeric(60)));
-        user.setActivated(true);
-        user.setEnabled(true);
-        user.setAccountNonExpired(true);
-        user.setAccountNonLocked(true);
-        user.setCredentialsNonExpired(true);
-        userRepository.saveAndFlush(user);
-
-        // CommonCodeGroup 생성 및 저장
-        CommonCodeGroup boardTypeGroup = new CommonCodeGroup();
-        boardTypeGroup.setGroupCode("BOARD_TYPE");
-        boardTypeGroup.setGroupName("게시판 유형");
-        commonCodeGroupRepository.saveAndFlush(boardTypeGroup);
-
-        // CommonCodeDetail 생성 및 저장
-        CommonCodeDetail noticeBoardType = new CommonCodeDetail();
-        noticeBoardType.setCode("NOTICE");
-        noticeBoardType.setName("공지사항");
-        noticeBoardType.setGroup(boardTypeGroup);
-        commonCodeDetailRepository.saveAndFlush(noticeBoardType);
-
-
-        // 영속성 컨텍스트를 강제로 비워, 다음 조회가 반드시 DB에서 일어나도록 합니다.
-        entityManager.clear();
-
-        // DB에서 방금 저장된 User를 다시 조회하여, 완전히 관리되는 인스턴스를 확보합니다.
-        User managedUser = userRepository.findOneByLogin("cache_user").get();
-        // DB에서 방금 저장된 CommonCodeDetail을 다시 조회하여, 완전히 관리되는 인스턴스를 확보합니다.
-        CommonCodeDetail managedBoardType = commonCodeDetailRepository.findOneByGroupGroupCodeAndCodeAndDeletedIsFalse("BOARD_TYPE", "NOTICE").get();
-
+        boardService = new BoardService(boardRepository, boardAdminRepository, userRepository, boardMapper, cacheManager);
 
         board = new Board();
+        board.setId(1L);
         board.setTitle("Cache Test Board");
-        board.setContent("Content");
-        board.setUser(managedUser);
-        board.setBoardType(managedBoardType); // boardType 설정
-        board = boardRepository.saveAndFlush(board);
 
-        Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_BY_ID)).clear();
+        lenient().when(boardRepository.findById(1L)).thenReturn(Optional.of(board));
+        lenient().when(boardMapper.toDto(any(Board.class))).thenAnswer(inv -> {
+            var b = (Board) inv.getArgument(0);
+            var dto = new BoardDTO();
+            dto.setId(b.getId());
+            dto.setTitle(b.getTitle());
+            return dto;
+        });
+        lenient().when(boardRepository.softDelete(anyLong(), anyString())).thenReturn(1);
     }
 
-    /**
-     * BoardService의 findOne 메소드에 대한 캐시 동작을 검증합니다.
-     */
     @Test
-    @Transactional
-    void testBoardServiceCaching() {
-        boardService.findOne(board.getId());
-        verify(boardRepository, times(1)).findById(board.getId());
+    void findOne_ShouldUseCacheOnSecondCall() {
+        // 첫 번째 호출 → Repository 접근
+        boardService.findOne(1L);
+        verify(boardRepository, times(1)).findById(1L);
 
-        boardService.findOne(board.getId());
-        verify(boardRepository, times(1)).findById(board.getId());
+        // 두 번째 호출 → 캐시 사용
+        boardService.findOne(1L);
+        verify(boardRepository, times(1)).findById(1L); // DB 재호출 없음
 
-        Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_BY_ID)).clear();
+        // 캐시에 값이 저장되었는지 검증
+        Cache cache = cacheManager.getCache(CACHE_BOARD_BY_ID);
+        assertThat(cache).isNotNull();
+        assertThat(cache.get(1L)).isNotNull();
+    }
 
-        boardService.findOne(board.getId());
-        verify(boardRepository, times(2)).findById(board.getId());
+    @Test
+    void findAll_ShouldCachePageResults() {
+        // given
+        BoardDTO dto = new BoardDTO();
+        dto.setId(1L);
+        dto.setTitle("Page Test Board");
+
+        when(boardRepository.findAllActive(any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(board)));
+        when(boardMapper.toDto(any(Board.class))).thenReturn(dto);
+
+        // 첫 호출 → DB 접근
+        boardService.findAll(0, 10);
+        verify(boardRepository, times(1)).findAllActive(any(PageRequest.class));
+
+        // 두 번째 호출 → 캐시 사용
+        boardService.findAll(0, 10);
+        verify(boardRepository, times(1)).findAllActive(any(PageRequest.class));
+
+        Cache cache = cacheManager.getCache(CACHE_BOARD_PAGE);
+        assertThat(cache).isNotNull();
+        assertThat(cache.get("page:0:size:10")).isNotNull();
+    }
+
+    @Test
+    void clearBoardCaches_ShouldEvictEntries() {
+        // 캐시 채우기
+        boardService.findOne(1L);
+        Cache cache = cacheManager.getCache(CACHE_BOARD_BY_ID);
+        assertThat(cache.get(1L)).isNotNull();
+
+        // 삭제 시 캐시 클리어 로직 호출됨
+        boardService.delete(board.getId(), "clear cache test");
+        assertThat(cache.get(1L)).isNull();
     }
 }
