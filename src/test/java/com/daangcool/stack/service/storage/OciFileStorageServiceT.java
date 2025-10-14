@@ -1,7 +1,7 @@
 package com.daangcool.stack.service.storage;
 
 import com.daangcool.stack.config.ApplicationProperties;
-import com.daangcool.stack.util.UploadFileUtils;
+import com.daangcool.stack.common.util.UploadFileUtils;
 import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.objectstorage.ObjectStorageClient;

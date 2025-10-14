@@ -1,5 +1,6 @@
 package com.daangcool.stack.config;
 
+import com.daangcool.stack.common.constant.StackAppConstants;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterRegistration;
 import jakarta.servlet.Servlet;

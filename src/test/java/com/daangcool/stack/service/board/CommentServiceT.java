@@ -8,7 +8,7 @@ import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.repository.board.CommentRepository;
 import com.daangcool.stack.service.dto.CommentDTO;
 import com.daangcool.stack.service.mapper.CommentMapper;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

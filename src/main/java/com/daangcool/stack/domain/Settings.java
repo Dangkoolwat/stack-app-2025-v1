@@ -1,6 +1,6 @@
 package com.daangcool.stack.domain;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

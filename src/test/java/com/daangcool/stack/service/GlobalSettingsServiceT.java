@@ -3,7 +3,7 @@ package com.daangcool.stack.service;
 import com.daangcool.stack.domain.Settings;
 import com.daangcool.stack.repository.SettingsRepository;
 import com.daangcool.stack.service.dto.SettingsDTO;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**

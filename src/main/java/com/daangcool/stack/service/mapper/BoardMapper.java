@@ -4,7 +4,7 @@ import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.domain.common.CommonCodeDetail;
 import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.service.dto.BoardDTO;
-import com.daangcool.stack.web.exception.EntityNotFoundException;
+import com.daangcool.stack.common.exception.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

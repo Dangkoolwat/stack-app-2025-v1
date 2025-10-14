@@ -1,15 +1,15 @@
 package com.daangcool.stack.web.rest;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.MailService;
 import com.daangcool.stack.service.UserService;
 import com.daangcool.stack.service.dto.AdminUserDTO;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
-import com.daangcool.stack.web.exception.EmailAlreadyUsedException;
-import com.daangcool.stack.web.exception.LoginAlreadyUsedException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.EmailAlreadyUsedException;
+import com.daangcool.stack.common.exception.LoginAlreadyUsedException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import org.slf4j.Logger;

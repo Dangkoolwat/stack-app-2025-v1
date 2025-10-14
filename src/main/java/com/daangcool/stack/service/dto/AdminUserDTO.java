@@ -1,6 +1,6 @@
 package com.daangcool.stack.service.dto;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import jakarta.validation.constraints.*;

@@ -4,7 +4,7 @@ import com.daangcool.stack.domain.board.Tag;
 import com.daangcool.stack.repository.board.TagRepository;
 import com.daangcool.stack.service.dto.TagDTO;
 import com.daangcool.stack.service.mapper.TagMapper;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

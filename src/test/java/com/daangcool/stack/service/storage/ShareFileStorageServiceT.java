@@ -1,7 +1,7 @@
 package com.daangcool.stack.service.storage;
 
 import com.daangcool.stack.config.ApplicationProperties;
-import com.daangcool.stack.util.UploadFileUtils;
+import com.daangcool.stack.common.util.UploadFileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

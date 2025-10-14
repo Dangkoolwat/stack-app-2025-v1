@@ -1,6 +1,6 @@
 package com.daangcool.stack.security;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 

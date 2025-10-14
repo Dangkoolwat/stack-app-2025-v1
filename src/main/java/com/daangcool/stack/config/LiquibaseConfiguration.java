@@ -1,5 +1,6 @@
 package com.daangcool.stack.config;
 
+import com.daangcool.stack.common.constant.StackAppConstants;
 import liquibase.integration.spring.SpringLiquibase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

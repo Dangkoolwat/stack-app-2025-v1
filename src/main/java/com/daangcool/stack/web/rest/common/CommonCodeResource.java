@@ -4,7 +4,7 @@ import com.daangcool.stack.domain.common.CommonCodeDetail;
 import com.daangcool.stack.domain.common.CommonCodeGroup;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.common.CommonCodeService;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

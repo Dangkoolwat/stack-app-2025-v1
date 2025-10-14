@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package com.daangcool.stack.config;
+package com.daangcool.stack.common.constant;
 
 /**
  * JHipster constants.

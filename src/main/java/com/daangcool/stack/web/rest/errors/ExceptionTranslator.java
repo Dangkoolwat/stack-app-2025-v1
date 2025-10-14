@@ -1,6 +1,6 @@
 package com.daangcool.stack.web.rest.errors;
 
-import com.daangcool.stack.web.exception.*;
+import com.daangcool.stack.common.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import com.daangcool.stack.util.errors.ErrorConstants;
+import com.daangcool.stack.common.constant.ErrorConstants;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package com.daangcool.stack.config;
+package com.daangcool.stack.common.constant;
 
 /**
  * Application constants.

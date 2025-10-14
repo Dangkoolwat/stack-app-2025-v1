@@ -1,4 +1,4 @@
-package com.daangcool.stack.util;
+package com.daangcool.stack.common.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

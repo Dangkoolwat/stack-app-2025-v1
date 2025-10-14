@@ -1,4 +1,4 @@
-package com.daangcool.stack.util.errors;
+package com.daangcool.stack.common.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.MessageSource;

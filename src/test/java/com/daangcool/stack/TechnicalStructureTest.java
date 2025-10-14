@@ -4,6 +4,7 @@ import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
+import com.daangcool.stack.common.constant.Constants;
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -32,7 +33,7 @@ class TechnicalStructureTest {
 
         .ignoreDependency(belongToAnyOf(StackApp.class), alwaysTrue())
         .ignoreDependency(alwaysTrue(), belongToAnyOf(
-            com.daangcool.stack.config.Constants.class,
+            Constants.class,
             com.daangcool.stack.config.ApplicationProperties.class
         ));
 }

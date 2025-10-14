@@ -5,7 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.daangcool.stack.IntegrationTest;
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.AuthorityRepository;
 import com.daangcool.stack.repository.UserRepository;

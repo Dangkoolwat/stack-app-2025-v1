@@ -1,6 +1,7 @@
 package com.daangcool.stack.config;
 
 import com.daangcool.stack.aop.logging.LoggingAspect;
+import com.daangcool.stack.common.constant.StackAppConstants;
 import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 

@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.daangcool.stack.IntegrationTest;
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.User;
 import jakarta.mail.Multipart;
 import jakarta.mail.Session;

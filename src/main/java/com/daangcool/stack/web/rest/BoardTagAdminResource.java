@@ -2,7 +2,7 @@ package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.service.board.BoardTagService;
 import com.daangcool.stack.service.dto.BoardTagDTO;
-import com.daangcool.stack.web.exception.EntityNotFoundException;
+import com.daangcool.stack.common.exception.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

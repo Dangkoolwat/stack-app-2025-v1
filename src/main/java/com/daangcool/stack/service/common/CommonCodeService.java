@@ -4,7 +4,7 @@ import com.daangcool.stack.domain.common.CommonCodeDetail;
 import com.daangcool.stack.domain.common.CommonCodeGroup;
 import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;

@@ -1,7 +1,7 @@
 package com.daangcool.stack.service.storage;
 
 import com.daangcool.stack.config.ApplicationProperties;
-import com.daangcool.stack.util.UploadFileUtils;
+import com.daangcool.stack.common.util.UploadFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

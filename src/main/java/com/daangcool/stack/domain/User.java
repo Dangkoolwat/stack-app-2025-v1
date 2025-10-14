@@ -1,6 +1,6 @@
 package com.daangcool.stack.domain;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.enumeration.SocialType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

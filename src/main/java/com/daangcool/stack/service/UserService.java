@@ -1,6 +1,6 @@
 package com.daangcool.stack.service;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.AuthorityRepository;

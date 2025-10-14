@@ -1,6 +1,6 @@
 package com.daangcool.stack.aop.logging;
 
-import com.daangcool.stack.config.StackAppConstants;
+import com.daangcool.stack.common.constant.StackAppConstants;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;

@@ -1,10 +1,10 @@
 package com.daangcool.stack.service;
 
-import com.daangcool.stack.config.Constants;
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Settings;
 import com.daangcool.stack.repository.SettingsRepository;
 import com.daangcool.stack.service.dto.SettingsDTO;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;

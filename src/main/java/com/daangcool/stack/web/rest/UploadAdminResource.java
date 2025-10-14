@@ -3,7 +3,7 @@ package com.daangcool.stack.web.rest;
 import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.board.UploadService;
-import com.daangcool.stack.web.exception.UploadNotFoundException;
+import com.daangcool.stack.common.exception.UploadNotFoundException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

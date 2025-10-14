@@ -1,4 +1,4 @@
-package com.daangcool.stack.web.exception;
+package com.daangcool.stack.common.exception;
 
 /**
  * 파일 업로드 중 발생하는 예외를 표현하는 사용자 정의 런타임 예외 클래스.

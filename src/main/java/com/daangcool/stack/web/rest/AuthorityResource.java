@@ -2,7 +2,7 @@ package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.repository.AuthorityRepository;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

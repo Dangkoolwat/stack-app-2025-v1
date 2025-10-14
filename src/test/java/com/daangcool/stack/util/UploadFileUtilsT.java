@@ -1,5 +1,6 @@
 package com.daangcool.stack.util;
 
+import com.daangcool.stack.common.util.UploadFileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;

@@ -2,7 +2,7 @@ package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.service.dto.TagDTO;
 import com.daangcool.stack.service.board.TagService;
-import com.daangcool.stack.web.exception.BadRequestAlertException;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

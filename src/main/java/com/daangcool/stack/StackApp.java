@@ -2,7 +2,7 @@ package com.daangcool.stack;
 
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.config.CRLFLogConverter;
-import com.daangcool.stack.config.StackAppConstants;
+import com.daangcool.stack.common.constant.StackAppConstants;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
