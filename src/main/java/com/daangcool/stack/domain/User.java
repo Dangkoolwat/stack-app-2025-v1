@@ -88,12 +88,16 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     private boolean activated = false;
 
     // 가입 탈퇴 여부
+    @Column(nullable = false)
     private  boolean enabled = true;
 
+    @Column(nullable = false)
     private  boolean accountNonExpired = true;
 
+    @Column(nullable = false)
     private  boolean accountNonLocked = true;
 
+    @Column(nullable = false)
     private  boolean credentialsNonExpired = true;
 
 
