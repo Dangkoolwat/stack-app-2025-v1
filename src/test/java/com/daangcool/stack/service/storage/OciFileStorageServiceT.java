@@ -1,7 +1,7 @@
 package com.daangcool.stack.service.storage;
 
-import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.common.util.UploadFileUtils;
+import com.daangcool.stack.config.ApplicationProperties;
 import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.objectstorage.ObjectStorageClient;
@@ -18,7 +18,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -51,32 +50,28 @@ class OciFileStorageServiceT {
     private MockedStatic<UploadFileUtils> uploadFileUtilsMockedStatic;
     private MockedConstruction<ConfigFileAuthenticationDetailsProvider> providerConstructionMock;
 
+
     @BeforeEach
     void setUp() throws IOException {
-        // 시스템 속성 설정 (생성자에서 사용)
         System.setProperty("oci.namespace", "test-namespace");
         System.setProperty("oci.bucket", "test-bucket");
 
-        // ApplicationProperties Mock 설정
-        ApplicationProperties.File fileProps = mock(ApplicationProperties.File.class);
-        lenient().when(applicationProperties.getFile()).thenReturn(fileProps);
-        lenient().when(fileProps.getSharePath()).thenReturn("test-bucket");
+        // 필요 없다면 완전히 삭제하세요.
+        // ApplicationProperties.File fileProps = mock(ApplicationProperties.File.class);
+        // lenient().when(applicationProperties.getFile()).thenReturn(fileProps);
+        // lenient().when(fileProps.getSharePath()).thenReturn("test-bucket");
 
-        // OCI SDK 클래스 Mocking
         providerConstructionMock = mockConstruction(ConfigFileAuthenticationDetailsProvider.class);
 
         ObjectStorageClient.Builder ociBuilder = mock(ObjectStorageClient.Builder.class);
-        ociClientMockedStatic = mockStatic(ObjectStorageClient.class, Mockito.withSettings().lenient());
+        ociClientMockedStatic = mockStatic(ObjectStorageClient.class);
         ociClientMockedStatic.when(ObjectStorageClient::builder).thenReturn(ociBuilder);
         when(ociBuilder.region(any(Region.class))).thenReturn(ociBuilder);
         when(ociBuilder.build(any(ConfigFileAuthenticationDetailsProvider.class))).thenReturn(ociClient);
 
         uploadFileUtilsMockedStatic = mockStatic(UploadFileUtils.class);
 
-        // 테스트 대상 서비스를 초기화합니다.
         storageService = new OciFileStorageService(applicationProperties);
-
-        // 테스트에 사용할 가짜 파일을 생성합니다.
         multipartFile = new MockMultipartFile("file", "oci-test.png", "image/png", "content".getBytes());
     }
 
