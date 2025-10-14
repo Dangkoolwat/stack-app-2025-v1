@@ -46,7 +46,7 @@ public class UploadFileUtils {
     /**
      * 파일을 저장하고 DB에 기록할 웹 접근 경로를 반환합니다.
      *
-     * @param rootPath   애플리케이션 기준 루트 절대 경로 (예: /home/app)
+     * @param rootPath   애플리케이션 기준 루트 절대 경로 (예: /home/app/uploads)
      * @param storageKey 파일 용도 구분 키 (예: NOTICE, USER_PROFILE)
      * @param file       업로드된 MultipartFile
      * @param isPublic   공개 여부. true이면 /uploads/public, false이면 /uploads/private 하위에 저장
@@ -70,14 +70,14 @@ public class UploadFileUtils {
 
         String cleanFilename = sanitizeFilename(originalFilename);
 
-        // 저장 기본 폴더 결정
-        String baseDir = isPublic ? "/uploads/public" : "/uploads/private";
+        // 저장 기본 폴더 결정 (rootPath 바로 하위)
+        String scopeDir = isPublic ? "public" : "private";
 
         // 날짜 기반 서브 폴더 생성 (yyyy/MM)
         String dateFolder = LocalDateTime.now().format(FOLDER_DATE_FORMATTER);
 
-        // 최종 물리 디렉토리: rootPath + baseDir + storageKey + dateFolder
-        Path targetDir = Paths.get(rootPath, trimLeadingSlash(baseDir), storageKey, dateFolder);
+        // 최종 물리 디렉토리: rootPath + scopeDir + storageKey + dateFolder
+        Path targetDir = Paths.get(rootPath, scopeDir, storageKey, dateFolder);
         Files.createDirectories(targetDir);
 
         // 새 파일명 생성: timestamp_uuid.ext
@@ -97,13 +97,14 @@ public class UploadFileUtils {
         }
 
         // 반환: 웹에서 접근 가능한 경로 형식으로 반환
-        return makeWebPath(baseDir, storageKey, dateFolder, newFilename);
+        // 예: /uploads/public/NOTICE/2025/10/20251009_uuid.ext
+        return makeWebPath("/uploads", scopeDir, storageKey, dateFolder, newFilename);
     }
 
     /**
      * 물리 파일 삭제 (로컬/공유 마운트 전용).
      *
-     * @param rootLocation    물리적 루트 경로 (예: /home/app)
+     * @param rootLocation    물리적 루트 경로 (예: /home/app/uploads)
      * @param storageFilePath DB에 저장된 웹 경로 (예: /uploads/public/NOTICE/2025/10/...)
      * @param webPrefix       웹 접근 경로 접두사 (예: /uploads)
      * @return 삭제 성공 여부 (파일이 없으면 true)
@@ -114,15 +115,19 @@ public class UploadFileUtils {
             return false;
         }
 
-        // 웹 경로에서 접두사 제거하여 상대 경로로 변환
+        // storageFilePath에서 webPrefix를 제거하여 rootLocation에 상대적인 경로를 얻는다.
+        // 예: storageFilePath = /uploads/public/..., webPrefix = /uploads -> relativePath = /public/...
         String relativePath = storageFilePath;
         if (StringUtils.hasText(webPrefix) && storageFilePath.startsWith(webPrefix)) {
             relativePath = storageFilePath.substring(webPrefix.length());
         }
 
         // 상대 경로의 '/'를 OS 구분자로 변환하고 Paths.get으로 안전하게 결합
+        // rootLocation: /home/app/uploads
+        // relativePath: /public/NOTICE/2025/10/file.ext
+        // filePath: /home/app/uploads/public/NOTICE/2025/10/file.ext
         String normalizedRelative = relativePath.replace('/', File.separatorChar);
-        Path filePath = Paths.get(rootLocation, normalizedRelative);
+        Path filePath = Paths.get(rootLocation, trimLeadingSlash(normalizedRelative));
 
         File fileToDelete = filePath.toFile();
         if (!fileToDelete.exists()) {
@@ -145,7 +150,7 @@ public class UploadFileUtils {
      * 저장된 파일을 한 범위(public/private)에서 다른 범위로 이동시킵니다.
      * DB의 filePath는 이 메서드 호출 후 반환값으로 교체되어야 합니다.
      *
-     * @param rootPath       애플리케이션 루트 절대 경로
+     * @param rootPath       애플리케이션 루트 절대 경로 (예: /home/app/uploads)
      * @param currentWebPath 현재 DB에 저장된 웹 경로 (예: /uploads/public/...)
      * @param targetBaseDir  이동 대상 baseDir (예: /uploads/private 또는 /uploads/public)
      * @return 이동 후의 웹 경로 (예: /uploads/private/...)
@@ -156,46 +161,40 @@ public class UploadFileUtils {
             throw new IllegalArgumentException("Invalid parameters for moveFileBetweenScopes");
         }
 
+        // currentWebPath에서 웹 접두사 (/uploads)를 제거한 상대 경로 추출
+        // 예: /uploads/public/NOTICE/2025/10/file.ext -> public/NOTICE/2025/10/file.ext
+        String relativePathWithoutWebPrefix = currentWebPath.substring("/uploads".length());
+
         // 현재 물리 경로 계산
-        String relativeCurrent = currentWebPath;
-        // currentWebPath 예시: /uploads/public/NOTICE/2025/10/file.ext
-        // rootPath와 결합하여 물리경로 생성
-        String normalizedRelativeCurrent = relativeCurrent.replace('/', File.separatorChar);
-        Path currentPath = Paths.get(rootPath, trimLeadingSlash(relativeCurrent));
+        // rootPath: /home/app/uploads
+        // relativePathWithoutWebPrefix: /public/NOTICE/2025/10/file.ext
+        // currentPath: /home/app/uploads/public/NOTICE/2025/10/file.ext
+        Path currentPath = Paths.get(rootPath, trimLeadingSlash(relativePathWithoutWebPrefix));
 
         if (!Files.exists(currentPath)) {
             throw new IOException("Source file does not exist: " + currentPath);
         }
 
-        // 파일명과 storageKey/date 폴더 추출
-        Path filename = currentPath.getFileName();
-        if (filename == null) {
-            throw new IOException("Invalid source file path: " + currentPath);
+        // 파일명과 storageKey, dateFolder 추출
+        // relativePathWithoutWebPrefix: /public/NOTICE/2025/10/file.ext
+        String[] parts = relativePathWithoutWebPrefix.split(File.separator);
+        if (parts.length < 4) { // parts[0] is empty string if starts with /, parts[1]=public/private, parts[2]=storageKey, parts[3]=yyyy, parts[4]=MM, parts[5]=filename
+             parts = relativePathWithoutWebPrefix.substring(1).split(File.separator);
         }
 
-        // 대상 디렉토: rootPath/targetBaseDir/{storageKey}/{yyyy}/{MM}
-        // currentWebPath에서 storageKey + dateFolder 추출 (현재 경로에서 baseDir 이후 부분)
-        String afterBase = currentWebPath.startsWith("/") ? currentWebPath.substring(1) : currentWebPath;
-        // afterBase: uploads/public/NOTICE/2025/10/file.ext
-        String[] parts = afterBase.split("/", 4); // [uploads, public, storageKey, rest...]
-        if (parts.length < 4) {
-            throw new IOException("Current web path does not contain expected segments: " + currentWebPath);
-        }
-        // parts[2] = storageKey, parts[3] = yyyy/MM/file.ext
-        String storageKey = parts[2];
-        String dateAndFile = parts[3];
-        String dateFolder = dateAndFile;
-        int lastSlash = dateAndFile.lastIndexOf('/');
-        if (lastSlash > 0) {
-            dateFolder = dateAndFile.substring(0, lastSlash); // yyyy/MM
-        } else {
-            dateFolder = "";
-        }
+        String currentScopeDir = parts[0]; // public or private
+        String storageKey = parts[1];
+        String dateFolder = parts[2] + File.separator + parts[3]; // yyyy/MM
+        String filename = parts[4];
 
-        Path targetDir = Paths.get(rootPath, trimLeadingSlash(targetBaseDir), storageKey, dateFolder);
+        // 대상 스코프 디렉토리 (public 또는 private)
+        String targetScopeDir = targetBaseDir.contains("private") ? "private" : "public";
+
+        // 대상 물리 디렉토리: rootPath/targetScopeDir/storageKey/dateFolder
+        Path targetDir = Paths.get(rootPath, targetScopeDir, storageKey, dateFolder);
         Files.createDirectories(targetDir);
 
-        Path targetPath = targetDir.resolve(filename.toString());
+        Path targetPath = targetDir.resolve(filename);
 
         // 이동 수행 (덮어쓰기)
         try {
@@ -206,12 +205,13 @@ public class UploadFileUtils {
         }
 
         // 반환 웹 경로
-        String newWebPath = makeWebPath(targetBaseDir, storageKey, dateFolder, filename.toString());
+        // 예: /uploads/private/NOTICE/2025/10/file.ext
+        String newWebPath = makeWebPath("/uploads", targetScopeDir, storageKey, dateFolder, filename);
         return newWebPath;
     }
 
     /**
-     * 파일명으로부터 확장자를 반환합니다.
+     * 파일명으로부터 확장자를 반환합니다。
      *
      * @param fileName 파일명 또는 경로
      * @return 확장자 (없으면 빈 문자열)
@@ -222,10 +222,9 @@ public class UploadFileUtils {
 
     /* ----------------- 보조 메서드 ----------------- */
 
-    private static String makeWebPath(String baseDir, String storageKey, String dateFolder, String saveName) {
+    private static String makeWebPath(String webPrefix, String scopeDir, String storageKey, String dateFolder, String saveName) {
         String normalizedDateFolder = dateFolder.replace(File.separatorChar, '/');
-        String base = baseDir.endsWith("/") ? baseDir.substring(0, baseDir.length() - 1) : baseDir;
-        return base + "/" + storageKey + "/" + normalizedDateFolder + "/" + saveName;
+        return webPrefix + "/" + scopeDir + "/" + storageKey + "/" + normalizedDateFolder + "/" + saveName;
     }
 
     private static String trimLeadingSlash(String path) {

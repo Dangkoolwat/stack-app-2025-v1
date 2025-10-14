@@ -53,7 +53,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     List<Board> findByUser_Id(Long userId);
 
     /**
-     * 게시판 유형별 조회 (삭제 조건 제거됨)
+     * 게시판 유형별 게시글 조회 (삭제 조건 제거됨)
      */
     @EntityGraph(attributePaths = {"user"})
     List<Board> findByBoardType_Code(String boardTypeCode);
@@ -114,4 +114,21 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Board b SET b.viewCount = b.viewCount + 1 WHERE b.id = :id")
     void increaseViewCount(@Param("id") Long id);
+
+    /**
+     * Soft delete(@Where) 필터를 무시하고 ID 기준으로 Board 엔티티를 조회합니다.
+     * 논리적으로 삭제된(isDeleted = true) 엔티티도 포함합니다.
+     * Hibernate의 @Where(clause = "is_deleted = 0") 은
+     * 엔티티 레벨 필터가 아니라 클래스 매핑 단계에서 적용됩니다.
+     * 따라서 JPQL 쿼리 (SELECT b FROM Board b ...) 에서도 자동으로 is_deleted = 0 조건이 계속 붙어요.
+     */
+    @Query("SELECT b FROM Board b WHERE b.id = :id")
+    Optional<Board> findByIdIncludingDeleted(@Param("id") Long id);
+
+    /**
+     * Soft delete(@Where) 필터를 무시하고 논리적으로 삭제된(isDeleted = true) 모든 Board 엔티티를 조회합니다.
+     */
+    @Query("SELECT b FROM Board b WHERE b.deleted = true ORDER BY b.id DESC")
+    @EntityGraph(attributePaths = {"user", "boardType"})
+    List<Board> findAllDeletedBoards();
 }

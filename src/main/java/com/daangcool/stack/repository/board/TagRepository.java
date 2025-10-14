@@ -108,4 +108,11 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Tag t SET t.usageCount = CASE WHEN t.usageCount > 0 THEN t.usageCount - 1 ELSE 0 END WHERE t.id = :id")
     void decreaseUsage(@Param("id") Long id);
+
+    /**
+     * ID로 태그를 조회합니다. isDeleted 상태와 관계없이 조회합니다.
+     * 테스트 또는 관리자 기능에서 논리적으로 삭제된 태그를 조회할 때 사용합니다.
+     */
+    @Query(value = "SELECT * FROM STACK_TAG WHERE ID = :id", nativeQuery = true) // Changed to native query
+    Optional<Tag> findByIdEvenIfDeleted(@Param("id") Long id);
 }

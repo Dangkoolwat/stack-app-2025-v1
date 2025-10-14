@@ -301,7 +301,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentDTO> findAllDeleted() {
         log.debug("Admin request to get all deleted comments");
-        return commentRepository.findAll().stream()
+        return commentRepository.findAllWithDeleted().stream()
             .filter(Comment::isDeleted)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());

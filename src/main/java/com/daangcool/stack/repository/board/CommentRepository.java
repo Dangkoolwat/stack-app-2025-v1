@@ -113,4 +113,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Comment c SET c.star = c.star + 1 WHERE c.id = :id")
     void increaseStar(@Param("id") Long id);
+
+    /**
+     * @SQLRestriction을 무시하고 모든 댓글을 조회합니다. (관리자용)
+     */
+    @Query(value = "SELECT * FROM STACK_COMMENT", nativeQuery = true)
+    List<Comment> findAllWithDeleted();
 }

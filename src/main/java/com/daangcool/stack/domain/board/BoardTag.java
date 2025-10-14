@@ -52,6 +52,7 @@ public class BoardTag extends AbstractAuditingEntity<Long> implements Serializab
     @JsonIgnoreProperties(value = { "boardTags" })
     private Tag tag;
 
+    @Column(name = "description") // 명시적으로 컬럼명 지정
     private String description;
 
     // --- JPA equals/hashCode/toString ---

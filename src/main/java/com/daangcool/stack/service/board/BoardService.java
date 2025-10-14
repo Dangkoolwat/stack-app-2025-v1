@@ -3,6 +3,7 @@ package com.daangcool.stack.service.board;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.repository.UserRepository;
+import com.daangcool.stack.repository.board.BoardAdminRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.service.dto.BoardDTO;
 import com.daangcool.stack.service.mapper.BoardMapper;
@@ -55,12 +56,14 @@ public class BoardService {
     public static final String CACHE_BOARD_COUNT_BY_USER = "BOARD_COUNT_BY_USER";
 
     private final BoardRepository boardRepository;
+    private final BoardAdminRepository boardAdminRepository; // BoardAdminRepository 추가
     private final UserRepository userRepository;
     private final BoardMapper boardMapper;
     private final CacheManager cacheManager;
 
-    public BoardService(BoardRepository boardRepository, UserRepository userRepository, BoardMapper boardMapper, CacheManager cacheManager) {
+    public BoardService(BoardRepository boardRepository, BoardAdminRepository boardAdminRepository, UserRepository userRepository, BoardMapper boardMapper, CacheManager cacheManager) {
         this.boardRepository = boardRepository;
+        this.boardAdminRepository = boardAdminRepository; // 주입
         this.userRepository = userRepository;
         this.boardMapper = boardMapper;
         this.cacheManager = cacheManager;
@@ -298,8 +301,7 @@ public class BoardService {
     // -----------------------------------------------------
     @Transactional(readOnly = true)
     public List<BoardDTO> findAllDeleted() {
-        return boardRepository.findAll().stream()
-            .filter(Board::isDeleted)
+        return boardAdminRepository.findAllDeleted().stream()
             .map(boardMapper::toDto)
             .collect(Collectors.toList());
     }

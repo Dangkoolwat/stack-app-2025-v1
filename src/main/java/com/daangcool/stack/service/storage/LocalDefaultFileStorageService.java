@@ -64,7 +64,9 @@ public class LocalDefaultFileStorageService implements StorageService {
     public String store(MultipartFile file, String subFolder, boolean isPublic) {
         try {
             String storagePath = UploadFileUtils.fileSave(this.rootLocation, subFolder, file, isPublic);
-            String webPath = properties.getFile().getUploadResourceDir() + storagePath;
+            // The UploadFileUtils.fileSave method now returns the full web path including /uploads.
+            // So, we should not prepend properties.getFile().getUploadResourceDir() again.
+            String webPath = storagePath; // Changed this line
             log.info("[STORAGE-LOCAL] Stored file (public={}): {}", isPublic, webPath);
             return webPath;
         } catch (IOException e) {
@@ -110,4 +112,3 @@ public class LocalDefaultFileStorageService implements StorageService {
         }
     }
 }
-
