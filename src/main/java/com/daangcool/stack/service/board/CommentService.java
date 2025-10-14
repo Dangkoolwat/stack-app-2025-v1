@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 /**
  * Service class for managing {@link com.daangcool.stack.domain.board.Comment}.
  *
@@ -38,7 +39,7 @@ public class CommentService {
     private static final String ENTITY_NAME = "comment";
 
     // -----------------------------------------------------
-    // 캐시 이름 상수 (CacheConfiguration과 동일하게 유지)
+    // 캐시 이름 상수
     // -----------------------------------------------------
     public static final String CACHE_COMMENT_BY_ID = "COMMENT_BY_ID";
     public static final String CACHE_COMMENT_BY_BOARD = "COMMENT_BY_BOARD";
@@ -46,7 +47,6 @@ public class CommentService {
     public static final String CACHE_COMMENT_COUNT_BY_BOARD = "COMMENT_COUNT_BY_BOARD";
     public static final String CACHE_COMMENT_COUNT_BY_USER = "COMMENT_COUNT_BY_USER";
     public static final String CACHE_COMMENT_STATS = "CACHE_COMMENT_STATS";
-
 
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
@@ -92,10 +92,8 @@ public class CommentService {
         comment.setContent(dto.getContent());
 
         Comment saved = commentRepository.save(comment);
-
         clearCommentCaches(saved);
 
-        // 단건 캐시에 즉시 반영
         Cache byId = cacheManager.getCache(CACHE_COMMENT_BY_ID);
         if (byId != null) byId.put(saved.getId(), commentMapper.toDto(saved));
 
@@ -106,13 +104,14 @@ public class CommentService {
     // 게시글 기준 댓글 목록 조회 (캐시 사용)
     // -----------------------------------------------------
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public List<CommentDTO> findAllByBoard(Long boardId) {
         log.debug("Request to get all Comments for Board : {}", boardId);
         String key = "board:" + boardId;
 
         Cache byBoard = cacheManager.getCache(CACHE_COMMENT_BY_BOARD);
         if (byBoard != null) {
-            List<CommentDTO> cached = byBoard.get(key, List.class);
+            List<CommentDTO> cached = (List<CommentDTO>) byBoard.get(key, List.class);
             if (cached != null) {
                 log.debug("[COMMENT CACHE] Cache hit for {}", key);
                 return cached;
@@ -210,13 +209,14 @@ public class CommentService {
     // 키워드 검색 (캐시 사용)
     // -----------------------------------------------------
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public Page<CommentDTO> search(String keyword, int page, int size) {
         log.debug("Request to search Comments by keyword: {}", keyword);
         String key = "q:" + (keyword == null ? "" : keyword.toLowerCase()) + ":p:" + page + ":s:" + size;
 
         Cache search = cacheManager.getCache(CACHE_COMMENT_SEARCH);
         if (search != null) {
-            Page<CommentDTO> cached = search.get(key, Page.class);
+            Page<CommentDTO> cached = (Page<CommentDTO>) search.get(key, Page.class);
             if (cached != null) {
                 log.debug("[COMMENT CACHE] Cache hit for search {}", key);
                 return cached;
@@ -274,7 +274,6 @@ public class CommentService {
         comment.setDeleted(false);
         comment.setDescription(null);
         Comment saved = commentRepository.save(comment);
-
         clearCommentCaches(saved);
     }
 
@@ -287,17 +286,9 @@ public class CommentService {
         clearCommentCaches(before);
     }
 
-    // -------------------------------------------------------------------
-    // 관리자 전용 기능 (AdminResource에서 호출)
-    // -------------------------------------------------------------------
-
-    /**
-     * 삭제된 댓글(Soft Deleted) 목록 조회
-     *
-     * <p>isDeleted=true 인 댓글만 반환하며, 일반 사용자 API에서는 노출되지 않습니다.</p>
-     *
-     * @return 삭제된 댓글 목록 (DTO 변환 완료)
-     */
+    // -----------------------------------------------------
+    // 삭제된 댓글 조회 (관리자)
+    // -----------------------------------------------------
     @Transactional(readOnly = true)
     public List<CommentDTO> findAllDeleted() {
         log.debug("Admin request to get all deleted comments");
@@ -307,9 +298,9 @@ public class CommentService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * 모든 댓글 캐시를 강제로 초기화합니다. (관리자 전용)
-     */
+    // -----------------------------------------------------
+    // 캐시 전체 초기화 (관리자)
+    // -----------------------------------------------------
     public void clearAllCommentCaches() {
         try {
             Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_ID)).clear();
@@ -324,30 +315,22 @@ public class CommentService {
     // -----------------------------------------------------
     // 캐시 클리어 유틸리티
     // -----------------------------------------------------
-    /**
-     * 댓글 관련 캐시를 무효화합니다.
-     *
-     * - 단건 캐시: 댓글 ID 기준 제거
-     * - 목록 캐시: 게시글(boardId) 기준 제거
-     * - 카운트 캐시: 게시글/사용자 기준 제거
-     * - 검색 캐시: 전체 초기화
-     */
     private void clearCommentCaches(Comment comment) {
         if (comment == null) return;
         try {
             Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_ID)).evictIfPresent(comment.getId());
             if (comment.getBoard() != null) {
                 Long boardId = comment.getBoard().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_BOARD)).evictIfPresent(boardId);
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_BOARD)).evictIfPresent(boardId);
+                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_BOARD)).evictIfPresent("board:" + boardId);
+                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_BOARD)).evictIfPresent("board:" + boardId);
             }
             if (comment.getUser() != null) {
                 Long userId = comment.getUser().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_USER)).evictIfPresent(userId);
+                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_USER)).evictIfPresent("user:" + userId);
             }
             Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_SEARCH)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_STATS)).clear(); // 추가됨
-            log.debug("[COMMENT CACHE] Cleared related caches for commentId={} / boardId={} / userId={}",
+            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_STATS)).clear();
+            log.debug("[COMMENT CACHE] Cleared caches for commentId={} / boardId={} / userId={}",
                 comment.getId(),
                 comment.getBoard() != null ? comment.getBoard().getId() : null,
                 comment.getUser() != null ? comment.getUser().getId() : null);
