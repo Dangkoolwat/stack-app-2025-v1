@@ -1,6 +1,6 @@
 package com.daangcool.stack.config;
 
-import com.daangcool.stack.web.rest.errors.ProblemUtils;
+import com.daangcool.stack.common.util.ProblemUtils;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

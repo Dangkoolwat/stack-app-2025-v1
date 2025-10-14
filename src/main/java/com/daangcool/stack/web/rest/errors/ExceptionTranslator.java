@@ -1,6 +1,7 @@
 package com.daangcool.stack.web.rest.errors;
 
 import com.daangcool.stack.common.exception.*;
+import com.daangcool.stack.common.util.ProblemUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
