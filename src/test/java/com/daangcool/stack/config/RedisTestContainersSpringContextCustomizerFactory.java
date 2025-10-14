@@ -12,9 +12,16 @@ import org.springframework.test.context.ContextCustomizer;
 import org.springframework.test.context.ContextCustomizerFactory;
 import org.springframework.test.context.MergedContextConfiguration;
 
+/**
+ * Redis Testcontainers 설정 팩토리
+ * ---------------------------------------------------
+ * - @EmbeddedRedis 어노테이션이 감지되면 RedisTestContainer를 등록
+ * - Redis 컨테이너 호스트/포트를 Spring Context에 주입
+ * - getContainerIpAddress() → getHost() 로 교체 (deprecation 해결)
+ */
 public class RedisTestContainersSpringContextCustomizerFactory implements ContextCustomizerFactory {
 
-    private Logger log = LoggerFactory.getLogger(RedisTestContainersSpringContextCustomizerFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(RedisTestContainersSpringContextCustomizerFactory.class);
 
     private static RedisTestContainer redisBean;
 
@@ -26,21 +33,27 @@ public class RedisTestContainersSpringContextCustomizerFactory implements Contex
                 ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
                 TestPropertyValues testValues = TestPropertyValues.empty();
                 EmbeddedRedis redisAnnotation = AnnotatedElementUtils.findMergedAnnotation(testClass, EmbeddedRedis.class);
-                if (null != redisAnnotation) {
-                    log.debug("detected the EmbeddedRedis annotation on class {}", testClass.getName());
-                    log.info("Warming up the redis database");
-                    if (null == redisBean) {
+
+                if (redisAnnotation != null) {
+                    log.debug("Detected the @EmbeddedRedis annotation on class {}", testClass.getName());
+                    log.info("Warming up the Redis TestContainer...");
+
+                    if (redisBean == null) {
                         redisBean = beanFactory.createBean(RedisTestContainer.class);
                         beanFactory.registerSingleton(RedisTestContainer.class.getName(), redisBean);
-                        // ((DefaultListableBeanFactory)beanFactory).registerDisposableBean(RedisTestContainer.class.getName(), redisBean);
                     }
-                    testValues = testValues.and(
-                        "jhipster.cache.redis.server=redis://" +
-                        redisBean.getRedisContainer().getContainerIpAddress() +
-                        ":" +
+
+                    // ✅ getContainerIpAddress() → getHost() 로 변경 (deprecation 해결)
+                    String redisUrl = String.format(
+                        "redis://%s:%d",
+                        redisBean.getRedisContainer().getHost(),
                         redisBean.getRedisContainer().getMappedPort(6379)
                     );
+
+                    testValues = testValues.and("jhipster.cache.redis.server=" + redisUrl);
+                    log.info("Redis TestContainer started at {}", redisUrl);
                 }
+
                 testValues.applyTo(context);
             }
 
