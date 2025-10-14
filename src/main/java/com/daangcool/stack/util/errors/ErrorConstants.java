@@ -1,4 +1,4 @@
-package com.daangcool.stack.web.rest.errors;
+package com.daangcool.stack.util.errors;
 
 import java.net.URI;
 

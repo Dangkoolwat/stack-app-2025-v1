@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
+import com.daangcool.stack.util.errors.ErrorConstants;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;

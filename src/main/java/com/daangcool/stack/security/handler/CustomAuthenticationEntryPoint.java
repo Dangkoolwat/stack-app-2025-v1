@@ -1,7 +1,7 @@
 package com.daangcool.stack.security.handler;
 
-import com.daangcool.stack.web.rest.errors.ErrorConstants;
-import com.daangcool.stack.web.rest.errors.ProblemUtils;
+import com.daangcool.stack.util.errors.ErrorConstants;
+import com.daangcool.stack.util.errors.ProblemUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
