@@ -58,6 +58,10 @@ public class OpenApiConfiguration {
                         .addProperty("status", new IntegerSchema().description("HTTP status code").example(503))
                         .addProperty("detail", new StringSchema().description("Detailed explanation").example("Connection to database timed out"))
                         .addProperty("instance", new StringSchema().description("Specific occurrence URI").example("/api/users/123"))
+                        // 아래 3개는 Stack 확장 필드
+                        .addProperty("timestamp", new StringSchema().description("Error occurrence timestamp (ISO-8601)").example("2025-10-14T11:35:52+09:00"))
+                        .addProperty("path", new StringSchema().description("Requested API path").example("/api/users/123"))
+                        .addProperty("locale", new StringSchema().description("Client locale (language tag)").example("ko-KR"))
                     )
                 )
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
