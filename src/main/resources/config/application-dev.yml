@@ -41,10 +41,14 @@ spring:
     hikari:
       poolName: Hikari
       auto-commit: false
+      maxLifetime: 1800000   # 30분
+      idleTimeout: 600000    # 10분
+      connectionTimeout: 30000
   liquibase:
     contexts: dev
     enabled: false  # Hibernate 개발용 자동 반영만 사용
     drop-first: false
+#    async-startup: false
   jpa:
     hibernate:
       ddl-auto: none
@@ -61,6 +65,7 @@ spring:
     port: 1025
     username: ""
     password: ""
+    from: "test@stack.local"
     properties:
       mail:
         smtp:

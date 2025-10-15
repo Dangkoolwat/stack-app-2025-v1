@@ -92,12 +92,19 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/activate").permitAll()
                     .requestMatchers("/api/account/reset-password/init").permitAll()
                     .requestMatchers("/api/account/reset-password/finish").permitAll()
-                    .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
 
                     //  파일 업로드/다운로드 API 보호
                     .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll() // Changed from authenticated() to permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/uploads/**").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").hasAuthority(AuthoritiesConstants.ADMIN)
+
+                    // OTP 인증 전용 (항상 공개)
+                    .requestMatchers("/api/auth/email/**").permitAll()
+                    // 로그인, 회원가입 등 인증 관련 공개 API
+                    .requestMatchers("/api/auth/**").permitAll()
+                    // 공용(public) 리소스
+                    .requestMatchers("/api/public/**").permitAll()
 
                     // 관리자 전용 API
                     .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)

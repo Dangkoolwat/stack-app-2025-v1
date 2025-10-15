@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <!-- ============================================================ -->
+  <!--  Table: stack_email_otp_log                                  -->
+  <!-- ============================================================ -->
+
+  <changeSet id="202510151921000-1-create-stack-email-otp-log" author="steve">
+
+    <!-- Sequence -->
+    <createSequence
+      sequenceName="stack_seq_email_otp_log"
+      startValue="1"
+      incrementBy="1"
+      cacheSize="20"/>
+
+    <!-- Table -->
+    <createTable tableName="stack_email_otp_log">
+      <column name="id" type="bigint" defaultValueSequenceNext="stack_seq_email_otp_log">
+        <constraints primaryKey="true" nullable="false" primaryKeyName="pk_stack_email_otp_log"/>
+      </column>
+
+      <column name="email" type="varchar(191)">
+        <constraints nullable="false"/>
+      </column>
+
+      <column name="otp_code" type="varchar(6)"/>
+      <column name="request_ip" type="varchar(45)"/>
+      <column name="user_agent" type="varchar(512)"/>
+      <column name="device_type" type="varchar(100)"/>
+      <column name="created_date"  type="${datetimeType}" defaultValueComputed="${now}">
+        <constraints nullable="false"/>
+      </column>
+      <column name="status" type="varchar(20)"/>
+      <column name="user_id" type="bigint"/>
+    </createTable>
+
+    <!-- Foreign Key -->
+    <addForeignKeyConstraint
+      baseTableName="stack_email_otp_log"
+      baseColumnNames="user_id"
+      constraintName="fk_stack_email_otp_log_user_id"
+      referencedTableName="stack_user"
+      referencedColumnNames="id"/>
+
+    <!-- Index -->
+    <createIndex tableName="stack_email_otp_log" indexName="ix_stack_email_otp_log_email">
+      <column name="email"/>
+    </createIndex>
+
+  </changeSet>
+
+</databaseChangeLog>

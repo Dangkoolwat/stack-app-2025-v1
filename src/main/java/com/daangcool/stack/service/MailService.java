@@ -3,10 +3,9 @@ package com.daangcool.stack.service;
 import com.daangcool.stack.domain.User;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,6 +15,10 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import tech.jhipster.config.JHipsterProperties;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Locale;
 
 /**
  * Service for sending emails asynchronously.
@@ -38,6 +41,9 @@ public class MailService {
     private final MessageSource messageSource;
 
     private final SpringTemplateEngine templateEngine;
+
+    @Value("${spring.mail.from:no-reply@stack.local}")
+    private String fromAddress;
 
     public MailService(
         JHipsterProperties jHipsterProperties,
@@ -117,4 +123,51 @@ public class MailService {
         LOG.debug("Sending password reset email to '{}'", user.getEmail());
         sendEmailFromTemplateSync(user, "mail/passwordResetEmail", "email.reset.title");
     }
+
+
+    /**
+     * OTP 인증 이메일 발송
+     *
+     * <p>사용자에게 6자리 인증번호를 포함한 HTML 이메일을 발송합니다.<br>
+     * MailHog (localhost:1025) 환경에서 테스트 가능합니다.</p>
+     *
+     * @param user    OTP를 받을 사용자
+     * @param otpCode 6자리 인증번호
+     */
+    @Async
+    public void sendEmailOtp(User user, String otpCode) {
+        LOG.info("[MailService] OTP 메일 발송 시작: {}", user.getEmail());
+
+        try {
+            // 템플릿 변수 구성
+            Context context = new Context();
+            context.setVariable("name", user.getFirstName() != null ? user.getFirstName() : user.getLogin());
+            context.setVariable("email", user.getEmail());
+            context.setVariable("otpCode", otpCode);
+            context.setVariable("ttlMinutes", Duration.ofMinutes(5).toMinutes());
+
+            // HTML 콘텐츠 생성
+            String htmlContent = templateEngine.process("mail/email-otp", context);
+
+            // 메일 메시지 구성
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+
+            helper.setTo(user.getEmail());
+            helper.setFrom(
+                fromAddress != null && !fromAddress.isBlank()
+                    ? fromAddress
+                    : "no-reply@stackapp.local"
+            );
+            helper.setSubject("[StackApp] 이메일 인증번호: " + otpCode);
+            helper.setText(htmlContent, true);
+
+            javaMailSender.send(message);
+            LOG.info("[MailService] OTP 메일 발송 완료 → {}", user.getEmail());
+
+        } catch (Exception e) {
+            LOG.error("[MailService] OTP 메일 발송 실패: {} → {}", user.getEmail(), e.getMessage(), e);
+        }
+    }
+
 }

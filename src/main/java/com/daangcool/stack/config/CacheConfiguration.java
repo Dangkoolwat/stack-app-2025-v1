@@ -157,8 +157,15 @@ public class CacheConfiguration {
             createCache(cm, CACHE_BOARD_COUNT_BY_USER, jcacheConfiguration);
 
             // BoardTag
-            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);;
+            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
             createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", jcacheConfiguration);
+
+            // Email OPT
+            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName()+ ".user", jcacheConfiguration);
+
+
+
 
             // -----------------------------------------------------------------
             // Hibernate Query Cache (기본 유지)
