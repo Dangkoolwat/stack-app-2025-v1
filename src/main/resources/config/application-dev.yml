@@ -45,10 +45,11 @@ spring:
       idleTimeout: 600000    # 10분
       connectionTimeout: 30000
   liquibase:
+    enabled: true
+    change-log: classpath:config/liquibase/master.xml
     contexts: dev
-    enabled: false  # Hibernate 개발용 자동 반영만 사용
     drop-first: false
-#    async-startup: false
+
   jpa:
     hibernate:
       ddl-auto: none
