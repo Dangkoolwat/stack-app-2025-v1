@@ -92,6 +92,7 @@ Spring Boot 3.x 기반 REST API 서버 프레임워크
 **Language:** Java 17+  
 **Build Tool:** Maven  
 **Database:** Oracle / PostgreSQL / MariaDB / MySQL  
+**Database Migration:** Liquibase  
 **Persistence:** Spring Data JPA (Hibernate)  
 **Caching:** Redis + Hibernate 2nd Cache  
 **Security:** Spring Security, JWT  
