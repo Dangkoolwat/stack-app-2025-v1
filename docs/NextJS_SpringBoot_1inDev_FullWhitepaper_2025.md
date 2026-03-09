@@ -8,7 +8,7 @@
 - Spring Boot와 완벽한 호환(CORS, HTTPS, JWT)
 - 프론트: Next.js / 백엔드: Spring Boot / 인증: 외부 Auth(NextAuth, Supabase 등)
 
-**핵심 철학**
+핵심 철학**
 > Spring Boot는 두뇌, Next.js는 얼굴(UI), Auth는 외부 서비스로 위임한다.
 
 ---
@@ -432,7 +432,7 @@ NEXT_PUBLIC_ENV=development
 ## 29. 결론적 비전
 - 1인 개발자가 기획, 개발, 배포, 운영까지 완성 가능.
 - Spring Boot는 엔진, Next.js는 인터페이스.
-- Supabase, Vercel, Render는 자동화된 인프라.
+- Superbase, Vercel, Render는 자동화된 인프라.
 - Electron/Tauri는 실제 제품화 도구.
 
 > “개발자의 꿈 — 나 혼자 운영 가능한 서비스”
