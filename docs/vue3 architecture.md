@@ -1,4 +1,4 @@
-# vue3.md
+# vue3 architecture.md
 
 ## Purpose
 
