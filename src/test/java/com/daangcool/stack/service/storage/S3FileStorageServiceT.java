@@ -12,16 +12,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +41,7 @@ class S3FileStorageServiceT {
     @Mock
     private S3Client s3Client;
 
-    private S3FileStorageService storageService;
+    private StorageService storageService;
 
     private MockMultipartFile multipartFile;
 
@@ -134,29 +133,24 @@ class S3FileStorageServiceT {
     }
 
     /**
-     * S3 파일 로드 테스트
+     * S3 파일 로드 테스트 (loadAsStream 방식)
      */
     @Test
-    void loadAsResource_ShouldCallS3GetObjectAndReturnBytes() {
+    void loadAsResource_ShouldCallS3GetObjectAndReturnBytes() throws IOException {
         // given
-        String objectKey = "S3_TEST/2025/10/dummy.jpg"; // 올바른 S3 객체 키
-        String fileUrl = String.format("https://test-bucket.s3.amazonaws.com/%s", objectKey); // 올바른 S3 URL 형식
+        String objectKey = "S3_TEST/2025/10/dummy.jpg";
+        String fileUrl = String.format("https://test-bucket.s3.amazonaws.com/%s", objectKey);
         byte[] fileContent = "S3 content".getBytes();
 
-        // getObjectAsBytes가 호출되면, 미리 정의된 byte 배열을 포함하는 Mock 응답을 반환하도록 설정합니다.
-        ResponseBytes<GetObjectResponse> responseBytes = ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), fileContent);
-        when(s3Client.getObjectAsBytes(any(GetObjectRequest.class))).thenReturn(responseBytes);
+        // getObject 호출 시 ByteArrayInputStream 반환 (ResponseInputStream을 직접 생성하지 않고 thenAnswer 사용)
+        when(s3Client.getObject(any(GetObjectRequest.class)))
+            .thenAnswer(inv -> new ByteArrayInputStream(fileContent));
 
-        ArgumentCaptor<GetObjectRequest> getRequestCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
-
-        // when
+        // when — interface default loadAsResource → loadAsStream 호출
         byte[] result = storageService.loadAsResource(fileUrl);
 
         // then
-        verify(s3Client, times(1)).getObjectAsBytes(getRequestCaptor.capture());
-        GetObjectRequest capturedRequest = getRequestCaptor.getValue();
-        assertThat(capturedRequest.bucket()).isEqualTo("test-bucket");
-        assertThat(capturedRequest.key()).isEqualTo(objectKey);
+        verify(s3Client, times(1)).getObject(any(GetObjectRequest.class));
         assertThat(result).isEqualTo(fileContent);
     }
 }

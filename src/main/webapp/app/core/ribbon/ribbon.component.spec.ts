@@ -1,8 +1,11 @@
-import { shallowMount } from '@vue/test-utils';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { createTestingPinia } from '@pinia/testing';
-import Ribbon from './ribbon.vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { type AccountStore, useStore } from '@/store';
+
+import Ribbon from './ribbon.vue';
 
 type RibbonComponentType = InstanceType<typeof Ribbon>;
 
@@ -28,14 +31,14 @@ describe('Ribbon', () => {
     expect(ribbon.ribbonEnabled).toBeFalsy();
   });
 
-  it('should have ribbonEnabled set to value in store', async () => {
+  it('should have ribbonEnabled set to value in store', () => {
     const profile = 'dev';
     store.setActiveProfiles(['foo', profile, 'bar']);
     store.setRibbonOnProfiles(profile);
     expect(ribbon.ribbonEnabled).toBeTruthy();
   });
 
-  it('should not have ribbonEnabled when profile not activated', async () => {
+  it('should not have ribbonEnabled when profile not activated', () => {
     const profile = 'dev';
     store.setActiveProfiles(['foo', 'bar']);
     store.setRibbonOnProfiles(profile);

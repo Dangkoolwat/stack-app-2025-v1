@@ -1,24 +1,19 @@
 import { type Ref, computed, defineComponent, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import type LoginService from '@/account/login.service';
 
-import { useLoginModal } from '@/account/login-modal';
 import type AccountService from '@/account/account.service';
-import languages from '@/shared/config/languages';
+import { useLoginModal } from '@/account/login-modal';
 import EntitiesMenu from '@/entities/entities-menu.vue';
-
+import languages from '@/shared/config/languages';
 import { useStore } from '@/store';
 
 export default defineComponent({
-  compatConfig: { MODE: 3 },
   name: 'JhiNavbar',
   components: {
     'entities-menu': EntitiesMenu,
   },
   setup() {
-    const loginService = inject<LoginService>('loginService');
-
     const { showLogin } = useLoginModal();
     const accountService = inject<AccountService>('accountService');
     const currentLanguage = inject('currentLanguage', () => computed(() => navigator.language ?? 'ko'), true);
@@ -34,22 +29,23 @@ export default defineComponent({
     const version = `v${APP_VERSION}`;
     const hasAnyAuthorityValues: Ref<any> = ref({});
 
-    const openAPIEnabled = computed(() => store.activeProfiles.indexOf('api-docs') > -1);
-    const inProduction = computed(() => store.activeProfiles.indexOf('prod') > -1);
+    const openAPIEnabled = computed(() => store.activeProfiles.includes('api-docs'));
+    const inProduction = computed(() => store.activeProfiles.includes('prod'));
     const authenticated = computed(() => store.authenticated);
 
     const subIsActive = (input: string | string[]) => {
       const paths = Array.isArray(input) ? input : [input];
       return paths.some(path => {
-        return router.currentRoute.value.path.indexOf(path) === 0; // current path starts with this path string
+        return router.currentRoute.value.path.startsWith(path); // current path starts with this path string
       });
     };
 
     const logout = async () => {
-      const response = await loginService.logout();
+      localStorage.removeItem('jhi-authenticationToken');
+      sessionStorage.removeItem('jhi-authenticationToken');
       store.logout();
       if (router.currentRoute.value.path !== '/') {
-        await router.push('/');
+        router.push('/');
       }
     };
 

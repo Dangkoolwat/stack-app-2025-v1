@@ -1,737 +1,975 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.daangcool</groupId>
-    <artifactId>stack</artifactId>
-    <version>1.0.0</version>
-    <name>stack-app-2025-v1</name>
-    <description>stack-app-2025-v1</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
+  <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <java.version>17</java.version>
-        <spring-boot.version>3.5.6</spring-boot.version>
-        <jhipster-framework.version>8.11.0</jhipster-framework.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <resource.delimiter>@</resource.delimiter>
-        <spring.profiles.active>dev</spring.profiles.active>
+  <!-- Spring Boot parent: dependency/plugin BOM 관리 -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>4.0.3</version>
+    <relativePath/>
+  </parent>
 
-        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
+  <groupId>com.daangcool</groupId>
+  <artifactId>stack</artifactId>
+  <version>2.0.0</version>
+  <packaging>jar</packaging>
+  <name>stack-app-2025-v1</name>
+  <description>stack-app-2025-v1</description>
 
-        <start-class>com.daangcool.stack.StackApp</start-class>
-        <springdoc-openapi-starter-webmvc-api.version>2.8.8</springdoc-openapi-starter-webmvc-api.version>
-        <spring-cloud-dependencies.version>2024.0.1</spring-cloud-dependencies.version>
+  <properties>
+    <!-- ========================================================= -->
+    <!-- Runtime / Build -->
+    <!-- ========================================================= -->
+    <java.version>21</java.version>
+    <maven.compiler.release>${java.version}</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+    <start-class>com.daangcool.stack.StackApp</start-class>
 
-        <redisson.version>3.46.0</redisson.version>
-        <archunit-junit5.version>1.4.0</archunit-junit5.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-        <com.oracle.database.jdbc-version>21.17.0.0</com.oracle.database.jdbc-version>
-        <liquibase.version>4.29.2</liquibase.version>
-        <jakarta-validation.version>3.0.2</jakarta-validation.version>
-        <commons-lang3-version>3.18.0</commons-lang3-version>
-        <commons-io-version>2.16.1</commons-io-version>
-        <amazon-awssdk-version>2.25.60</amazon-awssdk-version>
-        <oracle-oci-sdk-version>3.74.2</oracle-oci-sdk-version>
+    <!-- ========================================================= -->
+    <!-- Framework / BOM Versions -->
+    <!-- ========================================================= -->
+    <spring-boot.version>${project.parent.version}</spring-boot.version>
+    <spring-cloud-dependencies.version>2024.0.1</spring-cloud-dependencies.version>
+    <jhipster-framework.version>9.0.0</jhipster-framework.version>
 
-        <profile.api-docs/>
-        <profile.test/>
-        <profile.local-tls/>
-        <profile.no-liquibase/>
+    <!-- ========================================================= -->
+    <!-- Library Versions -->
+    <!-- ========================================================= -->
+    <springdoc-openapi-starter-webmvc-api.version>3.0.2</springdoc-openapi-starter-webmvc-api.version>
+    <openapi-generator-maven-plugin.version>7.20.0</openapi-generator-maven-plugin.version>
+    <redisson.version>4.3.0</redisson.version>
+    <archunit-junit5.version>1.4.1</archunit-junit5.version>
+    <mapstruct.version>1.6.3</mapstruct.version>
+    <jackson-databind-nullable.version>0.2.9</jackson-databind-nullable.version>
+    <oracle.jdbc.version>23.9.0.25.07</oracle.jdbc.version>
+    <oracle-oci-sdk.version>3.74.2</oracle-oci-sdk.version>
+    <commons-lang3.version>3.19.0</commons-lang3.version>
+    <commons-io.version>2.16.1</commons-io.version>
+    <amazon-awssdk.version>2.25.60</amazon-awssdk.version>
+    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+    <liquibase.version>4.31.0</liquibase.version>
+    <!-- Jakarta Persistence API: Liquibase-Hibernate가 엔티티 메타데이터 해석 시 필요 -->
+    <jakarta-persistence.version>3.2.0</jakarta-persistence.version>
+    <jakarta-validation.version>3.0.2</jakarta-validation.version>
 
-        <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
-        <node.version>v20.18.0</node.version>
-        <npm.version>10.8.3</npm.version>
-    </properties>
+    <!-- ========================================================= -->
+    <!-- Maven Plugin Versions -->
+    <!-- ========================================================= -->
+    <checksum-maven-plugin.version>1.11</checksum-maven-plugin.version>
+    <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
+    <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud-dependencies.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-              <groupId>software.amazon.awssdk</groupId>
-              <artifactId>bom</artifactId>
-              <version>${amazon-awssdk-version}</version>
-              <type>pom</type>
-              <scope>import</scope>
-            </dependency>
-          <dependency>
-            <groupId>com.oracle.oci.sdk</groupId>
-            <artifactId>oci-java-sdk-bom</artifactId>
-            <version>${oracle-oci-sdk-version}</version> <!-- 또는 프로젝트에 맞는 최신 버전 -->
-            <type>pom</type>
-            <scope>import</scope>
-          </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <!-- ========================================================= -->
+    <!-- Frontend -->
+    <!-- ========================================================= -->
+    <node.version>v24.14.0</node.version>
+    <npm.version>11.11.0</npm.version>
 
+    <!-- ========================================================= -->
+    <!-- Spring Profiles -->
+    <!-- ========================================================= -->
+    <spring.profiles.active>dev</spring.profiles.active>
+    <profile.api-docs/>
+    <profile.test/>
+    <profile.local-tls/>
+    <profile.prod-tls/>
+    <profile.no-liquibase/>
 
+    <!-- ========================================================= -->
+    <!-- Liquibase Maven Plugin Connection -->
+    <!-- ========================================================= -->
+    <liquibase-plugin.url/>
+    <liquibase-plugin.username/>
+    <liquibase-plugin.password/>
+  </properties>
+
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>tech.jhipster</groupId>
-            <artifactId>jhipster-framework</artifactId>
-            <version>${jhipster-framework.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-loader-tools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-undertow</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
-        </dependency>
-
-        <!--Websocket -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
-        <!--Security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-messaging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-data</artifactId>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit5-api</artifactId>
-            <version>${archunit-junit5.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <!-- Adding the engine dependency to the surefire-plugin unfortunately does not work in the current version. -->
-            <!-- https://www.archunit.org/userguide/html/000_Index.html#_junit_5 -->
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit5-engine</artifactId>
-            <version>${archunit-junit5.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>jdbc</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>oracle-xe</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>testcontainers</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-
-        <!--Spring Doc -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi-starter-webmvc-api.version}</version>
-        </dependency>
-
-        <!-- micrometer -->
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
-        </dependency>
-
-        <!--Jackson -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-hibernate6</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-hppc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-        </dependency>
-
-        <!-- database -->
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-        </dependency>
-
-        <!-- Liquibase Core -->
-        <dependency>
-          <groupId>org.liquibase</groupId>
-          <artifactId>liquibase-core</artifactId>
-          <version>${liquibase.version}</version>
-        </dependency>
-
-        <!-- Liquibase Hibernate Integration -->
-        <dependency>
-          <groupId>org.liquibase.ext</groupId>
-          <artifactId>liquibase-hibernate6</artifactId>
-          <version>${liquibase.version}</version>
-        </dependency>
-
-
-        <!-- For Oracle Wallet, get the oraclepki, osdt_core and osdt_cert artifacts;
-                 these are not needed for JKS -->
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ucp</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.database.nls</groupId>
-            <artifactId>orai18n</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.database.security</groupId>
-            <artifactId>oraclepki</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.database.security</groupId>
-            <artifactId>osdt_core</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.database.security</groupId>
-            <artifactId>osdt_cert</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-        <!-- ATP-D furnishes built-in high availability, you also need to get the ons and oraclepki artifacts
-                         for the HA events notification (even if you are using Java KeyStore) -->
-        <dependency>
-            <groupId>com.oracle.database.ha</groupId>
-            <artifactId>ons</artifactId>
-            <version>${com.oracle.database.jdbc-version}</version>
-        </dependency>
-
-        <!-- Redis cache-->
-        <dependency>
-            <groupId>org.redisson</groupId>
-            <artifactId>redisson</artifactId>
-            <version>${redisson.version}</version>
-        </dependency>
-
-        <!-- commons -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-          <version>${commons-lang3-version}</version>
-        </dependency>
-        <dependency>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-          <version>${commons-io-version}</version>
-        </dependency>
-
-
-        <!-- lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- glassfish -->
-        <dependency>
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- mapstruct -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- hibernate -->
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
+      <!-- Spring Cloud BOM -->
       <dependency>
-        <groupId>org.hibernate.orm</groupId>
-        <artifactId>hibernate-jcache</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud-dependencies.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
-      <!-- open API -->
-        <dependency>
-            <groupId>org.openapitools</groupId>
-            <artifactId>jackson-databind-nullable</artifactId>
-            <version>${jackson-databind-nullable.version}</version>
-        </dependency>
-
-      <!-- AWS SDK v2 (권장) -->
+      <!-- AWS SDK v2 BOM -->
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
-        <artifactId>s3</artifactId>
+        <artifactId>bom</artifactId>
+        <version>${amazon-awssdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
-      <!-- Oracle Cloud Infrastructure SDK: Object Storage -->
-      <!-- 공통 모듈 -->
+      <!-- Oracle OCI SDK BOM -->
       <dependency>
         <groupId>com.oracle.oci.sdk</groupId>
-        <artifactId>oci-java-sdk-common</artifactId>
+        <artifactId>oci-java-sdk-bom</artifactId>
+        <version>${oracle-oci-sdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
-      <!-- Object Storage 기능만 쓸 경우 -->
+      <!-- Oracle JDBC BOM -->
       <dependency>
-        <groupId>com.oracle.oci.sdk</groupId>
-        <artifactId>oci-java-sdk-objectstorage</artifactId>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc11-production</artifactId>
+        <version>${oracle.jdbc.version}</version>
+        <type>pom</type>
       </dependency>
-
-      <!-- HTTP 클라이언트 라이브러리 (Jersey 2 / 또는 Jersey 3 선택) -->
-      <dependency>
-        <groupId>com.oracle.oci.sdk</groupId>
-        <artifactId>oci-java-sdk-common-httpclient-jersey</artifactId>
-      </dependency>
-
     </dependencies>
+  </dependencyManagement>
 
-    <build>
-        <resources>
-            <!-- application.yml만 필터링 -->
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>config/application.yml</include>
-                </includes>
-            </resource>
+  <dependencies>
 
-            <!-- 나머지 리소스는 그대로 복사 -->
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <excludes>
-                    <exclude>config/application.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
-        <plugins>
-          <plugin>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-maven-plugin</artifactId>
-            <version>${liquibase.version}</version>
+    <!-- ========================================================= -->
+    <!-- Core / Common -->
+    <!-- ========================================================= -->
+
+    <!-- JHipster 공통 프레임워크 기능 -->
+    <dependency>
+      <groupId>tech.jhipster</groupId>
+      <artifactId>jhipster-framework</artifactId>
+      <version>${jhipster-framework.version}</version>
+    </dependency>
+
+    <!-- 운영 상태/메트릭/헬스 체크 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
+    <!-- AOP 기반 로깅/트랜잭션/공통 처리 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-aspectj</artifactId>
+    </dependency>
+
+    <!-- 메일 발송 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
+
+    <!-- Bean Validation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!-- 서버사이드 템플릿 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
+    <!-- @ConfigurationProperties metadata 생성 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Web / API -->
+    <!-- ========================================================= -->
+
+    <!-- Spring MVC + 기본 내장 서버(Tomcat 포함) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- WebSocket / STOMP -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+
+    <!-- OpenAPI 문서 엔드포인트 -->
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+      <version>${springdoc-openapi-starter-webmvc-api.version}</version>
+    </dependency>
+
+    <!-- nullable schema 직렬화 지원 -->
+    <dependency>
+      <groupId>org.openapitools</groupId>
+      <artifactId>jackson-databind-nullable</artifactId>
+      <version>${jackson-databind-nullable.version}</version>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Security -->
+    <!-- ========================================================= -->
+
+    <!-- 인증/인가 기본 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- JWT/Bearer token resource server -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+
+    <!-- WebSocket 메시징 보안 -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-messaging</artifactId>
+    </dependency>
+
+    <!-- Spring Data 레벨 보안 지원 -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-data</artifactId>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Database / Persistence -->
+    <!-- ========================================================= -->
+
+    <!-- JPA + Hibernate + 기본 커넥션 풀(HikariCP 포함) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- Spring Cache 추상화 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+
+    <!-- Liquibase Spring Boot 통합 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-liquibase</artifactId>
+    </dependency>
+
+    <!-- Liquibase core -->
+    <dependency>
+      <groupId>org.liquibase</groupId>
+      <artifactId>liquibase-core</artifactId>
+      <version>${liquibase.version}</version>
+    </dependency>
+
+    <!-- Oracle JDBC 번들 -->
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc11-production</artifactId>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <groupId>com.oracle.database.xml</groupId>
+          <artifactId>xmlparserv2</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Oracle 다국어 문자셋 지원 -->
+    <dependency>
+      <groupId>com.oracle.database.nls</groupId>
+      <artifactId>orai18n</artifactId>
+      <version>${oracle.jdbc.version}</version>
+    </dependency>
+
+    <!-- Hibernate 2차 캐시 연동 -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-jcache</artifactId>
+    </dependency>
+
+    <!-- JPA 메타모델/annotation processor -->
+    <dependency>
+      <groupId>org.hibernate.orm</groupId>
+      <artifactId>hibernate-processor</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Cache / Observability -->
+    <!-- ========================================================= -->
+
+    <!-- Redis 클라이언트 -->
+    <dependency>
+      <groupId>org.redisson</groupId>
+      <artifactId>redisson</artifactId>
+      <version>${redisson.version}</version>
+    </dependency>
+
+    <!-- Prometheus metrics export -->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
+    </dependency>
+
+    <!-- OpenTelemetry tracing -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-opentelemetry</artifactId>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- JSON / Serialization -->
+    <!-- ========================================================= -->
+
+    <!-- Boot 4 기준 Jackson 통합 모듈 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-jackson</artifactId>
+    </dependency>
+
+    <!-- Hibernate 엔티티 직렬화 보조 -->
+    <dependency>
+      <groupId>tools.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-hibernate7</artifactId>
+    </dependency>
+
+    <!-- Java Time 직렬화 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+    </dependency>
+
+    <!-- JAXB annotation 직렬화 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-jaxb-annotations</artifactId>
+    </dependency>
+
+    <!-- HPPC collection 직렬화 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-hppc</artifactId>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Cloud / Storage -->
+    <!-- ========================================================= -->
+
+    <!-- AWS S3 -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+    </dependency>
+
+    <!-- OCI 공통 -->
+    <dependency>
+      <groupId>com.oracle.oci.sdk</groupId>
+      <artifactId>oci-java-sdk-common</artifactId>
+    </dependency>
+
+    <!-- OCI Object Storage -->
+    <dependency>
+      <groupId>com.oracle.oci.sdk</groupId>
+      <artifactId>oci-java-sdk-objectstorage</artifactId>
+    </dependency>
+
+    <!-- OCI Jersey 기반 HTTP client -->
+    <dependency>
+      <groupId>com.oracle.oci.sdk</groupId>
+      <artifactId>oci-java-sdk-common-httpclient-jersey</artifactId>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Productivity / Codegen -->
+    <!-- ========================================================= -->
+
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- JAXB runtime -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- MapStruct API -->
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+
+    <!-- MapStruct processor -->
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- 공통 문자열 유틸 -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+    </dependency>
+
+    <!-- 파일/스트림 유틸 -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
+
+    <!-- ========================================================= -->
+    <!-- Test -->
+    <!-- ========================================================= -->
+
+    <!-- Spring Boot 테스트 기본 세트 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Spring Boot 4 Web MVC 테스트 지원 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webmvc-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Spring Security 테스트 -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ArchUnit API -->
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5-api</artifactId>
+      <version>${archunit-junit5.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- ArchUnit engine -->
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5-engine</artifactId>
+      <version>${archunit-junit5.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Testcontainers core -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testcontainers JDBC -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-jdbc</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Testcontainers JUnit 5 -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Oracle XE 테스트 컨테이너 -->
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-oracle-xe</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Liquibase + Hibernate 비교용 -->
+    <dependency>
+      <groupId>org.liquibase.ext</groupId>
+      <artifactId>liquibase-hibernate6</artifactId>
+      <version>${liquibase.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <!-- application.yml 만 filtering -->
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>config/application.yml</include>
+        </includes>
+      </resource>
+
+      <!-- 나머지 리소스는 원본 복사 -->
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>config/application.yml</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!-- Java 컴파일 및 annotation processor 설정 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>${java.version}</release>
+          <parameters>true</parameters>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-configuration-processor</artifactId>
+            </path>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${mapstruct.version}</version>
+            </path>
+            <path>
+              <groupId>org.hibernate.orm</groupId>
+              <artifactId>hibernate-processor</artifactId>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <!-- 리소스 복사 / filtering -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <!-- Spring Boot 실행 jar 재패키징 -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-info</id>
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>repackage</id>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>${start-class}</mainClass>
+        </configuration>
+      </plugin>
+
+      <!-- OpenAPI 스펙 기반 API 코드 생성 -->
+      <plugin>
+        <groupId>org.openapitools</groupId>
+        <artifactId>openapi-generator-maven-plugin</artifactId>
+        <version>${openapi-generator-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>generate-openapi-server</id>
+            <goals>
+              <goal>generate</goal>
+            </goals>
             <configuration>
-              <changeLogFile>config/liquibase/master.xml</changeLogFile>
-              <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
-              <driver>oracle.jdbc.OracleDriver</driver>
-              <url>${liquibase-plugin.url}</url>
-              <defaultSchemaName/>
-              <username>${liquibase-plugin.username}</username>
-              <password>${liquibase-plugin.password}</password>
-              <systemProperties>
-                <property>
-                  <name>liquibase.objectQuotingStrategy</name>
-                  <value>LEGACY</value>
-                </property>
-              </systemProperties>
-              <referenceUrl>
-                hibernate:spring:com.daangcool.stack.domain?
-                dialect=org.hibernate.dialect.Oracle12cDialect&amp;
-                hibernate.physical_naming_strategy=com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy&amp;
-                hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
-              </referenceUrl>
-              <verbose>true</verbose>
-              <contexts>!test</contexts>
+              <inputSpec>${project.basedir}/src/main/resources/swagger/api.yml</inputSpec>
+              <generatorName>spring</generatorName>
+              <apiPackage>com.daangcool.stack.web.api</apiPackage>
+              <modelPackage>com.daangcool.stack.service.api.dto</modelPackage>
+              <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+              <skipValidateSpec>false</skipValidateSpec>
+              <configOptions>
+                <delegatePattern>true</delegatePattern>
+                <title>stack</title>
+                <useSpringBoot3>true</useSpringBoot3>
+              </configOptions>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Liquibase changelog 생성/비교/업데이트용 -->
+      <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>${liquibase.version}</version>
+        <configuration>
+          <changeLogFile>config/liquibase/master.xml</changeLogFile>
+          <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
+          <driver>oracle.jdbc.OracleDriver</driver>
+          <url>${liquibase-plugin.url}</url>
+          <username>${liquibase-plugin.username}</username>
+          <password>${liquibase-plugin.password}</password>
+          <referenceUrl>hibernate:spring:com.daangcool.stack.domain?dialect=org.hibernate.dialect.OracleDialect&amp;hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
+          <verbose>true</verbose>
+          <contexts>!test</contexts>
+        </configuration>
+        <executions>
+          <execution>
+            <id>generateChangeLog</id>
+            <phase>none</phase>
+            <goals>
+              <goal>generateChangeLog</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>diff</id>
+            <phase>none</phase>
+            <goals>
+              <goal>diff</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>update</id>
+            <phase>none</phase>
+            <goals>
+              <goal>update</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>dropAll</id>
+            <phase>none</phase>
+            <goals>
+              <goal>dropAll</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <!-- Liquibase core -->
+          <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
+          </dependency>
+
+          <!-- Hibernate 모델 비교 확장 -->
+          <dependency>
+            <groupId>org.liquibase.ext</groupId>
+            <artifactId>liquibase-hibernate6</artifactId>
+            <version>${liquibase.version}</version>
+          </dependency>
+
+          <!-- JPA API -->
+          <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta-persistence.version}</version>
+          </dependency>
+
+          <!-- Validation API -->
+          <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta-validation.version}</version>
+          </dependency>
+
+          <!-- Spring Data JPA / Hibernate 로딩용 -->
+          <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring-boot.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <!-- Node / NPM 설치 및 프런트엔드 빌드 지원 -->
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+        <version>${frontend-maven-plugin.version}</version>
+        <configuration>
+          <installDirectory>target</installDirectory>
+          <nodeVersion>${node.version}</nodeVersion>
+          <npmVersion>${npm.version}</npmVersion>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- Liquibase 비활성화 -->
+    <profile>
+      <id>no-liquibase</id>
+      <properties>
+        <profile.no-liquibase>,no-liquibase</profile.no-liquibase>
+        <spring.profiles.active>no-liquibase</spring.profiles.active>
+      </properties>
+    </profile>
+
+    <!-- 로컬 TLS -->
+    <profile>
+      <id>local-tls</id>
+      <properties>
+        <profile.local-tls>,local-tls</profile.local-tls>
+      </properties>
+    </profile>
+
+    <!-- 운영 TLS -->
+    <profile>
+      <id>prod-tls</id>
+      <properties>
+        <profile.prod-tls>,prod-tls</profile.prod-tls>
+      </properties>
+    </profile>
+
+    <!-- OAuth 관련 옵션 프로필 -->
+    <profile>
+      <id>oauth</id>
+      <properties>
+        <profile.tls>,oauth</profile.tls>
+      </properties>
+    </profile>
+
+    <!-- 개발 기본 프로필 -->
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <liquibase-plugin.url>jdbc:oracle:thin:@//localhost:1521/FREEPDB1</liquibase-plugin.url>
+        <liquibase-plugin.username>dizzyUncle</liquibase-plugin.username>
+        <liquibase-plugin.password>Docker#2020</liquibase-plugin.password>
+        <profile.test>test,testdev</profile.test>
+        <spring.profiles.active>dev</spring.profiles.active>
+      </properties>
+      <dependencies>
+        <!-- 개발 중 hot reload 보조 -->
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-devtools</artifactId>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- API docs 활성화 -->
+    <profile>
+      <id>api-docs</id>
+      <properties>
+        <profile.api-docs>,api-docs</profile.api-docs>
+      </properties>
+    </profile>
+
+    <!-- 운영 프로필 -->
+    <profile>
+      <id>prod</id>
+      <properties>
+        <liquibase-plugin.password>oracle</liquibase-plugin.password>
+        <liquibase-plugin.url>jdbc:oracle:thin:@localhost:1521:xe</liquibase-plugin.url>
+        <liquibase-plugin.username>system</liquibase-plugin.username>
+        <profile.test>test,testprod</profile.test>
+        <spring.profiles.active>prod${profile.api-docs}${profile.no-liquibase}</spring.profiles.active>
+      </properties>
+    </profile>
+
+    <!-- 외부 WAS 배포가 필요할 때만 WAR 패키징 -->
+    <profile>
+      <id>war</id>
+      <build>
+        <plugins>
+          <!-- WAR 생성 -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>${maven-war-plugin.version}</version>
+            <configuration>
+              <warSourceIncludes>WEB-INF/**,META-INF/**</warSourceIncludes>
+              <failOnMissingWebXml>false</failOnMissingWebXml>
+              <warSourceDirectory>target/classes/static/</warSourceDirectory>
+              <webResources>
+                <resource>
+                  <directory>src/main/webapp/</directory>
+                  <includes>
+                    <include>WEB-INF/**</include>
+                  </includes>
+                </resource>
+              </webResources>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Docker Compose 연동 -->
+    <profile>
+      <id>docker-compose</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-docker-compose</artifactId>
+          <optional>true</optional>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- 프런트엔드(webapp) 빌드 -->
+    <profile>
+      <id>webapp</id>
+      <properties>
+        <spring.profiles.active>dev${profile.no-liquibase}</spring.profiles.active>
+      </properties>
+      <build>
+        <plugins>
+
+          <!-- 프런트엔드 결과물 변경 여부 체크섬 생성 -->
+          <plugin>
+            <groupId>net.nicoulaj.maven.plugins</groupId>
+            <artifactId>checksum-maven-plugin</artifactId>
+            <version>${checksum-maven-plugin.version}</version>
             <executions>
               <execution>
-                <id>generateChangeLog</id>
-                <phase>none</phase>
+                <id>create-pre-compiled-webapp-checksum</id>
                 <goals>
-                  <goal>generateChangeLog</goal>
+                  <goal>files</goal>
                 </goals>
+                <phase>generate-resources</phase>
               </execution>
-
               <execution>
-                <id>diff</id>
-                <phase>none</phase>
+                <id>create-compiled-webapp-checksum</id>
                 <goals>
-                  <goal>diff</goal>
+                  <goal>files</goal>
                 </goals>
-              </execution>
-
-              <execution>
-                <id>update</id>
-                <phase>none</phase>
-                <goals>
-                  <goal>update</goal>
-                </goals>
-              </execution>
-
-              <execution>
-                <id>dropAll</id>
-                <phase>none</phase>
-                <goals>
-                  <goal>dropAll</goal>
-                </goals>
+                <phase>compile</phase>
+                <configuration>
+                  <csvSummaryFile>checksums.csv.old</csvSummaryFile>
+                </configuration>
               </execution>
             </executions>
-            <dependencies>
-              <dependency>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-core</artifactId>
-                <version>${liquibase.version}</version>
-              </dependency>
-              <dependency>
-                <groupId>org.liquibase.ext</groupId>
-                <artifactId>liquibase-hibernate6</artifactId>
-                <version>${liquibase.version}</version>
-               </dependency>
-              <dependency>
-                <groupId>jakarta.validation</groupId>
-                <artifactId>jakarta.validation-api</artifactId>
-                <version>${jakarta-validation.version}</version>
-              </dependency>
-              <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-jpa</artifactId>
-                <version>${spring-boot.version}</version>
-              </dependency>
-            </dependencies>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.basedir}</directory>
+                  <includes>
+                    <include>.postcssrc.js</include>
+                    <include>package-lock.json</include>
+                    <include>package.json</include>
+                    <include>src/main/webapp/**/*.*</include>
+                    <include>target/classes/static/**/*.*</include>
+                    <include>tsconfig.app.json</include>
+                    <include>tsconfig.json</include>
+                    <include>vite.config.mts</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/app/**/service-worker.js</exclude>
+                    <exclude>**/app/**/vendor.css</exclude>
+                  </excludes>
+                </fileSet>
+              </fileSets>
+              <failOnError>false</failOnError>
+              <failIfNoFiles>false</failIfNoFiles>
+              <individualFiles>false</individualFiles>
+              <algorithms>
+                <algorithm>SHA-1</algorithm>
+              </algorithms>
+              <includeRelativePath>true</includeRelativePath>
+              <quiet>true</quiet>
+            </configuration>
           </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+
+          <!-- 체크섬 비교 후 npm build skip 여부 판단 -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>${maven-antrun-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>eval-frontend-checksum</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
                 <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-configuration-processor</artifactId>
-                        </path>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
+                  <target>
+                    <condition property="skip.npm" value="true" else="false">
+                      <and>
+                        <available file="checksums.csv" filepath="${project.build.directory}"/>
+                        <available file="checksums.csv.old" filepath="${project.build.directory}"/>
+                        <filesmatch file1="${project.build.directory}/checksums.csv"
+                                    file2="${project.build.directory}/checksums.csv.old"/>
+                      </and>
+                    </condition>
+                  </target>
+                  <exportAntProperties>true</exportAntProperties>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Node 설치 / npm install / webapp build -->
+          <plugin>
+            <groupId>com.github.eirslett</groupId>
+            <artifactId>frontend-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>install-node-and-npm</id>
+                <goals>
+                  <goal>install-node-and-npm</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>npm install</id>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>webapp build dev</id>
+                <goals>
+                  <goal>npm</goal>
+                </goals>
+                <phase>generate-resources</phase>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                  <arguments>run webapp:build</arguments>
+                  <environmentVariables>
+                    <APP_VERSION>${project.version}</APP_VERSION>
+                  </environmentVariables>
+                  <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend-maven-plugin.version}</version>
-                <configuration>
-                    <installDirectory>target</installDirectory>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-                </configuration>
-            </plugin>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
-    <profiles>
-      <profile>
-        <id>no-liquibase</id>
-        <properties>
-          <profile.no-liquibase>,no-liquibase</profile.no-liquibase>
-          <spring.profiles.active>no-liquibase</spring.profiles.active>
-        </properties>
-      </profile>
-        <profile>
-            <id>local-tls</id>
-            <properties>
-                <profile.local-tls>,local-tls</profile.local-tls>
-            </properties>
-        </profile>
-        <profile>
-            <id>prod-tls</id>
-            <properties>
-                <profile.prod-tls>,prod-tls</profile.prod-tls>
-            </properties>
-        </profile>
-        <profile>
-            <id>oauth</id>
-            <properties>
-                <profile.tls>,oauth</profile.tls>
-            </properties>
-        </profile>
-        <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <liquibase-plugin.url>jdbc:oracle:thin:@//localhost:1521/FREEPDB1</liquibase-plugin.url>
-                <liquibase-plugin.username>dizzyUncle</liquibase-plugin.username>
-                <liquibase-plugin.password>Docker#2020</liquibase-plugin.password>
-                <profile.test>test,testdev</profile.test>
-                <!-- default Spring profiles -->
-                <spring.profiles.active>dev{profile.local-tls}${profile.api-docs}${profile.no-liquibase}</spring.profiles.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-devtools</artifactId>
-                    <scope>runtime</scope>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>install-node-and-npm</id>
-                                <goals>
-                                    <goal>install-node-and-npm</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>npm install</id>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>webapp build dev</id>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                                <phase>process-resources</phase>
-                                <configuration>
-                                    <arguments>run webapp:build:dev</arguments>
-                                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>api-docs</id>
-            <properties>
-                <profile.api-docs>,api-docs</profile.api-docs>
-            </properties>
-        </profile>
-        <profile>
-            <id>prod</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-undertow</artifactId>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>build-info</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>install-node-and-npm</id>
-                                <goals>
-                                    <goal>install-node-and-npm</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>npm install</id>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>webapp build prod</id>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                                <phase>generate-resources</phase>
-                                <configuration>
-                                    <arguments>run webapp:prod</arguments>
-                                    <npmInheritsProxyConfigFromMaven>false</npmInheritsProxyConfigFromMaven>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-              <!-- default Spring profiles -->
-              <liquibase-plugin.url>jdbc:oracle:thin:@localhost:1521:xe</liquibase-plugin.url>
-              <liquibase-plugin.username>system</liquibase-plugin.username>
-              <liquibase-plugin.password>oracle</liquibase-plugin.password>
-              <profile.test>test,testprod</profile.test>
-              <spring.profiles.active>prod${profile.api-docs}${profile.no-liquibase}</spring.profiles.active>
-            </properties>
-        </profile>
-        <profile>
-            <id>war</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+      </build>
+    </profile>
+  </profiles>
 </project>

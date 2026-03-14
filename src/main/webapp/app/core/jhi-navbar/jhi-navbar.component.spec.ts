@@ -1,14 +1,15 @@
-import { vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { computed } from 'vue';
-import { shallowMount } from '@vue/test-utils';
 import { type Router } from 'vue-router';
+
 import { createTestingPinia } from '@pinia/testing';
+import { shallowMount } from '@vue/test-utils';
+
+import { useLoginModal } from '@/account/login-modal';
+import { createRouter } from '@/router';
+import { useStore } from '@/store';
 
 import JhiNavbar from './jhi-navbar.vue';
-import { useStore } from '@/store';
-import { createRouter } from '@/router';
-import type LoginService from '@/account/login.service';
-import { useLoginModal } from '@/account/login-modal';
 
 type JhiNavbarComponentType = InstanceType<typeof JhiNavbar>;
 
@@ -17,7 +18,6 @@ const store = useStore();
 
 describe('JhiNavbar', () => {
   let jhiNavbar: JhiNavbarComponentType;
-  let loginService: LoginService;
   let login: ReturnType<typeof useLoginModal>;
   const accountService = { hasAnyAuthorityAndCheckAuth: vitest.fn().mockImplementation(() => Promise.resolve(true)) };
   const changeLanguage = vitest.fn();
@@ -25,7 +25,6 @@ describe('JhiNavbar', () => {
 
   beforeEach(() => {
     router = createRouter();
-    loginService = { login: vitest.fn(), logout: vitest.fn() };
     const wrapper = shallowMount(JhiNavbar, {
       global: {
         plugins: [pinia, router],
@@ -41,7 +40,6 @@ describe('JhiNavbar', () => {
           'b-navbar-brand': true,
         },
         provide: {
-          loginService,
           currentLanguage: computed(() => 'foo'),
           changeLanguage,
           accountService,
@@ -85,19 +83,18 @@ describe('JhiNavbar', () => {
 
   it('logout should clear credentials', async () => {
     store.setAuthentication({ login: 'test' });
-    (loginService.logout as any).mockReturnValue(Promise.resolve({}));
 
     await jhiNavbar.logout();
 
-    expect(loginService.logout).toHaveBeenCalled();
+    expect(jhiNavbar.authenticated).toBeFalsy();
   });
 
   it('should determine active route', async () => {
-    await router.push('/toto');
+    await router.push('/forbidden');
 
     expect(jhiNavbar.subIsActive('/titi')).toBeFalsy();
-    expect(jhiNavbar.subIsActive('/toto')).toBeTruthy();
-    expect(jhiNavbar.subIsActive(['/toto', 'toto'])).toBeTruthy();
+    expect(jhiNavbar.subIsActive('/forbidden')).toBeTruthy();
+    expect(jhiNavbar.subIsActive(['/forbidden', 'forbidden'])).toBeTruthy();
   });
 
   it('should call translationService when changing language', () => {

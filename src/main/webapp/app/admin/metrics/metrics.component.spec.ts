@@ -1,9 +1,11 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { shallowMount } from '@vue/test-utils';
 import axios from 'axios';
 import sinon from 'sinon';
 
-import Metrics from './metrics.vue';
 import MetricsService from './metrics.service';
+import Metrics from './metrics.vue';
 
 type MetricsComponentType = InstanceType<typeof Metrics>;
 

@@ -1,4 +1,5 @@
 <template>
+  <BToastOrchestrator />
   <div id="app">
     <ribbon></ribbon>
     <div id="app-header">
@@ -8,10 +9,12 @@
       <div class="card jh-card">
         <router-view></router-view>
       </div>
-      <n-modal v-model:show="loginModalOpen" preset="card" :style="{ width: '450px' }" :title="t$('login.title')" :mask-closable="false">
-        <login-form></login-form>
-      </n-modal>
-
+      <b-modal id="login-page" focus="username" v-model="loginModalOpen" :no-footer="true" lazy>
+        <template #title>
+          <span data-cy="loginTitle" id="login-title">{{ t$('login.title') }}</span>
+        </template>
+        <login-form v-if="loginModalOpen"></login-form>
+      </b-modal>
       <jhi-footer></jhi-footer>
     </div>
   </div>

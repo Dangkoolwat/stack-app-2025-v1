@@ -1,4 +1,4 @@
-import { Authority } from '@/shared/security/authority';
+import { Authority } from '@/shared/jhipster/constants';
 
 const Register = () => import('@/account/register/register.vue');
 const Activate = () => import('@/account/activate/activate.vue');
@@ -6,7 +6,6 @@ const ResetPasswordInit = () => import('@/account/reset-password/init/reset-pass
 const ResetPasswordFinish = () => import('@/account/reset-password/finish/reset-password-finish.vue');
 const ChangePassword = () => import('@/account/change-password/change-password.vue');
 const Settings = () => import('@/account/settings/settings.vue');
-const Sessions = () => import('@/account/sessions/sessions.vue');
 
 export default [
   {
@@ -33,12 +32,6 @@ export default [
     path: '/account/password',
     name: 'ChangePassword',
     component: ChangePassword,
-    meta: { authorities: [Authority.USER] },
-  },
-  {
-    path: '/account/sessions',
-    name: 'Sessions',
-    component: Sessions,
     meta: { authorities: [Authority.USER] },
   },
   {

@@ -1,80 +1,76 @@
-import type { BvToast } from 'bootstrap-vue';
-import { getCurrentInstance } from 'vue';
 import { type Composer, useI18n } from 'vue-i18n';
 
+import { type BToastProps, useToast } from 'bootstrap-vue-next';
+
+import { getMessageFromHeaders } from '@/shared/jhipster/headers';
+
 export const useAlertService = () => {
-  const bvToast = getCurrentInstance().root.proxy._bv__toast;
-  if (!bvToast) {
+  const toast = useToast();
+  if (!toast) {
     throw new Error('BootstrapVue toast component was not found');
   }
   const i18n = useI18n();
   return new AlertService({
-    bvToast,
+    toast,
     i18n,
   });
 };
 
 export default class AlertService {
-  private bvToast: BvToast;
-  private i18n: Composer;
+  private readonly toast: ReturnType<typeof useToast>;
+  private readonly i18n: Composer;
 
-  constructor({ bvToast, i18n }: { bvToast: BvToast; i18n: Composer }) {
-    this.bvToast = bvToast;
+  constructor({ toast, i18n }: { toast: ReturnType<typeof useToast>; i18n: Composer }) {
+    this.toast = toast;
     this.i18n = i18n;
   }
 
-  showInfo(toastMessage: string, toastOptions?: any) {
-    this.bvToast.toast(toastMessage, {
-      toaster: 'b-toaster-top-center',
-      title: 'Info',
-      variant: 'info',
-      solid: true,
-      autoHideDelay: 5000,
-      ...toastOptions,
+  showInfo(toastMessage: string, props: BToastProps = {}) {
+    this.toast.show!({
+      props: {
+        pos: 'top-center',
+        title: 'Info',
+        variant: 'info',
+        solid: true,
+        body: toastMessage,
+        ...props,
+      },
     });
   }
 
   showSuccess(toastMessage: string) {
-    this.bvToast.toast(toastMessage, {
-      toaster: 'b-toaster-top-center',
+    this.showInfo(toastMessage, {
       title: 'Success',
       variant: 'success',
-      solid: true,
-      autoHideDelay: 5000,
     });
   }
 
   showError(toastMessage: string) {
-    this.bvToast.toast(toastMessage, {
-      toaster: 'b-toaster-top-center',
+    this.showInfo(toastMessage, {
       title: 'Error',
       variant: 'danger',
-      solid: true,
-      autoHideDelay: 5000,
     });
   }
 
-  showHttpError(httpErrorResponse: any) {
+  showHttpError({ data, status, headers }: any) {
     let errorMessage: string | null = null;
-    switch (httpErrorResponse.status) {
+    switch (status) {
       case 0:
         errorMessage = this.i18n.t('error.server.not.reachable').toString();
         break;
 
       case 400: {
-        const arr = Object.keys(httpErrorResponse.headers);
-        let entityKey: string | null = null;
-        for (const entry of arr) {
-          if (entry.toLowerCase().endsWith('app-error')) {
-            errorMessage = httpErrorResponse.headers[entry];
-          } else if (entry.toLowerCase().endsWith('app-params')) {
-            entityKey = httpErrorResponse.headers[entry];
-          }
-        }
-        if (errorMessage && entityKey) {
-          errorMessage = this.i18n.t(errorMessage, { entityName: this.i18n.t(`global.menu.entities.${entityKey}`) }).toString();
-        } else if (!errorMessage) {
-          errorMessage = this.i18n.t(httpErrorResponse.data.message).toString();
+        const message = getMessageFromHeaders(headers);
+        if (message.errorKey && message.param) {
+          errorMessage = this.i18n.t(message.errorKey!, { entityName: this.i18n.t(`global.menu.entities.${message.param!}`) }).toString();
+        } else if (message.errorKey) {
+          errorMessage = this.i18n.t(message.errorKey!).toString();
+        } else if (message.errorMessage) {
+          errorMessage = message.errorMessage;
+        } else if (data.message) {
+          errorMessage = this.i18n.t(data.message).toString();
+        } else if (data?.fieldErrors) {
+          errorMessage = 'Validation error';
         }
         break;
       }
@@ -84,8 +80,8 @@ export default class AlertService {
         break;
 
       default:
-        errorMessage = this.i18n.t(httpErrorResponse.data.message).toString();
+        errorMessage = this.i18n.t(data.message).toString();
     }
-    this.showError(errorMessage);
+    this.showError(errorMessage!);
   }
 }

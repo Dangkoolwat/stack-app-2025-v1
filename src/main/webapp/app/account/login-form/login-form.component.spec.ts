@@ -1,13 +1,15 @@
-import { vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { type RouteLocation } from 'vue-router';
+
+import { createTestingPinia } from '@pinia/testing';
 import { type MountingOptions, shallowMount } from '@vue/test-utils';
 import axios from 'axios';
 import sinon from 'sinon';
-import { type RouteLocation } from 'vue-router';
-import { createTestingPinia } from '@pinia/testing';
 
-import AccountService from '../account.service';
-import LoginForm from './login-form.vue';
 import { useStore } from '@/store';
+import AccountService from '../account.service';
+
+import LoginForm from './login-form.vue';
 
 type LoginFormComponentType = InstanceType<typeof LoginForm>;
 
@@ -54,7 +56,7 @@ describe('LoginForm Component', () => {
     loginForm = wrapper.vm;
   });
 
-  it('should authentication be KO', async () => {
+  it('should not store token if authentication is KO', async () => {
     // GIVEN
     loginForm.login = 'login';
     loginForm.password = 'pwd';
@@ -67,20 +69,23 @@ describe('LoginForm Component', () => {
 
     // THEN
     expect(
-      axiosStub.post.calledWith('api/authentication', 'username=login&password=pwd&remember-me=true&submit=Login', {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      axiosStub.post.calledWith('api/authenticate', {
+        username: 'login',
+        password: 'pwd',
+        rememberMe: true,
       }),
     ).toBeTruthy();
     await loginForm.$nextTick();
     expect(loginForm.authenticationError).toBeTruthy();
   });
 
-  it('should authentication be OK', async () => {
+  it('should store token if authentication is OK', async () => {
     // GIVEN
     loginForm.login = 'login';
     loginForm.password = 'pwd';
     loginForm.rememberMe = true;
-    axiosStub.post.resolves({});
+    const jwtSecret = 'jwt-secret';
+    axiosStub.post.resolves({ headers: { authorization: `Bearer ${jwtSecret}` } });
 
     // WHEN
     loginForm.doLogin();
@@ -88,11 +93,39 @@ describe('LoginForm Component', () => {
 
     // THEN
     expect(
-      axiosStub.post.calledWith('api/authentication', 'username=login&password=pwd&remember-me=true&submit=Login', {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      axiosStub.post.calledWith('api/authenticate', {
+        username: 'login',
+        password: 'pwd',
+        rememberMe: true,
       }),
     ).toBeTruthy();
 
     expect(loginForm.authenticationError).toBeFalsy();
+    expect(localStorage.getItem('jhi-authenticationToken')).toEqual(jwtSecret);
+  });
+
+  it('should store token if authentication is OK in session', async () => {
+    // GIVEN
+    loginForm.login = 'login';
+    loginForm.password = 'pwd';
+    loginForm.rememberMe = false;
+    const jwtSecret = 'jwt-secret';
+    axiosStub.post.resolves({ headers: { authorization: `Bearer ${jwtSecret}` } });
+
+    // WHEN
+    loginForm.doLogin();
+    await loginForm.$nextTick();
+
+    // THEN
+    expect(
+      axiosStub.post.calledWith('api/authenticate', {
+        username: 'login',
+        password: 'pwd',
+        rememberMe: false,
+      }),
+    ).toBeTruthy();
+
+    expect(loginForm.authenticationError).toBeFalsy();
+    expect(sessionStorage.getItem('jhi-authenticationToken')).toEqual(jwtSecret);
   });
 });

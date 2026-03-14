@@ -1,10 +1,9 @@
 package com.daangcool.stack.security;
 
+import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
-import java.util.*;
-import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +13,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.Locale;
 
 /**
  * Authenticate a user from the database.
@@ -25,6 +27,7 @@ public class DomainUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
+
     public DomainUserDetailsService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -34,7 +37,7 @@ public class DomainUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String login) {
         LOG.debug("Authenticating {}", login);
 
-        if (new EmailValidator().isValid(login, null)) {
+        if (Constants.LOGIN_REGEX.matches(login)) {
             return userRepository
                 .findOneWithAuthoritiesByEmailIgnoreCase(login)
                 .map(user -> createSpringSecurityUser(login, user))

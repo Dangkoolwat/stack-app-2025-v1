@@ -1,11 +1,12 @@
-import { shallowMount } from '@vue/test-utils';
-import axios from 'axios';
-import * as sinon from 'sinon';
-import { Subject, type Subscription } from 'rxjs';
 import { type Router, createMemoryHistory, createRouter } from 'vue-router';
 
-import JhiTracker from './tracker.vue';
+import { shallowMount } from '@vue/test-utils';
+import axios from 'axios';
+import { Subject, type Subscription } from 'rxjs';
+import sinon from 'sinon';
+
 import TrackerService from './tracker.service';
+import JhiTracker from './tracker.vue';
 
 type JhiTrackerComponentType = InstanceType<typeof JhiTracker>;
 

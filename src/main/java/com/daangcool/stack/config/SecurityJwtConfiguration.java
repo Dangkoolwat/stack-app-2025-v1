@@ -60,7 +60,10 @@ public class SecurityJwtConfiguration {
     @Bean
     public BearerTokenResolver bearerTokenResolver() {
         var bearerTokenResolver = new DefaultBearerTokenResolver();
-        bearerTokenResolver.setAllowUriQueryParameter(true);
+        // H-4 보안 수정: URI 쿼리 파라미터로 JWT 전달을 금지합니다.
+        // 활성화 시 토큰이 액세스 로그·브라우저 히스토리·Referer에 노출됩니다.
+        // JWT는 반드시 Authorization: Bearer <token> 헤더를 통해 전달해야 합니다.
+        bearerTokenResolver.setAllowUriQueryParameter(false);
         return bearerTokenResolver;
     }
 

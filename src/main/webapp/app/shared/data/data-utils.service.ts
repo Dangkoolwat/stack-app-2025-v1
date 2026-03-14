@@ -1,5 +1,8 @@
+import { byteSize, openFile, toBase64 } from '@/shared/jhipster/data-utils';
+import { getPageNumberFromLinkHeader } from '@/shared/jhipster/link-header';
+
 /**
- * An composable utility for data.
+ * A composable utility for data.
  */
 const useDataUtils = () => ({
   /**
@@ -16,39 +19,14 @@ const useDataUtils = () => ({
    * Method to find the byte size of the string provides
    */
   byteSize(base64String) {
-    return this.formatAsBytes(this.size(base64String));
+    return byteSize(base64String);
   },
 
   /**
    * Method to open file
    */
   openFile(contentType, data) {
-    const byteCharacters = atob(data);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {
-      type: contentType,
-    });
-    const objectURL = URL.createObjectURL(blob);
-    const win = window.open(objectURL);
-    if (win) {
-      win.onload = () => URL.revokeObjectURL(objectURL);
-    }
-  },
-
-  /**
-   * Method to convert the file to base64
-   */
-  toBase64(file, cb) {
-    const fileReader = new FileReader();
-    fileReader.readAsDataURL(file);
-    fileReader.onload = (e: any) => {
-      const base64Data = e.target.result.substring(e.target.result.indexOf('base64,') + 'base64,'.length);
-      cb(base64Data);
-    };
+    openFile(data, contentType);
   },
 
   /**
@@ -68,35 +46,13 @@ const useDataUtils = () => ({
     }
   },
 
-  endsWith(suffix, str) {
-    return str.indexOf(suffix, str.length - suffix.length) !== -1;
-  },
-
-  paddingSize(value) {
-    if (this.endsWith('==', value)) {
-      return 2;
-    }
-    if (this.endsWith('=', value)) {
-      return 1;
-    }
-    return 0;
-  },
-
-  size(value) {
-    return (value.length / 4) * 3 - this.paddingSize(value);
-  },
-
-  formatAsBytes(size) {
-    return `${size.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} bytes`;
-  },
-
   setFileData(event, entity, field, isImage) {
-    if (event && event.target.files && event.target.files[0]) {
+    if (event?.target.files?.[0]) {
       const file = event.target.files[0];
-      if (isImage && !/^image\//.test(file.type)) {
+      if (isImage && !file.type.startsWith('image/')) {
         return;
       }
-      this.toBase64(file, base64Data => {
+      toBase64(file, base64Data => {
         entity[field] = base64Data;
         entity[`${field}ContentType`] = file.type;
       });
@@ -127,33 +83,11 @@ const useDataUtils = () => ({
    * Method to parse header links
    */
   parseLinks(header) {
-    const links = {};
-
-    if ((header?.indexOf(',') ?? -1) === -1) {
-      return links;
+    try {
+      return getPageNumberFromLinkHeader(header);
+    } catch {
+      return {};
     }
-    // Split parts by comma
-    const parts = header.split(',');
-
-    // Parse each part into a named link
-    parts.forEach(p => {
-      if (p.indexOf('>;') === -1) {
-        return;
-      }
-      const section = p.split('>;');
-      const url = section[0].replace(/<(.*)/, '$1').trim();
-      const queryString = { page: null };
-      url.replace(new RegExp(/([^?=&]+)(=([^&]*))?/g), ($0, $1, $2, $3) => {
-        queryString[$1] = $3;
-      });
-      let page = queryString.page;
-      if (typeof page === 'string') {
-        page = parseInt(page, 10);
-      }
-      const name = section[1].replace(/rel="(.*)"/, '$1').trim();
-      links[name] = page;
-    });
-    return links;
   },
 });
 

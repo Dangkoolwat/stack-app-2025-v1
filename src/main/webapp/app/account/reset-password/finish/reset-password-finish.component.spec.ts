@@ -1,7 +1,10 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { createTestingPinia } from '@pinia/testing';
+import { shallowMount } from '@vue/test-utils';
 import axios from 'axios';
 import sinon from 'sinon';
-import { shallowMount } from '@vue/test-utils';
-import { createTestingPinia } from '@pinia/testing';
+
 import ResetPasswordFinish from './reset-password-finish.vue';
 
 type ResetPasswordFinishComponentType = InstanceType<typeof ResetPasswordFinish>;

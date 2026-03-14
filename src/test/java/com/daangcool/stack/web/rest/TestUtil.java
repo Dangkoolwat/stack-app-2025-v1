@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -36,15 +35,10 @@ public final class TestUtil {
 
     private static final ObjectMapper mapper = createObjectMapper();
 
-
     /**
      * MediaType for JSON UTF8
      */
-    public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
-        MediaType.APPLICATION_JSON.getType(),
-        MediaType.APPLICATION_JSON.getSubtype(),
-        StandardCharsets.UTF_8
-    );
+    public static final MediaType APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON;
 
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
@@ -80,7 +74,8 @@ public final class TestUtil {
     }
 
     /**
-     * A matcher that tests that the examined string represents the same instant as the reference datetime.
+     * A matcher that tests that the examined string represents the same instant as
+     * the reference datetime.
      */
     public static class ZonedDateTimeMatcher extends TypeSafeDiagnosingMatcher<String> {
 
@@ -99,7 +94,8 @@ public final class TestUtil {
                 }
                 return true;
             } catch (DateTimeParseException e) {
-                mismatchDescription.appendText("was ").appendValue(item).appendText(", which could not be parsed as a ZonedDateTime");
+                mismatchDescription.appendText("was ").appendValue(item)
+                        .appendText(", which could not be parsed as a ZonedDateTime");
                 return false;
             }
         }
@@ -111,16 +107,19 @@ public final class TestUtil {
     }
 
     /**
-     * Creates a matcher that matches when the examined string represents the same instant as the reference datetime.
+     * Creates a matcher that matches when the examined string represents the same
+     * instant as the reference datetime.
      *
-     * @param date the reference datetime against which the examined string is checked.
+     * @param date the reference datetime against which the examined string is
+     *             checked.
      */
     public static ZonedDateTimeMatcher sameInstant(ZonedDateTime date) {
         return new ZonedDateTimeMatcher(date);
     }
 
     /**
-     * A matcher that tests that the examined number represents the same value - it can be Long, Double, etc - as the reference BigDecimal.
+     * A matcher that tests that the examined number represents the same value - it
+     * can be Long, Double, etc - as the reference BigDecimal.
      */
     public static class NumberMatcher extends TypeSafeMatcher<Number> {
 
@@ -162,9 +161,11 @@ public final class TestUtil {
     }
 
     /**
-     * Creates a matcher that matches when the examined number represents the same value as the reference BigDecimal.
+     * Creates a matcher that matches when the examined number represents the same
+     * value as the reference BigDecimal.
      *
-     * @param number the reference BigDecimal against which the examined number is checked.
+     * @param number the reference BigDecimal against which the examined number is
+     *               checked.
      */
     public static NumberMatcher sameNumber(BigDecimal number) {
         return new NumberMatcher(number);
@@ -190,7 +191,9 @@ public final class TestUtil {
     }
 
     /**
-     * Create a {@link FormattingConversionService} which use ISO date format, instead of the localized one.
+     * Create a {@link FormattingConversionService} which use ISO date format,
+     * instead of the localized one.
+     *
      * @return the {@link FormattingConversionService}.
      */
     public static FormattingConversionService createFormattingConversionService() {
@@ -203,8 +206,9 @@ public final class TestUtil {
 
     /**
      * Executes a query on the EntityManager finding all stored objects.
-     * @param <T> The type of objects to be searched
-     * @param em The instance of the EntityManager
+     *
+     * @param <T>   The type of objects to be searched
+     * @param em    The instance of the EntityManager
      * @param clazz The class type to be searched
      * @return A list of all found objects
      */
@@ -222,18 +226,21 @@ public final class TestUtil {
         Enhancer e = new Enhancer();
         e.setSuperclass(original.getClass());
         e.setCallback(
-            new MethodInterceptor() {
-                public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                    Object val = update.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(update, args);
-                    if (val == null) {
-                        return original.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(original, args);
+                new MethodInterceptor() {
+                    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
+                            throws Throwable {
+                        Object val = update.getClass().getMethod(method.getName(), method.getParameterTypes())
+                                .invoke(update, args);
+                        if (val == null) {
+                            return original.getClass().getMethod(method.getName(), method.getParameterTypes())
+                                    .invoke(original, args);
+                        }
+                        return val;
                     }
-                    return val;
-                }
-            }
-        );
+                });
         return (T) e.create();
     }
 
-    private TestUtil() {}
+    private TestUtil() {
+    }
 }

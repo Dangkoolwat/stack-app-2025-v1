@@ -1,57 +1,58 @@
 <template>
-  <div class="modal-body">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <n-alert v-if="authenticationError" type="error" data-cy="loginError">
-          <span v-html="t$('login.messages.error.authentication')"></span>
-        </n-alert>
+  <div class="d-flex justify-content-center">
+    <div class="row-md">
+      <div class="col-md-12">
+        <b-alert
+          data-cy="loginError"
+          variant="danger"
+          :model-value="authenticationError"
+          v-html="t$('login.messages.error.authentication')"
+        ></b-alert>
       </div>
-      <div class="col-md-8">
-        <n-form @submit.prevent="doLogin()">
-          <n-form-item :label="t$('global.form[\'username.label\']')" label-for="username">
-            <n-input
+      <div class="col-md-12">
+        <b-form @submit.prevent="doLogin()">
+          <b-form-group :label="t$('global.form[\'username.label\']')" label-for="username">
+            <b-form-input
               id="username"
               type="text"
               name="username"
-              autofocus
               :placeholder="t$('global.form[\'username.placeholder\']')"
-              v-model:value="login"
+              v-model="login"
               data-cy="username"
-            />
-          </n-form-item>
-          <n-form-item :label="t$('login.form.password')" label-for="password">
-            <n-input
+            >
+            </b-form-input>
+          </b-form-group>
+          <b-form-group :label="t$('login.form.password')" label-for="password">
+            <b-form-input
               id="password"
               type="password"
               name="password"
               :placeholder="t$('login.form[\'password.placeholder\']')"
-              v-model:value="password"
+              v-model="password"
               data-cy="password"
-            />
-          </n-form-item>
-          <n-checkbox id="rememberMe" name="rememberMe" v-model:checked="rememberMe" checked>
-            <span v-text="t$('login.form.rememberme')"></span>
-          </n-checkbox>
-          <div style="margin-top: 16px">
-            <n-button data-cy="submit" type="primary" attr-type="submit" v-text="t$('login.form.button')"></n-button>
+            >
+            </b-form-input>
+          </b-form-group>
+          <b-form-checkbox id="rememberMe" name="rememberMe" v-model="rememberMe" checked>
+            <span>{{ t$('login.form.rememberme') }}</span>
+          </b-form-checkbox>
+          <div>
+            <b-button data-cy="submit" type="submit" variant="primary">{{ t$('login.form.button') }}</b-button>
           </div>
-        </n-form>
+        </b-form>
         <p></p>
         <div>
-          <n-alert type="warning">
-            <router-link
-              :to="'/account/reset/request'"
-              class="alert-link"
-              v-text="t$('login.password.forgot')"
-              data-cy="forgetYourPasswordSelector"
-            ></router-link>
-          </n-alert>
+          <b-alert :model-value="true" variant="warning">
+            <b-link :to="'/account/reset/request'" class="alert-link" data-cy="forgetYourPasswordSelector">{{
+              t$('login.password.forgot')
+            }}</b-link>
+          </b-alert>
         </div>
         <div>
-          <n-alert type="warning">
-            <span v-text="t$('global.messages.info.register.noaccount')"></span>
-            <router-link :to="'/register'" class="alert-link" v-text="t$('global.messages.info.register.link')"></router-link>
-          </n-alert>
+          <b-alert :model-value="true" variant="warning">
+            <span>{{ t$('global.messages.info.register.noaccount') }}</span>
+            <b-link :to="'/register'" class="alert-link">{{ t$('global.messages.info.register.link') }}</b-link>
+          </b-alert>
         </div>
       </div>
     </div>

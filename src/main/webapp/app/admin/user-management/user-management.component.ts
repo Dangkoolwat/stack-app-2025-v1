@@ -1,16 +1,14 @@
 import { type ComputedRef, type Ref, defineComponent, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import UserManagementService from './user-management.service';
-import { useAlertService } from '@/shared/alert/alert.service';
 
+import { useAlertService } from '@/shared/alert/alert.service';
 import { useDateFormat } from '@/shared/composables';
+import { getMessageFromHeaders } from '@/shared/jhipster/headers';
+
+import UserManagementService from './user-management.service';
 
 export default defineComponent({
-  compatConfig: { MODE: 3 },
   name: 'JhiUserManagementComponent',
-  mounted(): void {
-    this.loadAll();
-  },
   setup() {
     const alertService = inject('alertService', () => useAlertService(), true);
     const { formatDateShort: formatDate } = useDateFormat();
@@ -49,6 +47,9 @@ export default defineComponent({
       queryCount,
       t$: useI18n().t,
     };
+  },
+  mounted(): void {
+    this.loadAll();
   },
   methods: {
     setActive(user, isActivated): void {
@@ -113,12 +114,10 @@ export default defineComponent({
       this.userManagementService
         .remove(this.removeId)
         .then(res => {
-          this.alertService.showInfo(
-            this.t$(res.headers['x-stackapp-alert'].toString(), {
-              param: decodeURIComponent(res.headers['x-stackapp-params'].replace(/\+/g, ' ')),
-            }),
-            { variant: 'danger' },
-          );
+          const message = getMessageFromHeaders(res.headers);
+          this.alertService.showInfo(message.alertKey ? this.t$(message.alertKey, { param: message.param }) : message.alertMessage, {
+            variant: 'danger',
+          });
           this.removeId = null;
           this.loadAll();
           this.closeDialog();

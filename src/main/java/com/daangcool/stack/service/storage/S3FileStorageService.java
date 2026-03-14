@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -97,20 +97,14 @@ public class S3FileStorageService implements StorageService {
     }
 
     @Override
-    public byte[] loadAsResource(String storageFilePath) {
-        try {
-            String key = extractKeyFromUrl(storageFilePath);
-            GetObjectRequest getReq = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-
-            ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(getReq);
-            return response.asByteArray();
-
-        } catch (Exception e) {
-            throw new RuntimeException(" S3 파일 다운로드 실패: " + storageFilePath, e);
-        }
+    public InputStream loadAsStream(String storageFilePath) throws IOException {
+        String key = extractKeyFromUrl(storageFilePath);
+        GetObjectRequest getReq = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .build();
+        // S3Client.getObject(GetObjectRequest) returns ResponseInputStream which is an InputStream
+        return s3Client.getObject(getReq);
     }
 
     private String getExtension(String filename) {

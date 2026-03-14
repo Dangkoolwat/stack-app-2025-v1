@@ -20,7 +20,6 @@ logging:
     com.daangcool.stack: DEBUG
     org.springframework: INFO   # Spring Boot 기본값 유지
     org.hibernate.SQL: DEBUG    # 실행된 SQL 보여주기
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # Hibernate 5.x 파라미터
     org.hibernate.orm.jdbc.bind: TRACE # Hibernate 6.x 파라미터
 
 spring:
@@ -44,6 +43,7 @@ spring:
       maxLifetime: 1800000   # 30분
       idleTimeout: 600000    # 10분
       connectionTimeout: 30000
+      keepaliveTime: 30000   # 30초마다 핑을 보내 연결 유지 확인
   liquibase:
     enabled: true
     change-log: classpath:config/liquibase/master.xml

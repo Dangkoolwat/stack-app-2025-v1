@@ -1,15 +1,15 @@
 <template>
   <div>
-    <h2 id="tracker-page-heading" v-text="t$('tracker.title')" data-cy="trackerPageHeading"></h2>
+    <h2 id="tracker-page-heading" data-cy="trackerPageHeading">{{ t$('tracker.title') }}</h2>
 
     <div class="table-responsive">
       <table class="table table-striped" data-cy="trackerTable">
         <thead>
           <tr>
-            <th v-text="t$('tracker.table.userlogin')"></th>
-            <th v-text="t$('tracker.table.ipaddress')"></th>
-            <th v-text="t$('tracker.table.page')"></th>
-            <th v-text="t$('tracker.table.time')"></th>
+            <th>{{ t$('tracker.table.userlogin') }}</th>
+            <th>{{ t$('tracker.table.ipaddress') }}</th>
+            <th>{{ t$('tracker.table.page') }}</th>
+            <th>{{ t$('tracker.table.time') }}</th>
             <th></th>
           </tr>
         </thead>

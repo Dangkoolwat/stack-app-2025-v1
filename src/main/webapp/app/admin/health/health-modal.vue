@@ -1,53 +1,29 @@
 <template>
   <div class="modal-body pad">
-    <div v-if="currentHealth && currentHealth.details">
-      <h5 v-text="t$('health.details.properties')"></h5>
-      <n-data-table :columns="columns" :data="healthDetails" :bordered="false" />
+    <div v-if="currentHealth?.details">
+      <h5>{{ t$('health.details.properties') }}</h5>
+      <div class="table-responsive">
+        <table class="table table-striped" aria-describedby="Health">
+          <thead>
+            <tr>
+              <th class="text-start" scope="col">{{ t$('health.details.name') }}</th>
+              <th class="text-start" scope="col">{{ t$('health.details.value') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in currentHealth.details.details" :key="index">
+              <td class="text-start">{{ index }}</td>
+              <td class="text-start">{{ readableValue(item) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div v-if="currentHealth && currentHealth.error">
-      <h4 v-text="t$('health.details.error')"></h4>
+    <div v-if="currentHealth?.error">
+      <h4>{{ t$('health.details.error') }}</h4>
       <pre>{{ currentHealth.error }}</pre>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { computed, h, defineComponent } from 'vue';
-import { NDataTable, NTag } from 'naive-ui';
-import { useI18n } from 'vue-i18n';
-
-export default defineComponent({
-  name: 'JhiHealthModal',
-  props: {
-    currentHealth: Object,
-  },
-  setup(props) {
-    const { t } = useI18n();
-
-    const healthDetails = computed(() => {
-      if (!props.currentHealth?.details?.details) return [];
-      return Object.entries(props.currentHealth.details.details).map(([key, value]) => ({
-        name: key,
-        value: value,
-      }));
-    });
-
-    const columns = [
-      { title: t('health.details.name'), key: 'name' },
-      { title: t('health.details.value'), key: 'value' },
-    ];
-
-    const readableValue = (item: any): string => {
-      if (typeof item === 'object') return JSON.stringify(item);
-      return String(item);
-    };
-
-    return {
-      t,
-      healthDetails,
-      columns,
-      readableValue,
-    };
-  },
-});
-</script>
+<script lang="ts" src="./health-modal.component.ts"></script>

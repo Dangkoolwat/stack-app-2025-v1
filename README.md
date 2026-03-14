@@ -1,7 +1,7 @@
 # 🚀 Stack App 2025 v1
-Spring Boot 3.x 기반 REST API 서버 프레임워크  
+Spring Boot 4.x 기반 REST API 서버 프레임워크  
 개인 개발자가 온프레미스(On-Prem) 또는 클라우드(OCI/Azure) 환경에서  
-**빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project**입니다.
+빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project입니다.
 
 현재 Oracle Cloud VM 환경에서 운영 중인 구조를 최신 트렌드에 맞게 개편하고 있으며,  
 실제 프로젝트 경험을 기반으로 생산성과 유지보수성을 극대화하도록 설계했습니다.
@@ -65,43 +65,45 @@ Spring Boot 3.x 기반 REST API 서버 프레임워크
 - HTTPS(SSL-ready) 구성 쉽게 지원
 
 ### ✔ 5. 기본 비즈니스 모델 탑재 (Ready-to-Use Modules)
-초기 서비스에서 가장 많이 쓰이는 도메인을 **기본 내장**:
+초기 서비스에서 가장 많이 쓰이는 도메인을 기본 내장:
 
-- **회원 관리(User Management)**
+- 회원 관리(User Management)
   - 가입/로그인/권한(Role) 구조
   - JWT 인증/인가 구조 확장 가능
-- **게시판 관리(Board/Post)**
+- 게시판 관리(Board/Post)
   - 게시글 CRUD, 카테고리 연동
-- **카테고리 관리(Category Management)**
+- 카테고리 관리(Category Management)
   - 계층형 카테고리, 태깅 모델
-- **관리자 전용 메트릭 페이지(Admin Metrics)**
+- 관리자 전용 메트릭 페이지(Admin Metrics)
   - 시스템 상태, DB/Redis 연결, 요청 카운트 등 모니터링
 
 즉, “서비스가 기본적으로 갖춰야 하는 기능”을 반복 구현하지 않아도 된다.
 
-### ✔ 6. Next.js 기반의 프런트엔드 템플릿 제공
-- Next.js + Tailwind CSS 기본 구성
-- Layout / ThemeProvider 구조 내장
-- 관리자 페이지, 대시보드, 웹앱 구조 빠르게 구축 가능
-
+### ✔ 6.Vue3 기반의 프런트엔드 템플릿 제공
+- TypeScript, Vite, Pinia 등 최신 기술 스택이 기본으로 설정되어 있어 견고한 프런트엔드 기반을 제공
+- 백엔드 Spring Boot API와 연동되는 서비스 레이어와 타입 정의가 포함되어 개발 시간을 획기적으로 단축
+- JWT, OAuth2 등 Spring Security 설정과 동기화된 로그인, 권한 제어, 세션 관리 기능이 클라이언트 단에 미리 구현
+- i18next 라이브러리를 통해 한국어를 포함한 다양한 언어 팩을 손쉽게 관리하고 동적으로 전환할 수 있는 구조를 제공
+  사용자 관리, 권한 설정, API 문서(Swagger) 확인, 헬스 체크 등 운영에 필요한 관리자 페이지가 기본 제공
+- 관리자 페이지, 대시보드, 웹앱 구조를 빠른 구축 및  커스터마이징 가능
 ---
 
 ## 🔧 기술 스택 (Tech Stack)
 
-**Framework:** Spring Boot 3.5.x  
-**Language:** Java 17+  
-**Build Tool:** Maven  
-**Database:** Oracle / PostgreSQL / MariaDB / MySQL  
-**Database Migration:** Liquibase  
-**Persistence:** Spring Data JPA (Hibernate)  
-**Caching:** Redis + Hibernate 2nd Cache  
-**Security:** Spring Security, JWT  
-**Error Handling:** RFC 7807 (ProblemDetail)  
-**API Docs:** Swagger UI (springdoc-openapi)  
-**Testing:** JUnit 5, Spring Boot Test, MockMvc  
-**Deployment Target:** Oracle Cloud Infrastructure (OCI) VM  
-**DevOps:** Docker, GitHub  
-**Messaging Queue:** MQTT Integration
+Framework: Spring Boot 4.x
+Language: Java 21+  
+Build Tool: Maven  
+Database: Oracle / PostgreSQL / MariaDB / MySQL  
+Database Migration: Liquibase  
+Persistence: Spring Data JPA (Hibernate)  
+Caching: Redis + Hibernate 2nd Cache  
+Security: Spring Security, JWT  
+Error Handling: RFC 7807 (ProblemDetail)  
+API Docs: Swagger UI (springdoc-openapi)  
+Testing: JUnit 5, Spring Boot Test, MockMvc  
+Deployment Target: Oracle Cloud Infrastructure (OCI) VM  
+DevOps: Docker, GitHub  
+Messaging Queue: MQTT Integration
 
 ---
 
@@ -120,10 +122,16 @@ Spring Boot 3.x 기반 REST API 서버 프레임워크
 - 다양한 디바이스 환경 대응
 - 센서 데이터 수집/모니터링 용이
 
-### 멀티 플랫폼 클라이언트 제공
+### 멀티 플랫폼 클라이언트 제공 (개별 프로젝트로 진행)
 - Windows / macOS 데스크톱 클라이언트
 - iOS / Android 모바일 앱
 
+### Spring AI 활용
+- RAG(Retrieval-Augmented Generation)를 도입하여 사내 문서 및 DB 데이터를 기반으로 정교한 답변을 제공하는 맞춤형 지식 베이스를 구축
+- LLM의 Function Calling 기능을 활용해 사용자의 자연어 요청을 실시간 DB 쿼리나 API 호출로 변환하여 업무 자동화를 실현
+- 멀티모달 모델을 연동하여 텍스트뿐만 아니라 이미지 분석, 음성 인식(STT), 요약 등 고도화된 콘텐츠 처리 기능을 제공
+- Spring AI의 추상화 레이어를 활용해 OpenAI, Gemini, 로컬 LLM(Ollama) 등 다양한 모델을 유연하게 교체하며 최적의 비용 대비 성능을 확보
+- 
 ---
 
 ## ⚡ 설치 및 실행
@@ -142,7 +150,7 @@ java -jar target/app.jar
 
 ## 📜 안내 (About)
 이 프로젝트는 개발자로서 쌓아온 경험과 생산성을 정리한  
-**개인 Legacy Project이자, Full-Stack Starter Framework**입니다.  
+개인 Legacy Project이자, Full-Stack Starter Framework입니다.  
 온프레미스와 클라우드 어디서나 빠르게 서비스를 구축할 수 있도록 설계되어 있으며,  
 앞으로도 지속적으로 개선될 예정입니다.
 

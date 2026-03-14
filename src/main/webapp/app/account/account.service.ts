@@ -3,7 +3,7 @@ import axios from 'axios';
 import { type AccountStore } from '@/store';
 
 export default class AccountService {
-  constructor(private store: AccountStore) {}
+  constructor(private readonly store: AccountStore) {}
 
   async update(): Promise<void> {
     if (!this.store.profilesLoaded) {
@@ -16,7 +16,7 @@ export default class AccountService {
   async retrieveProfiles(): Promise<boolean> {
     try {
       const res = await axios.get<any>('management/info');
-      if (res.data && res.data.activeProfiles) {
+      if (res.data?.activeProfiles) {
         this.store.setRibbonOnProfiles(res.data['display-ribbon-on-profiles']);
         this.store.setActiveProfiles(res.data.activeProfiles);
       }
@@ -46,7 +46,8 @@ export default class AccountService {
     if (this.store.logon) {
       return this.store.logon;
     }
-    if (this.authenticated && this.userAuthorities) {
+    const token = localStorage.getItem('jhi-authenticationToken') ?? sessionStorage.getItem('jhi-authenticationToken');
+    if (this.authenticated && this.userAuthorities && token) {
       return;
     }
 

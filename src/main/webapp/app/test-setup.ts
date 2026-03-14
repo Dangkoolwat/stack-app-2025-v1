@@ -1,10 +1,11 @@
 import { beforeAll } from 'vitest';
-import axios from 'axios';
-import { config } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 
+import { config } from '@vue/test-utils';
+import axios from 'axios';
+
 beforeAll(() => {
-  window.location.href = 'https://jhipster.tech/';
+  globalThis.location.href = 'https://jhipster.tech/';
 
   // Make sure axios is never executed.
   axios.interceptors.request.use(request => {

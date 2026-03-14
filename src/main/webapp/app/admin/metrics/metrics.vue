@@ -1,16 +1,16 @@
 <template>
   <div>
     <h2>
-      <span id="metrics-page-heading" v-text="t$('metrics.title')" data-cy="metricsPageHeading"></span>
-      <n-button class="float-end" @click="refresh()">
-        <span v-text="t$('metrics[\'refresh.button\']')"></span>
-      </n-button>
+      <span id="metrics-page-heading" data-cy="metricsPageHeading">{{ t$('metrics.title') }}</span>
+      <button class="btn btn-primary float-end" @click="refresh()">
+        <font-awesome-icon icon="sync"></font-awesome-icon> <span>{{ t$("metrics['refresh.button']") }}</span>
+      </button>
     </h2>
 
-    <h3 v-text="t$('metrics.jvm.title')"></h3>
+    <h3>{{ t$('metrics.jvm.title') }}</h3>
     <div class="row" v-if="!updatingMetrics">
       <div class="col-md-4">
-        <h4 v-text="t$('metrics.jvm.memory.title')"></h4>
+        <h4>{{ t$('metrics.jvm.memory.title') }}</h4>
         <div>
           <div v-for="(entry, key) of metrics.jvm" :key="key">
             <span v-if="entry.max !== -1">
@@ -20,54 +20,63 @@
               <span>{{ key }}</span> {{ formatNumber1(entry.used / 1048576) }}M
             </span>
             <div>Committed : {{ formatNumber1(entry.committed / 1048576) }}M</div>
-            <n-progress
-              v-if="entry.max !== -1"
-              type="line"
-              :percentage="Math.round((entry.used * 100) / entry.max)"
-              :indicator-placement="'inside'"
-              :status="'success'"
-            >
-            </n-progress>
+            <b-progress v-if="entry.max !== -1" variant="success" animated :max="entry.max" striped>
+              <b-progress-bar :value="entry.used" :label="formatNumber1((entry.used * 100) / entry.max) + '%'"> </b-progress-bar>
+            </b-progress>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <h4 v-text="t$('metrics.jvm.threads.title')"></h4>
-        <span><span v-text="t$('metrics.jvm.threads.runnable')"></span> {{ threadStats.threadDumpRunnable }}</span>
-        <n-progress
-          type="line"
-          :percentage="Math.round((threadStats.threadDumpRunnable * 100) / threadStats.threadDumpAll)"
-          :status="'success'"
+        <h4>{{ t$('metrics.jvm.threads.title') }}</h4>
+        <span
+          ><span>{{ t$('metrics.jvm.threads.runnable') }}</span> {{ threadStats.threadDumpRunnable }}</span
         >
-        </n-progress>
+        <b-progress variant="success" :max="threadStats.threadDumpAll" striped>
+          <b-progress-bar
+            :value="threadStats.threadDumpRunnable"
+            :label="formatNumber1((threadStats.threadDumpRunnable * 100) / threadStats.threadDumpAll) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
 
-        <span><span v-text="t$('metrics.jvm.threads.timedwaiting')"></span> ({{ threadStats.threadDumpTimedWaiting }})</span>
-        <n-progress
-          type="line"
-          :percentage="Math.round((threadStats.threadDumpTimedWaiting * 100) / threadStats.threadDumpAll)"
-          :status="'success'"
+        <span
+          ><span>{{ t$('metrics.jvm.threads.timedwaiting') }}</span> ({{ threadStats.threadDumpTimedWaiting }})</span
         >
-        </n-progress>
+        <b-progress variant="success" :max="threadStats.threadDumpAll" striped>
+          <b-progress-bar
+            :value="threadStats.threadDumpTimedWaiting"
+            :label="formatNumber1((threadStats.threadDumpTimedWaiting * 100) / threadStats.threadDumpAll) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
 
-        <span><span v-text="t$('metrics.jvm.threads.waiting')"></span> ({{ threadStats.threadDumpWaiting }})</span>
-        <n-progress
-          type="line"
-          :percentage="Math.round((threadStats.threadDumpWaiting * 100) / threadStats.threadDumpAll)"
-          :status="'success'"
+        <span
+          ><span>{{ t$('metrics.jvm.threads.waiting') }}</span> ({{ threadStats.threadDumpWaiting }})</span
         >
-        </n-progress>
+        <b-progress variant="success" :max="threadStats.threadDumpAll" striped>
+          <b-progress-bar
+            :value="threadStats.threadDumpWaiting"
+            :label="formatNumber1((threadStats.threadDumpWaiting * 100) / threadStats.threadDumpAll) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
 
-        <span><span v-text="t$('metrics.jvm.threads.blocked')"></span> ({{ threadStats.threadDumpBlocked }})</span>
-        <n-progress
-          type="line"
-          :percentage="Math.round((threadStats.threadDumpBlocked * 100) / threadStats.threadDumpAll)"
-          :status="'success'"
+        <span
+          ><span>{{ t$('metrics.jvm.threads.blocked') }}</span> ({{ threadStats.threadDumpBlocked }})</span
         >
-        </n-progress>
+        <b-progress variant="success" :max="threadStats.threadDumpAll" striped>
+          <b-progress-bar
+            :value="threadStats.threadDumpBlocked"
+            :label="formatNumber1((threadStats.threadDumpBlocked * 100) / threadStats.threadDumpAll) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
 
         <span
           >Total: {{ threadStats.threadDumpAll }}
-          <a class="hand" @click="showMetricsModal = true">👁</a>
+          <a class="hand" v-b-modal.metricsModal data-toggle="modal" @click="openModal()" data-target="#threadDump">
+            <font-awesome-icon icon="eye"></font-awesome-icon>
+          </a>
         </span>
       </div>
       <div class="col-md-4">
@@ -84,14 +93,24 @@
           <div class="col-md-9">Process CPU usage</div>
           <div class="col-md-3 text-end">{{ formatNumber2(100 * metrics.processMetrics['process.cpu.usage']) }} %</div>
         </div>
-        <n-progress type="line" :percentage="Math.round(100 * metrics.processMetrics['process.cpu.usage'])" :status="'success'">
-        </n-progress>
+        <b-progress variant="success" :max="100" striped>
+          <b-progress-bar
+            :value="100 * metrics.processMetrics['process.cpu.usage']"
+            :label="formatNumber1(100 * metrics.processMetrics['process.cpu.usage']) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
         <div class="row" v-if="!updatingMetrics">
           <div class="col-md-9">System CPU usage</div>
           <div class="col-md-3 text-end">{{ formatNumber2(100 * metrics.processMetrics['system.cpu.usage']) }} %</div>
         </div>
-        <n-progress type="line" :percentage="Math.round(100 * metrics.processMetrics['system.cpu.usage'])" :status="'success'">
-        </n-progress>
+        <b-progress variant="success" :max="100" striped>
+          <b-progress-bar
+            :value="100 * metrics.processMetrics['system.cpu.usage']"
+            :label="formatNumber1(100 * metrics.processMetrics['system.cpu.usage']) + '%'"
+          >
+          </b-progress-bar>
+        </b-progress>
         <div class="row" v-if="!updatingMetrics">
           <div class="col-md-9">System CPU count</div>
           <div class="col-md-3 text-end">{{ metrics.processMetrics['system.cpu.count'] }}</div>
@@ -111,7 +130,7 @@
       </div>
     </div>
 
-    <h3 v-text="t$('metrics.jvm.gc.title')"></h3>
+    <h3>{{ t$('metrics.jvm.gc.title') }}</h3>
     <div class="row" v-if="!updatingMetrics && isObjectExisting(metrics, 'garbageCollector')">
       <div class="col-md-4">
         <div>
@@ -119,14 +138,17 @@
             GC Live Data Size/GC Max Data Size ({{ formatNumber1(metrics.garbageCollector['jvm.gc.live.data.size'] / 1048576) }}M /
             {{ formatNumber1(metrics.garbageCollector['jvm.gc.max.data.size'] / 1048576) }}M)
           </span>
-          <n-progress
-            type="line"
-            :percentage="
-              Math.round((100 * metrics.garbageCollector['jvm.gc.live.data.size']) / metrics.garbageCollector['jvm.gc.max.data.size'])
-            "
-            :status="'success'"
-          >
-          </n-progress>
+          <b-progress variant="success" :max="metrics.garbageCollector['jvm.gc.max.data.size']" striped>
+            <b-progress-bar
+              :value="metrics.garbageCollector['jvm.gc.live.data.size']"
+              :label="
+                formatNumber2(
+                  (100 * metrics.garbageCollector['jvm.gc.live.data.size']) / metrics.garbageCollector['jvm.gc.max.data.size'],
+                ) + '%'
+              "
+            >
+            </b-progress-bar>
+          </b-progress>
         </div>
       </div>
       <div class="col-md-4">
@@ -135,14 +157,17 @@
             GC Memory Promoted/GC Memory Allocated ({{ formatNumber1(metrics.garbageCollector['jvm.gc.memory.promoted'] / 1048576) }}M /
             {{ formatNumber1(metrics.garbageCollector['jvm.gc.memory.allocated'] / 1048576) }}M)
           </span>
-          <n-progress
-            type="line"
-            :percentage="
-              Math.round((100 * metrics.garbageCollector['jvm.gc.memory.promoted']) / metrics.garbageCollector['jvm.gc.memory.allocated'])
-            "
-            :status="'success'"
-          >
-          </n-progress>
+          <b-progress variant="success" :max="metrics.garbageCollector['jvm.gc.memory.allocated']" striped>
+            <b-progress-bar
+              :value="metrics.garbageCollector['jvm.gc.memory.promoted']"
+              :label="
+                formatNumber2(
+                  (100 * metrics.garbageCollector['jvm.gc.memory.promoted']) / metrics.garbageCollector['jvm.gc.memory.allocated'],
+                ) + '%'
+              "
+            >
+            </b-progress-bar>
+          </b-progress>
         </div>
       </div>
       <div class="col-md-4">
@@ -160,14 +185,14 @@
           <thead>
             <tr>
               <th scope="col"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.count')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.mean')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.min')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p50')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p75')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p95')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p99')"></th>
-              <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.max')"></th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.count') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.mean') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.min') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p50') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p75') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p95') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p99') }}</th>
+              <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.max') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -187,7 +212,7 @@
       </div>
     </div>
 
-    <h3 v-text="t$('metrics.jvm.http.title')"></h3>
+    <h3>{{ t$('metrics.jvm.http.title') }}</h3>
     <table
       class="table table-striped"
       v-if="!updatingMetrics && isObjectExisting(metrics, 'http.server.requests')"
@@ -195,23 +220,19 @@
     >
       <thead>
         <tr>
-          <th scope="col" v-text="t$('metrics.jvm.http.table.code')"></th>
-          <th scope="col" v-text="t$('metrics.jvm.http.table.count')"></th>
-          <th scope="col" class="text-end" v-text="t$('metrics.jvm.http.table.mean')"></th>
-          <th scope="col" class="text-end" v-text="t$('metrics.jvm.http.table.max')"></th>
+          <th scope="col">{{ t$('metrics.jvm.http.table.code') }}</th>
+          <th scope="col">{{ t$('metrics.jvm.http.table.count') }}</th>
+          <th scope="col" class="text-end">{{ t$('metrics.jvm.http.table.mean') }}</th>
+          <th scope="col" class="text-end">{{ t$('metrics.jvm.http.table.max') }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(entry, key) of metrics['http.server.requests']['percode']" :key="key">
           <td>{{ key }}</td>
           <td>
-            <n-progress
-              type="line"
-              :percentage="Math.round((entry.count * 100) / metrics['http.server.requests']['all'].count)"
-              :status="'success'"
-            >
-              {{ formatNumber1(entry.count) }}
-            </n-progress>
+            <b-progress variant="success" animated :max="metrics['http.server.requests']['all'].count" striped>
+              <b-progress-bar :value="entry.count" :label="formatNumber1(entry.count)"></b-progress-bar>
+            </b-progress>
           </td>
           <td class="text-end">
             {{ formatNumber2(filterNaN(entry.mean)) }}
@@ -245,12 +266,12 @@
       </table>
     </div>
 
-    <h3 v-text="t$('metrics.cache.title')"></h3>
+    <h3>{{ t$('metrics.cache.title') }}</h3>
     <div class="table-responsive" v-if="!updatingMetrics && isObjectExisting(metrics, 'cache')">
       <table class="table table-striped" aria-describedby="Cache">
         <thead>
           <tr>
-            <th scope="col" v-text="t$('metrics.cache.cachename')"></th>
+            <th scope="col">{{ t$('metrics.cache.cachename') }}</th>
             <th scope="col" class="text-end" data-translate="metrics.cache.hits">Cache Hits</th>
             <th scope="col" class="text-end" data-translate="metrics.cache.misses">Cache Misses</th>
             <th scope="col" class="text-end" data-translate="metrics.cache.gets">Cache Gets</th>
@@ -281,23 +302,23 @@
       </table>
     </div>
 
-    <h3 v-text="t$('metrics.datasource.title')"></h3>
+    <h3>{{ t$('metrics.datasource.title') }}</h3>
     <div class="table-responsive" v-if="!updatingMetrics && isObjectExistingAndNotEmpty(metrics, 'databases')">
       <table class="table table-striped" aria-describedby="Connection pool">
         <thead>
           <tr>
             <th scope="col">
-              <span v-text="t$('metrics.datasource.usage')"></span> (active: {{ metrics.databases.active.value }}, min:
+              <span>{{ t$('metrics.datasource.usage') }}</span> (active: {{ metrics.databases.active.value }}, min:
               {{ metrics.databases.min.value }}, max: {{ metrics.databases.max.value }}, idle: {{ metrics.databases.idle.value }})
             </th>
-            <th scope="col" class="text-end" v-text="t$('metrics.datasource.count')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.datasource.mean')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.min')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p50')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p75')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p95')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.servicesstats.table.p99')"></th>
-            <th scope="col" class="text-end" v-text="t$('metrics.datasource.max')"></th>
+            <th scope="col" class="text-end">{{ t$('metrics.datasource.count') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.datasource.mean') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.min') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p50') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p75') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p95') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.servicesstats.table.p99') }}</th>
+            <th scope="col" class="text-end">{{ t$('metrics.datasource.max') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -338,9 +359,12 @@
       </table>
     </div>
 
-    <n-modal v-model:show="showMetricsModal" preset="card" :style="{ width: '900px' }" :title="t$('metrics.jvm.threads.dump.title')">
+    <b-modal ref="metricsModal" size="lg" ok-only>
+      <template #title>
+        <h4 class="modal-title" id="showMetricsLabel">{{ t$('metrics.jvm.threads.dump.title') }}</h4>
+      </template>
       <metrics-modal :thread-dump="threadData"></metrics-modal>
-    </n-modal>
+    </b-modal>
   </div>
 </template>
 

@@ -1,12 +1,13 @@
-import axios from 'axios';
 import { type Ref, defineComponent, inject, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import type AccountService from '../account.service';
+import { useRoute, useRouter } from 'vue-router';
+
+import axios from 'axios';
+
 import { useLoginModal } from '@/account/login-modal';
+import type AccountService from '../account.service';
 
 export default defineComponent({
-  compatConfig: { MODE: 3 },
   setup() {
     const authenticationError: Ref<boolean> = ref(false);
     const login: Ref<string> = ref(null);
@@ -22,13 +23,20 @@ export default defineComponent({
     const accountService = inject<AccountService>('accountService');
 
     const doLogin = async () => {
-      const data = `username=${encodeURIComponent(login.value)}&password=${encodeURIComponent(password.value)}&remember-me=${rememberMe.value}&submit=Login`;
+      const data = { username: login.value, password: password.value, rememberMe: rememberMe.value };
       try {
-        await axios.post('api/authentication', data, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        });
+        const result = await axios.post('api/authenticate', data);
+        const bearerToken = result.headers.authorization;
+        if (bearerToken?.startsWith('Bearer ')) {
+          const jwt = bearerToken.slice(7, bearerToken.length);
+          if (rememberMe.value) {
+            localStorage.setItem('jhi-authenticationToken', jwt);
+            sessionStorage.removeItem('jhi-authenticationToken');
+          } else {
+            sessionStorage.setItem('jhi-authenticationToken', jwt);
+            localStorage.removeItem('jhi-authenticationToken');
+          }
+        }
 
         authenticationError.value = false;
         hideLogin();

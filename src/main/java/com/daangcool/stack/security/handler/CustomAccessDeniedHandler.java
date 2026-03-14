@@ -2,7 +2,6 @@ package com.daangcool.stack.security.handler;
 
 import com.daangcool.stack.common.constant.ErrorConstants;
 import com.daangcool.stack.common.util.ProblemUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -14,9 +13,11 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
 /**
  * 인증은 되었으나 권한 없는 리소스 접근 시 403 응답을 ProblemDetail로 반환.
  * - ProblemUtils.build 사용: status/path/timestamp/locale 자동 포함
@@ -27,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     private static final Logger log = LoggerFactory.getLogger(CustomAccessDeniedHandler.class);
+
     private final ObjectMapper objectMapper;
 
     public CustomAccessDeniedHandler(ObjectMapper objectMapper) {
@@ -45,8 +47,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         ProblemDetail problem = ProblemUtils.build(
             HttpStatus.FORBIDDEN,
             ErrorConstants.ACCESS_DENIED_TYPE.toString(),
-            "problem.accessDenied",          // i18n title key
-            "problem.accessDenied.detail",   // i18n detail key
+            "problem.accessDenied",
+            "problem.accessDenied.detail",
             request
         );
 

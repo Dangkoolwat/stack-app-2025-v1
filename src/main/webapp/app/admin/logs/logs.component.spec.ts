@@ -1,6 +1,9 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import { shallowMount } from '@vue/test-utils';
 import axios from 'axios';
 import sinon from 'sinon';
+
 import Logs from './logs.vue';
 
 type LogsComponentType = InstanceType<typeof Logs>;
@@ -15,7 +18,15 @@ describe('Logs Component', () => {
 
   beforeEach(() => {
     axiosStub.get.resolves({});
-    const wrapper = shallowMount(Logs);
+    const wrapper = shallowMount(Logs, {
+      global: {
+        stubs: {
+          'jhi-sort-indicator': true,
+          BButton: true,
+          BButtonGroup: true,
+        },
+      },
+    });
     logs = wrapper.vm;
   });
 

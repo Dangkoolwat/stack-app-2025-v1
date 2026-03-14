@@ -1,6 +1,9 @@
-import * as sinon from 'sinon';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import sinon from 'sinon';
+
 import * as setupAxiosConfig from './axios-interceptor';
 
 const mock = new MockAdapter(axios);
@@ -12,14 +15,18 @@ describe('Axios interceptor', () => {
   });
 
   it('should use localStorage to provide bearer', () => {
+    localStorage.setItem('jhi-authenticationToken', 'auth');
     const result = setupAxiosConfig.onRequestSuccess(() => console.log('A problem occurred'));
 
+    expect(result.headers.Authorization).toBe('Bearer auth');
     expect(result.url.indexOf(SERVER_API_URL)).toBeGreaterThan(-1);
   });
 
   it('should use sessionStorage to provide bearer', () => {
+    sessionStorage.setItem('jhi-authenticationToken', 'auth');
     const result = setupAxiosConfig.onRequestSuccess(() => console.log('A problem occurred'));
 
+    expect(result.headers.Authorization).toBe('Bearer auth');
     expect(result.url.indexOf(SERVER_API_URL)).toBeGreaterThan(-1);
   });
 });

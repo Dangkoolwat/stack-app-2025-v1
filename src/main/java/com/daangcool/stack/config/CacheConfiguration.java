@@ -1,24 +1,19 @@
 package com.daangcool.stack.config;
 
+import org.hibernate.cache.jcache.ConfigSettings;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.ClusterServersConfig;
 import org.redisson.config.Config;
 import org.redisson.config.SingleServerConfig;
 import org.redisson.jcache.configuration.RedissonConfiguration;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.info.GitProperties;
+import org.springframework.boot.cache.autoconfigure.JCacheManagerCustomizer;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.jhipster.config.JHipsterProperties;
-import tech.jhipster.config.cache.PrefixedKeyGenerator;
 
-import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
@@ -26,27 +21,224 @@ import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import static com.daangcool.stack.service.GlobalSettingsService.SETTING_CACHE;
-import static com.daangcool.stack.service.board.BoardService.*;
-import static com.daangcool.stack.service.board.CommentService.*;
-import static com.daangcool.stack.service.board.TagService.*;
-import static com.daangcool.stack.service.board.UploadService.*;
-import static com.daangcool.stack.service.common.CommonCodeService.*;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_BY_ID;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_COUNT_BY_USER;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_COUNT_TOTAL;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_NOTICE_LIST;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_PAGE;
+import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_SEARCH;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_BY_BOARD;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_BY_ID;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_COUNT_BY_BOARD;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_COUNT_BY_USER;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_SEARCH;
+import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_STATS;
+import static com.daangcool.stack.service.board.TagService.CACHE_TAG_ALL;
+import static com.daangcool.stack.service.board.TagService.CACHE_TAG_BY_ID;
+import static com.daangcool.stack.service.board.TagService.CACHE_TAG_POPULAR;
+import static com.daangcool.stack.service.board.TagService.CACHE_TAG_PREFIX;
+import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_ALL;
+import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_BY_BOARD;
+import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_BY_ID;
+import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_STATS;
+import static com.daangcool.stack.service.common.CommonCodeService.COMMON_DETAIL_CACHE;
+import static com.daangcool.stack.service.common.CommonCodeService.COMMON_DETAIL_LIST_BY_GROUP_CACHE;
+import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_CACHE;
+import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_LIST_CACHE;
 
 
+/**
+ * CacheConfiguration
+ * ------------------------------------------------------------------
+ * Redis/Redisson 기반 JCache 설정
+ *
+ * 재점검 내역 (2026-03-14):
+ *  - H-1  해결됨: jcacheConfiguration이 redissonClient 빈을 재사용 (이전 세션 적용)
+ *  - M-5  개선: buildTTLConfig()를 실제 캐시 등록에 적용 (TTL 세분화)
+ *         · 정적/준정적 데이터 (Tag, CommonCode, Settings): 24시간 TTL
+ *         · 동적 데이터 (Board, Comment): jhipster 기본 TTL (1시간)
+ *         · 사용자 인증 캐시: jhipster 기본 TTL
+ *  - BUG  수정: Board.boardTags 중복 등록 제거 (L166, L177 → L166 하나만 유지)
+ *  - L-5  잔존: @SuppressWarnings("deprecation") — Redisson 4.x setPassword()
+ *          업그레이드 시 제거 예정
+ * ------------------------------------------------------------------
+ */
 @Configuration
 @EnableCaching
 public class CacheConfiguration {
 
-    private GitProperties gitProperties;
-    private BuildProperties buildProperties;
-
+    // -----------------------------------------------------------------
+    // RedissonClient Bean (단일 인스턴스 — H-1 해결됨)
+    // jcacheConfiguration이 이 빈을 주입받아 재사용합니다.
+    // -----------------------------------------------------------------
     @Bean
-    public Config redissonConfig(JHipsterProperties jHipsterProperties) {
-        URI redisUri = URI.create(jHipsterProperties.getCache().getRedis().getServer()[0]);
-        Config config = new Config();
-        // Fix Hibernate lazy initialization
-        config.setCodec(new org.redisson.codec.SerializationCodec());
+    public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
+        Config config = getRedissonConfig(jHipsterProperties);
+        return Redisson.create(config);
+    }
 
+    // -----------------------------------------------------------------
+    // JCache 기본 설정 Bean (jhipster 기본 TTL — 1시간)
+    // -----------------------------------------------------------------
+    @Bean
+    public javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration(
+            RedissonClient redissonClient, JHipsterProperties props) {
+        MutableConfiguration<Object, Object> jcacheConfig = new MutableConfiguration<>();
+        jcacheConfig.setStatisticsEnabled(true);
+        jcacheConfig.setExpiryPolicyFactory(
+            CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS,
+                props.getCache().getRedis().getExpiration())));
+        return RedissonConfiguration.fromInstance(redissonClient, jcacheConfig);
+    }
+
+    // -----------------------------------------------------------------
+    // JCache 장기 TTL Bean (정적/준정적 데이터 — 24시간)
+    // Tag, CommonCode, Settings 등 변경 빈도가 낮은 데이터에 사용합니다.
+    // -----------------------------------------------------------------
+    @Bean
+    public javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration(
+            RedissonClient redissonClient) {
+        return buildTTLConfig(redissonClient, 24, TimeUnit.HOURS);
+    }
+
+    // -----------------------------------------------------------------
+    // Hibernate L2 Cache 연동
+    // -----------------------------------------------------------------
+    @Bean
+    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(javax.cache.CacheManager cm) {
+        return hibernateProperties -> hibernateProperties.put(ConfigSettings.CACHE_MANAGER, cm);
+    }
+
+    // -----------------------------------------------------------------
+    // Cache Region 등록
+    // -----------------------------------------------------------------
+    @Bean
+    public JCacheManagerCustomizer cacheManagerCustomizer(
+            javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration,
+            javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration) {
+        return cm -> {
+
+            // ── 사용자 인증 캐시 (기본 TTL: 1시간) ─────────────────────
+            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.User.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+
+            // ── Settings (장기 TTL: 24시간) ──────────────────────────────
+            // 전역 설정은 거의 변하지 않으므로 장기 캐시 적용
+            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), longTtlCacheConfiguration);
+            createCache(cm, SETTING_CACHE, longTtlCacheConfiguration);
+
+            // ── CommonCode (장기 TTL: 24시간) ────────────────────────────
+            // 공통코드는 배포 시점에만 변하는 정적 데이터
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), longTtlCacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), longTtlCacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", longTtlCacheConfiguration);
+            createCache(cm, COMMON_GROUP_CACHE, longTtlCacheConfiguration);
+            createCache(cm, COMMON_GROUP_LIST_CACHE, longTtlCacheConfiguration);
+            createCache(cm, COMMON_DETAIL_CACHE, longTtlCacheConfiguration);
+            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, longTtlCacheConfiguration);
+
+            // ── Tag (장기 TTL: 24시간) ───────────────────────────────────
+            // 태그는 자주 변하지 않으나 인기 태그는 기본 TTL로 분리 가능
+            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), longTtlCacheConfiguration);
+            createCache(cm, CACHE_TAG_BY_ID, longTtlCacheConfiguration);
+            createCache(cm, CACHE_TAG_ALL, longTtlCacheConfiguration);
+            createCache(cm, CACHE_TAG_PREFIX, longTtlCacheConfiguration);
+            createCache(cm, CACHE_TAG_POPULAR, jcacheConfiguration); // 인기 태그는 1시간 TTL
+
+            // ── Upload (기본 TTL: 1시간) ──────────────────────────────────
+            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), jcacheConfiguration);
+            createCache(cm, CACHE_UPLOAD_BY_ID, jcacheConfiguration);
+            createCache(cm, CACHE_UPLOAD_BY_BOARD, jcacheConfiguration);
+            createCache(cm, CACHE_UPLOAD_ALL, jcacheConfiguration);
+            createCache(cm, CACHE_UPLOAD_STATS, jcacheConfiguration);
+
+            // ── Comment (기본 TTL: 1시간) ─────────────────────────────────
+            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_BY_ID, jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_BY_BOARD, jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_SEARCH, jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, jcacheConfiguration);
+            createCache(cm, CACHE_COMMENT_STATS, jcacheConfiguration);
+
+            // ── Board (기본 TTL: 1시간) ────────────────────────────────────
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_BY_ID, jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_PAGE, jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_SEARCH, jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_NOTICE_LIST, jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_COUNT_TOTAL, jcacheConfiguration);
+            createCache(cm, CACHE_BOARD_COUNT_BY_USER, jcacheConfiguration);
+
+            // ── BoardTag (기본 TTL: 1시간) ────────────────────────────────
+            // 버그 수정: Board.boardTags 중복 등록 제거 (이미 Board 섹션에서 등록)
+            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
+
+            // ── EmailOtpLog (기본 TTL: 1시간) ─────────────────────────────
+            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName() + ".user", jcacheConfiguration);
+
+            // ── Hibernate Query Cache ──────────────────────────────────────
+            createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
+            createCache(cm, "default-query-results-region", jcacheConfiguration);
+
+            // jhipster-needle-redis-add-entry
+        };
+    }
+
+    // -----------------------------------------------------------------
+    // 내부 헬퍼
+    // -----------------------------------------------------------------
+
+    private void createCache(
+        javax.cache.CacheManager cm,
+        String cacheName,
+        javax.cache.configuration.Configuration<Object, Object> config
+    ) {
+        javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
+        if (cache != null) {
+            cache.clear();
+        } else {
+            cm.createCache(cacheName, config);
+        }
+    }
+
+    /**
+     * 개별 TTL을 지정한 캐시 설정을 생성합니다.
+     * RedissonClient를 주입받아 Redisson 설정으로 래핑합니다.
+     *
+     * @param redissonClient Redisson 클라이언트 (단일 인스턴스 재사용)
+     * @param duration       TTL 시간값
+     * @param unit           TTL 단위 (예: TimeUnit.HOURS)
+     */
+    private javax.cache.configuration.Configuration<Object, Object> buildTTLConfig(
+            RedissonClient redissonClient, long duration, TimeUnit unit) {
+        MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+        config.setStatisticsEnabled(true);
+        config.setExpiryPolicyFactory(
+            CreatedExpiryPolicy.factoryOf(new javax.cache.expiry.Duration(unit, duration))
+        );
+        return RedissonConfiguration.fromInstance(redissonClient, config);
+    }
+
+    /**
+     * Redisson 연결 설정을 구성합니다.
+     * L-5 잔존: setPassword()는 Redisson 4.x에서 deprecated.
+     *           Redisson 메이저 업그레이드 시 withPassword() 체이닝으로 전환 필요.
+     */
+    @SuppressWarnings("deprecation")
+    private Config getRedissonConfig(JHipsterProperties jHipsterProperties) {
+        URI redisUri = URI.create(jHipsterProperties.getCache().getRedis().getServer()[0]);
+
+        Config config = new Config();
+        // Fix Hibernate lazy initialization https://github.com/jhipster/generator-jhipster/issues/22889
+        config.setCodec(new org.redisson.codec.SerializationCodec());
         if (jHipsterProperties.getCache().getRedis().isCluster()) {
             ClusterServersConfig clusterServersConfig = config
                 .useClusterServers()
@@ -70,151 +262,6 @@ public class CacheConfiguration {
                 singleServerConfig.setPassword(redisUri.getUserInfo().substring(redisUri.getUserInfo().indexOf(':') + 1));
             }
         }
-        return config;
-    }
-
-    @Bean(destroyMethod = "shutdown")
-    public RedissonClient redissonClient(Config redissonConfig) {
-        return Redisson.create(redissonConfig);
-    }
-
-    @Bean
-    public javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration(JHipsterProperties jHipsterProperties, RedissonClient redissonClient) {
-        MutableConfiguration<Object, Object> jcacheConfig = new MutableConfiguration<>();
-        jcacheConfig.setStatisticsEnabled(true);
-        jcacheConfig.setExpiryPolicyFactory(
-            CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS, jHipsterProperties.getCache().getRedis().getExpiration()))
-        ); // 시스템 TTL 설정 부분 : 기본 24시간
-        return RedissonConfiguration.fromInstance(redissonClient, jcacheConfig);
-    }
-
-    @Bean
-    public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(ObjectProvider<CacheManager> cmProvider) {
-        return hibernateProperties -> hibernateProperties.put(org.hibernate.cache.jcache.ConfigSettings.CACHE_MANAGER, cmProvider.getObject());
-    }
-
-    @Bean
-    public org.springframework.boot.autoconfigure.cache.JCacheManagerCustomizer cacheManagerCustomizer(javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
-        return cm -> {
-            // Hibernate Query Cache 기본 리전 추가
-
-
-            // 기본 캐시
-            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.User.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", jcacheConfiguration);
-
-            // Global Settings 기본 TTL 적용
-            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(),jcacheConfiguration);
-            createCache(cm, SETTING_CACHE,jcacheConfiguration);
-
-            // Common Group 기본 TTL 적용
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", jcacheConfiguration);
-
-            createCache(cm, COMMON_GROUP_CACHE, jcacheConfiguration);
-            createCache(cm, COMMON_GROUP_LIST_CACHE, jcacheConfiguration);
-            createCache(cm, COMMON_DETAIL_CACHE, jcacheConfiguration);
-            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, jcacheConfiguration);
-
-            // Tag
-            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), jcacheConfiguration);
-            createCache(cm, CACHE_TAG_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_TAG_ALL, jcacheConfiguration);
-            createCache(cm, CACHE_TAG_PREFIX, jcacheConfiguration);
-            createCache(cm, CACHE_TAG_POPULAR, jcacheConfiguration);
-
-            // Upload
-            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_ALL, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_STATS, jcacheConfiguration);
-
-            // Comment
-            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_SEARCH, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_STATS, jcacheConfiguration);
-
-            // Board
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", jcacheConfiguration);
-
-            createCache(cm, CACHE_BOARD_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_PAGE, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_SEARCH, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_NOTICE_LIST, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_COUNT_TOTAL, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_COUNT_BY_USER, jcacheConfiguration);
-
-            // BoardTag
-            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", jcacheConfiguration);
-
-            // Email OPT
-            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName()+ ".user", jcacheConfiguration);
-
-
-
-
-            // -----------------------------------------------------------------
-            // Hibernate Query Cache (기본 유지)
-            // -----------------------------------------------------------------
-            createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
-            createCache(cm, "default-query-results-region", jcacheConfiguration);
-
-
-            // jhipster-needle-redis-add-entry
-        };
-    }
-
-    private void createCache(javax.cache.CacheManager cm, String cacheName, javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration) {
-        javax.cache.Cache<Object, Object> cache = cm.getCache(cacheName);
-        if (cache != null) {
-            cache.clear();
-        } else {
-            cm.createCache(cacheName, jcacheConfiguration);
-        }
-    }
-
-    @Autowired(required = false)
-    public void setGitProperties(GitProperties gitProperties) {
-        this.gitProperties = gitProperties;
-    }
-
-    @Autowired(required = false)
-    public void setBuildProperties(BuildProperties buildProperties) {
-        this.buildProperties = buildProperties;
-    }
-
-    @Bean
-    public KeyGenerator keyGenerator() {
-        return new PrefixedKeyGenerator(this.gitProperties, this.buildProperties);
-    }
-
-    /**
-     * TTL(만료 시간)을 개별적으로 설정한 캐시 설정을 생성합니다.
-     * 캐시 통계를 활성화하여 모니터링에 활용할 수 있습니다.
-     *
-     * @param duration TTL 시간값
-     * @param unit TTL 단위 (예: TimeUnit.MINUTES)
-     */
-    private javax.cache.configuration.Configuration<Object, Object> buildTTLConfig(long duration, TimeUnit unit) {
-        MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
-        config.setStatisticsEnabled(true); // 캐시 모니터링 활성화
-        config.setExpiryPolicyFactory(
-            CreatedExpiryPolicy.factoryOf(new javax.cache.expiry.Duration(unit, duration))
-        );
         return config;
     }
 }

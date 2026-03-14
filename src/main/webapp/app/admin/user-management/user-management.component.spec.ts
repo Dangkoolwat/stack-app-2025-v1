@@ -1,11 +1,14 @@
-import { vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ref } from 'vue';
+
 import { shallowMount } from '@vue/test-utils';
 import axios from 'axios';
 import sinon from 'sinon';
 
-import UserManagement from './user-management.vue';
 import AlertService from '@/shared/alert/alert.service';
+import { MESSAGE_ALERT_HEADER_NAME, MESSAGE_PARAM_HEADER_NAME } from '@/shared/jhipster/constants';
+
+import UserManagement from './user-management.vue';
 
 type UserManagementComponentType = InstanceType<typeof UserManagement>;
 
@@ -26,8 +29,8 @@ describe('UserManagement Component', () => {
 
     alertService = new AlertService({
       i18n: { t: vitest.fn() } as any,
-      bvToast: {
-        toast: vitest.fn(),
+      toast: {
+        show: vitest.fn(),
       } as any,
     });
 
@@ -85,8 +88,8 @@ describe('UserManagement Component', () => {
       // GIVEN
       axiosStub.delete.resolves({
         headers: {
-          'x-stackapp-alert': '',
-          'x-stackapp-params': '',
+          [MESSAGE_ALERT_HEADER_NAME]: '',
+          [MESSAGE_PARAM_HEADER_NAME]: '',
         },
       });
 

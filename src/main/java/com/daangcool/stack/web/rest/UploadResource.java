@@ -6,55 +6,56 @@ import com.daangcool.stack.service.board.UploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
- * REST controller for managing file uploads and downloads.
+ * UploadResource
+ * ------------------------------------------------------------------
+ * 파일 다운로드 / 인라인 미리보기를 제공하는 REST 컨트롤러입니다.
  *
- * <p>
- * User-facing API for:
- * - Downloading public or private files
- * - Inline preview of media (images, PDF, etc.)
- * </p>
+ * H-3 개선: 파일을 전체 byte[]로 heap에 로드하지 않고,
+ *           StorageService.loadAsStream()을 통해 StreamingResponseBody로
+ *           직접 클라이언트에 파이프합니다. 대용량 파일 OOM 위험을 방지합니다.
+ * L-3 개선: User-Agent 분기 제거, RFC 5987 filename*=UTF-8'' 단일 방식 사용.
+ * ------------------------------------------------------------------
  */
+@Tag(name = "Upload", description = "파일 업로드/다운로드 API")
 @RestController
 @RequestMapping("/api/uploads")
-@Tag(name = "Upload Resource", description = "Public File Access and Download API")
 public class UploadResource {
 
     private static final Logger log = LoggerFactory.getLogger(UploadResource.class);
 
-    private final UploadService uploadService;
     private final StorageService storageService;
+    private final UploadService uploadService;
 
-    public UploadResource(UploadService uploadService, StorageService storageService) {
-        this.uploadService = uploadService;
+    public UploadResource(StorageService storageService, UploadService uploadService) {
         this.storageService = storageService;
+        this.uploadService = uploadService;
     }
 
-    /**
-     * {@code GET  /uploads/:id/download} : Download a public file.
-     *
-     * @param id the file ID
-     * @param request the browser request for content disposition detection
-     * @return {@link ResponseEntity} with file stream
-     */
-    @Operation(summary = "Download a public file", description = "Downloads a file by ID if it is publicly accessible.")
-    @ApiResponse(responseCode = "200", description = "File downloaded successfully")
+    // --------------------------------------------------------
+    // 공개 파일 다운로드
+    // --------------------------------------------------------
+
+    @Operation(summary = "공개 파일 다운로드")
+    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공")
     @ApiResponse(responseCode = "403", description = "Access denied (private file)")
     @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{id}/download")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable Long id) {
         try {
             Upload upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
@@ -66,22 +67,25 @@ public class UploadResource {
                 throw new SecurityException("비공개 파일은 인증된 사용자만 접근 가능합니다.");
             }
 
-            byte[] data = storageService.loadAsResource(upload.getFilePath());
-            if (data == null || data.length == 0) {
-                throw new FileNotFoundException("파일이 존재하지 않거나 손상되었습니다: " + upload.getFilePath());
-            }
-
-            String encodedFilename = encodeFilename(upload.getSourceFilename(), request);
-
+            String encodedFilename = encodeFilename(upload.getSourceFilename());
             HttpHeaders headers = new HttpHeaders();
-            setDispositionHeader(headers, request, encodedFilename);
+            setDispositionHeader(headers, encodedFilename);
             headers.setContentType(MediaType.parseMediaType(
                 Optional.ofNullable(upload.getMimeType()).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE)
             ));
-            headers.setContentLength(data.length);
 
-            log.info("[DOWNLOAD] Success - id={}, filename={}", id, upload.getSourceFilename());
-            return ResponseEntity.ok().headers(headers).body(data);
+            final String filePath = upload.getFilePath();
+            StreamingResponseBody body = outputStream -> {
+                try (InputStream is = storageService.loadAsStream(filePath)) {
+                    is.transferTo(outputStream);
+                } catch (IOException e) {
+                    log.error("[DOWNLOAD] Stream error for path={}", filePath, e);
+                    throw e;
+                }
+            };
+
+            log.info("[DOWNLOAD] Streaming - id={}, filename={}", id, upload.getSourceFilename());
+            return ResponseEntity.ok().headers(headers).body(body);
 
         } catch (FileNotFoundException e) {
             log.warn("[DOWNLOAD] File not found: {}", e.getMessage());
@@ -95,19 +99,16 @@ public class UploadResource {
         }
     }
 
-    /**
-     * {@code GET  /uploads/:id/preview} : Preview an image or PDF inline.
-     *
-     * @param id file ID
-     * @param request request info
-     * @return inline viewable file (e.g., image/pdf)
-     */
-    @Operation(summary = "Preview file inline", description = "Returns an image or document for browser inline preview.")
-    @ApiResponse(responseCode = "200", description = "Preview rendered successfully")
+    // --------------------------------------------------------
+    // 공개 파일 인라인 미리보기
+    // --------------------------------------------------------
+
+    @Operation(summary = "공개 파일 인라인 미리보기")
+    @ApiResponse(responseCode = "200", description = "파일 미리보기 성공")
     @ApiResponse(responseCode = "403", description = "Access denied (private file)")
     @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{id}/preview")
-    public ResponseEntity<byte[]> previewFile(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<StreamingResponseBody> previewFile(@PathVariable Long id) {
         try {
             Upload upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
@@ -119,19 +120,24 @@ public class UploadResource {
                 throw new SecurityException("비공개 파일은 인증된 사용자만 접근 가능합니다.");
             }
 
-            byte[] data = storageService.loadAsResource(upload.getFilePath());
-            if (data == null || data.length == 0) {
-                throw new FileNotFoundException("파일이 존재하지 않거나 손상되었습니다: " + upload.getFilePath());
-            }
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(
                 Optional.ofNullable(upload.getMimeType()).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE)
             ));
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" +
-                encodeFilename(upload.getSourceFilename(), request) + "\"");
+            headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "inline; filename*=UTF-8''" + encodeFilename(upload.getSourceFilename()));
 
-            return ResponseEntity.ok().headers(headers).body(data);
+            final String filePath = upload.getFilePath();
+            StreamingResponseBody body = outputStream -> {
+                try (InputStream is = storageService.loadAsStream(filePath)) {
+                    is.transferTo(outputStream);
+                } catch (IOException e) {
+                    log.error("[PREVIEW] Stream error for path={}", filePath, e);
+                    throw e;
+                }
+            };
+
+            return ResponseEntity.ok().headers(headers).body(body);
 
         } catch (FileNotFoundException e) {
             log.warn("[PREVIEW] File not found: {}", e.getMessage());
@@ -145,20 +151,16 @@ public class UploadResource {
         }
     }
 
-    /**
-     * {@code GET  /uploads/private/:id/download} : Download a private file (authentication required).
-     *
-     * @param id file ID
-     * @param request browser info
-     * @return file stream
-     */
-    @Operation(summary = "Download private file", description = "Downloads a private file. Authentication required.")
-    @ApiResponse(responseCode = "200", description = "Private file downloaded successfully")
-    @ApiResponse(responseCode = "401", description = "Authentication required")
+    // --------------------------------------------------------
+    // 비공개 파일 다운로드 (인증 필요)
+    // --------------------------------------------------------
+
+    @Operation(summary = "비공개 파일 다운로드 (인증 필요)")
+    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공")
     @ApiResponse(responseCode = "404", description = "File not found")
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/private/{id}/download")
-    public ResponseEntity<byte[]> downloadPrivateFile(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<StreamingResponseBody> downloadPrivateFile(@PathVariable Long id) {
         try {
             Upload upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
@@ -168,25 +170,29 @@ public class UploadResource {
             }
 
             if (upload.isPublic()) {
-                return ResponseEntity.badRequest()
-                    .body("이 파일은 공개 파일입니다. /api/uploads/{id}/download 경로를 사용하십시오."
-                        .getBytes(StandardCharsets.UTF_8));
+                // 공개 파일을 비공개 엔드포인트로 접근 — 400 Bad Request
+                log.warn("[PRIVATE DOWNLOAD] Attempted to download public file via private endpoint (id={})", id);
+                return ResponseEntity.badRequest().build();
             }
 
-            byte[] data = storageService.loadAsResource(upload.getFilePath());
-            if (data == null || data.length == 0) {
-                throw new FileNotFoundException("파일이 존재하지 않거나 손상되었습니다: " + upload.getFilePath());
-            }
-
-            String encodedFilename = encodeFilename(upload.getSourceFilename(), request);
+            String encodedFilename = encodeFilename(upload.getSourceFilename());
             HttpHeaders headers = new HttpHeaders();
-            setDispositionHeader(headers, request, encodedFilename);
+            setDispositionHeader(headers, encodedFilename);
             headers.setContentType(MediaType.parseMediaType(
                 Optional.ofNullable(upload.getMimeType()).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE)
             ));
-            headers.setContentLength(data.length);
 
-            return ResponseEntity.ok().headers(headers).body(data);
+            final String filePath = upload.getFilePath();
+            StreamingResponseBody body = outputStream -> {
+                try (InputStream is = storageService.loadAsStream(filePath)) {
+                    is.transferTo(outputStream);
+                } catch (IOException e) {
+                    log.error("[PRIVATE DOWNLOAD] Stream error for path={}", filePath, e);
+                    throw e;
+                }
+            };
+
+            return ResponseEntity.ok().headers(headers).body(body);
 
         } catch (FileNotFoundException e) {
             log.warn("[PRIVATE DOWNLOAD] File not found: {}", e.getMessage());
@@ -201,28 +207,21 @@ public class UploadResource {
     // Helper methods (encoding / headers)
     // --------------------------------------------------------
 
-    private String encodeFilename(String originalFilename, HttpServletRequest request) {
-        String ua = Optional.ofNullable(request.getHeader("User-Agent")).orElse("").toLowerCase();
-        if (ua.contains("trident") || ua.contains("msie")) {
-            return URLEncoder.encode(originalFilename, StandardCharsets.UTF_8).replace("+", " ");
-        } else if (ua.contains("edge") || ua.contains("edg")) {
-            return URLEncoder.encode(originalFilename, StandardCharsets.UTF_8);
-        } else if (ua.contains("chrome")) {
-            return URLEncoder.encode(originalFilename, StandardCharsets.UTF_8).replace("+", "%20");
-        } else if (ua.contains("safari") && !ua.contains("chrome")) {
-            return new String(originalFilename.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
-        } else if (ua.contains("firefox")) {
-            return "UTF-8''" + URLEncoder.encode(originalFilename, StandardCharsets.UTF_8).replace("+", "%20");
-        }
+    /**
+     * RFC 5987 표준에 따라 파일명을 퍼센트 인코딩합니다.
+     * 모든 현대 브라우저(Chrome, Firefox, Safari, Edge)가 RFC 5987을 지원하므로
+     * User-Agent 분기 없이 단일 방식으로 처리합니다.
+     */
+    private String encodeFilename(String originalFilename) {
         return URLEncoder.encode(originalFilename, StandardCharsets.UTF_8).replace("+", "%20");
     }
 
-    private void setDispositionHeader(HttpHeaders headers, HttpServletRequest request, String encodedFilename) {
-        String ua = Optional.ofNullable(request.getHeader("User-Agent")).orElse("").toLowerCase();
-        if (ua.contains("firefox") || ua.contains("trident") || ua.contains("msie")) {
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFilename + "\"");
-        } else {
-            headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
-        }
+    /**
+     * Content-Disposition 헤더를 RFC 5987 표준 형식으로 설정합니다.
+     * {@code filename*=UTF-8''<encoded>} 형식은 파일명에 한글·특수문자가 포함될 때
+     * 브라우저 간 일관된 다운로드 파일명을 보장합니다.
+     */
+    private void setDispositionHeader(HttpHeaders headers, String encodedFilename) {
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
     }
 }

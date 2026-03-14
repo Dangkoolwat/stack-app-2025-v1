@@ -1,13 +1,14 @@
 import { type Ref, defineComponent, inject, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+
 import { type Subscription } from 'rxjs';
 
-import { useRoute } from 'vue-router';
-import type TrackerService from './tracker.service';
 import { useDateFormat } from '@/shared/composables';
 
+import type TrackerService from './tracker.service';
+
 export default defineComponent({
-  compatConfig: { MODE: 3 },
   name: 'JhiTrackerComponent',
   setup() {
     const { formatDateShort: formatDate } = useDateFormat();

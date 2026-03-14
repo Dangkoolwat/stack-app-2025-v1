@@ -111,27 +111,19 @@ public class OciFileStorageService implements StorageService {
     // 파일 다운로드
     // ===============================================================
     @Override
-    public byte[] loadAsResource(String storageFilePath) {
-        try {
-            // 웹 경로에서 객체 키만 추출
-            String objectKey = extractObjectKey(storageFilePath);
+    public InputStream loadAsStream(String storageFilePath) throws IOException {
+        String objectKey = extractObjectKey(storageFilePath);
 
-            GetObjectRequest request = GetObjectRequest.builder()
-                .namespaceName(namespace)
-                .bucketName(bucketName)
-                .objectName(objectKey)
-                .build();
+        GetObjectRequest request = GetObjectRequest.builder()
+            .namespaceName(namespace)
+            .bucketName(bucketName)
+            .objectName(objectKey)
+            .build();
 
-            GetObjectResponse response = client.getObject(request);
-            byte[] bytes = response.getInputStream().readAllBytes();
-            response.getInputStream().close();
-
-            log.info("[STORAGE-OCI] Loaded object: {}", objectKey);
-            return bytes;
-
-        } catch (Exception e) {
-            throw new FileUploadException("OCI 파일 다운로드 실패", e);
-        }
+        GetObjectResponse response = client.getObject(request);
+        log.info("[STORAGE-OCI] Loaded object: {}", objectKey);
+        // 호출 측(UploadResource)이 try-with-resources로 닫아야 합니다.
+        return response.getInputStream();
     }
 
     // ===============================================================

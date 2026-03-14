@@ -6,14 +6,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -90,25 +89,18 @@ public class LocalDefaultFileStorageService implements StorageService {
     }
 
     @Override
-    public byte[] loadAsResource(String storageFilePath) {
-        try {
-            String webPrefix = properties.getFile().getUploadResourceDir();
-            String relativePath = storageFilePath.startsWith(webPrefix)
-                ? storageFilePath.substring(webPrefix.length())
-                : storageFilePath;
+    public InputStream loadAsStream(String storageFilePath) throws IOException {
+        String webPrefix = properties.getFile().getUploadResourceDir();
+        String relativePath = storageFilePath.startsWith(webPrefix)
+            ? storageFilePath.substring(webPrefix.length())
+            : storageFilePath;
 
-            Path filePath = Paths.get(this.rootLocation, relativePath);
-            Resource resource = new UrlResource(filePath.toUri());
+        Path filePath = Paths.get(this.rootLocation, relativePath);
+        UrlResource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() && resource.isReadable()) {
-                return resource.getContentAsByteArray();
-            } else {
-                throw new java.io.FileNotFoundException("Could not read file: " + storageFilePath);
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Error resolving file path: " + storageFilePath, e);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read file: " + storageFilePath, e);
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new java.io.FileNotFoundException("Could not read file: " + storageFilePath);
         }
+        return resource.getInputStream();
     }
 }

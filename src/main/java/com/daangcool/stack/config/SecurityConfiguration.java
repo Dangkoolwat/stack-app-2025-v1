@@ -4,13 +4,12 @@ import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.security.handler.CustomAccessDeniedHandler;
 import com.daangcool.stack.security.handler.CustomAuthenticationEntryPoint;
 import com.daangcool.stack.web.filter.SpaWebFilter;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,7 +46,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(withDefaults())
-            .csrf(csrf -> csrf.disable())
+            .csrf(AbstractHttpConfigurer::disable)
             .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
             .headers(headers ->
                 headers
@@ -63,8 +62,8 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
-                    // Spring Boot 기본 정적 리소스(css, js, images, webjars 등)
-                    .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                    // Spring Boot 기본 정적 리소스
+                    .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
 
                     // JHipster가 추가로 서빙하는 정적 리소스
                     .requestMatchers("/content/**", "/i18n/*").permitAll()
@@ -126,7 +125,7 @@ public class SecurityConfiguration {
                 //  CustomAuthenticationEntryPoint를 등록
                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                 //  JWT 디코더/인코더는 기존과 동일
-                .jwt(Customizer.withDefaults())
+                .jwt(withDefaults())
             );
         return http.build();
     }

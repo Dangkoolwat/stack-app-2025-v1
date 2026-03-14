@@ -1,11 +1,13 @@
-import axios from 'axios';
 import { type Composer } from 'vue-i18n';
+
+import axios from 'axios';
 import dayjs from 'dayjs';
+
 import languages from '@/shared/config/languages';
 
 export default class TranslationService {
   private readonly i18n: Composer;
-  private languages = languages();
+  private readonly languages = languages();
 
   constructor(i18n: Composer) {
     this.i18n = i18n;

@@ -1,9 +1,12 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { createTestingPinia } from '@pinia/testing';
 import axios from 'axios';
 import sinon from 'sinon';
 
-import { createTestingPinia } from '@pinia/testing';
-import AccountService from './account.service';
 import { type AccountStore, useStore } from '@/store';
+
+import AccountService from './account.service';
 
 const resetStore = (store: AccountStore) => {
   store.$reset();
@@ -22,6 +25,7 @@ describe('Account Service test suite', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('jhi-authenticationToken', 'token');
 
     axiosStub.get.reset();
     resetStore(store);
@@ -87,7 +91,7 @@ describe('Account Service test suite', () => {
     });
   });
 
-  it('should init service as not authentified and not return any authorities admin and not retrieve account', async () => {
+  it('should init service as not authenticated and not return any authorities admin and not retrieve account', async () => {
     axiosStub.get.rejects();
     accountService = new AccountService(store);
     await accountService.update();
@@ -97,7 +101,7 @@ describe('Account Service test suite', () => {
     });
   });
 
-  it('should init service as not authentified and return authority user', async () => {
+  it('should init service as not authenticated and return authority user', async () => {
     axiosStub.get.rejects();
     accountService = new AccountService(store);
     await accountService.update();

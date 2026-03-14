@@ -23,6 +23,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -137,10 +138,10 @@ class OciFileStorageServiceT {
     }
 
     /**
-     * OCI 파일 로드 테스트
+     * OCI 파일 로드 테스트 (loadAsStream 방식)
      */
     @Test
-    void loadAsResource_ShouldCallOciGetObject() throws IOException {
+    void loadAsStream_ShouldCallOciGetObject() throws IOException {
         // given
         String objectKey = "OCI_TEST/2025/10/dummy.png";
         String fileUrl = String.format("https://objectstorage.ap-seoul-1.oraclecloud.com/n/test-namespace/b/test-bucket/o/%s", objectKey);
@@ -152,16 +153,18 @@ class OciFileStorageServiceT {
 
         ArgumentCaptor<GetObjectRequest> getRequestCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
 
-        // when
-        byte[] result = storageService.loadAsResource(fileUrl);
+        // when: loadAsStream을 직접 호출하여 InputStream을 받음
+        try (InputStream result = storageService.loadAsStream(fileUrl)) {
+            byte[] bytes = result.readAllBytes();
 
-        // then
-        verify(ociClient, times(1)).getObject(getRequestCaptor.capture());
-        GetObjectRequest capturedRequest = getRequestCaptor.getValue();
+            // then
+            verify(ociClient, times(1)).getObject(getRequestCaptor.capture());
+            GetObjectRequest capturedRequest = getRequestCaptor.getValue();
 
-        assertThat(capturedRequest.getNamespaceName()).isEqualTo("test-namespace");
-        assertThat(capturedRequest.getBucketName()).isEqualTo("test-bucket");
-        assertThat(capturedRequest.getObjectName()).isEqualTo(objectKey);
-        assertThat(result).isEqualTo(fileContent);
+            assertThat(capturedRequest.getNamespaceName()).isEqualTo("test-namespace");
+            assertThat(capturedRequest.getBucketName()).isEqualTo("test-bucket");
+            assertThat(capturedRequest.getObjectName()).isEqualTo(objectKey);
+            assertThat(bytes).isEqualTo(fileContent);
+        }
     }
 }

@@ -1,7 +1,8 @@
-import { vitest } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { type Ref, ref } from 'vue';
-import { shallowMount } from '@vue/test-utils';
 import { type Router, createMemoryHistory, createRouter } from 'vue-router';
+
+import { shallowMount } from '@vue/test-utils';
 import { Subject } from 'rxjs';
 
 import type TrackerService from './tracker.service';
@@ -53,7 +54,7 @@ describe('Tracker Service', () => {
         },
       },
     });
-    expect(router.afterEach).toBeCalledTimes(1);
+    expect(router.afterEach).toHaveBeenCalledOnce();
   });
 
   it('Should call activate on authenticated', async () => {
@@ -70,7 +71,7 @@ describe('Tracker Service', () => {
     await wrapper.vm.$nextTick();
 
     // THEN
-    expect(mockStomp.activate).toBeCalledTimes(1);
+    expect(mockStomp.activate).toHaveBeenCalledOnce();
   });
 
   it('Should send activity on connected', async () => {
@@ -90,8 +91,7 @@ describe('Tracker Service', () => {
     await wrapper.vm.$nextTick();
 
     // THEN
-    expect(mockStomp.publish).toBeCalledTimes(1);
-    expect(mockStomp.publish).toHaveBeenCalledWith({ destination: '/topic/activity', body: JSON.stringify({ page: '/admin' }) });
+    expect(mockStomp.publish).toHaveBeenCalledExactlyOnceWith({ destination: '/topic/activity', body: JSON.stringify({ page: '/admin' }) });
   });
 
   it('Should disconnect on logout', async () => {
@@ -112,6 +112,6 @@ describe('Tracker Service', () => {
     await wrapper.vm.$nextTick();
 
     // THEN
-    expect(mockStomp.deactivate).toBeCalledTimes(1);
+    expect(mockStomp.deactivate).toHaveBeenCalledOnce();
   });
 });

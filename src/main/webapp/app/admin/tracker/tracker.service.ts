@@ -1,9 +1,9 @@
 import { type ComputedRef, inject, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import SockJS from 'sockjs-client';
-import { map } from 'rxjs';
+
 import { RxStomp, RxStompState } from '@stomp/rx-stomp';
-import Cookies from 'js-cookie';
+import { map } from 'rxjs';
+import SockJS from 'sockjs-client';
 
 const DESTINATION_TRACKER = '/topic/tracker';
 const DESTINATION_ACTIVITY = '/topic/activity';
@@ -82,11 +82,20 @@ export default class TrackerService {
     await this.rxStomp.deactivate();
   }
 
+  private getAuthToken() {
+    const authToken = localStorage.getItem('jhi-authenticationToken') || sessionStorage.getItem('jhi-authenticationToken');
+    return authToken;
+  }
+
   private buildUrl(): string {
     // building absolute path so that websocket doesn't fail when deploying with a context path
     const loc = window.location;
     const baseHref = document.querySelector('base')?.getAttribute('href');
     const url = `//${loc.host}${baseHref ?? '/'}websocket/tracker`;
+    const authToken = this.getAuthToken();
+    if (authToken) {
+      return `${url}?access_token=${authToken}`;
+    }
     return url;
   }
 
@@ -94,9 +103,6 @@ export default class TrackerService {
     this.rxStomp.configure({
       webSocketFactory: () => {
         return new SockJS(this.buildUrl());
-      },
-      connectHeaders: {
-        'X-XSRF-TOKEN': Cookies.get('JSESSIONID') || Cookies.get('XSRF-TOKEN'),
       },
     });
   }

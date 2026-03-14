@@ -43,7 +43,7 @@ management:
         readiness:
           include: readinessState,db
     jhimetrics:
-      enabled: true
+      access: read-only
   info:
     git:
       mode: full
@@ -78,7 +78,10 @@ management:
           enabled: true
     tags:
       application: ${spring.application.name}
-
+  otlp:
+    metrics:
+      export:
+        enabled: false # http://localhost:4318/v1/metrics  전송 중지
 spring:
   application:
     name: stack
@@ -90,10 +93,14 @@ spring:
     group:
       dev:
         - dev
+        - secret
         - local-tls
         - api-docs
         # Uncomment to activate TLS for the dev profile
-        #- data
+        #- data      -
+  threads:
+    virtual:
+      enabled: false
   jmx:
     enabled: false
   data:
@@ -126,13 +133,13 @@ spring:
 #       physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
 #       physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         physical-strategy: com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy
-        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        implicit-strategy: org.springframework.boot.hibernate.SpringImplicitNamingStrategy
   messages:
     basename: i18n/messages
     encoding: UTF-8
     fallback-to-system-locale: false
   main:
-    allow-bean-definition-overriding: true
+    allow-bean-definition-overriding: false # Springboot 4 default value
   mvc:
     problemdetails:
       enabled: true
@@ -171,6 +178,9 @@ springdoc:
   show-actuator: true
   api-docs:
     path: /api-docs          # OpenAPI JSON 문서 엔드포인트
+    enabled: true
+    groups:
+      enabled: true
   swagger-ui:
     path: /swagger-ui.html   # Swagger UI 접근 경로
     operations-sorter: method
@@ -214,7 +224,10 @@ jhipster:
     license: unlicensed
     license-url:
   security:
-    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+    # style-src의 'unsafe-inline'은 Vue/CSS-in-JS 런타임 주입에 필요할 수 있습니다.
+    # 제거하려면 프론트엔드에서 nonce 또는 hash 기반 CSP 적용이 필요합니다.
+    # script-src에서는 'unsafe-inline'을 제거하여 XSS 공격 표면을 줄였습니다.
 
 # jhipster-needle-add-application-yaml-document
 ---
