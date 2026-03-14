@@ -118,12 +118,14 @@
       </dependency>
 
       <!-- Oracle JDBC BOM -->
-      <dependency>
-        <groupId>com.oracle.database.jdbc</groupId>
-        <artifactId>ojdbc11-production</artifactId>
-        <version>${oracle.jdbc.version}</version>
-        <type>pom</type>
-      </dependency>
+        <dependency>
+          <groupId>com.oracle.database.jdbc</groupId>
+          <artifactId>ojdbc-bom</artifactId>
+          <version>23.26.1.0.0</version>
+          <type>pom</type>
+          <scope>import</scope>
+        </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -265,24 +267,10 @@
     </dependency>
 
     <!-- Oracle JDBC 번들 -->
-    <dependency>
-      <groupId>com.oracle.database.jdbc</groupId>
-      <artifactId>ojdbc11-production</artifactId>
-      <type>pom</type>
-      <exclusions>
-        <exclusion>
-          <groupId>com.oracle.database.xml</groupId>
-          <artifactId>xmlparserv2</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
-    <!-- Oracle 다국어 문자셋 지원 -->
-    <dependency>
-      <groupId>com.oracle.database.nls</groupId>
-      <artifactId>orai18n</artifactId>
-      <version>${oracle.jdbc.version}</version>
-    </dependency>
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc17</artifactId>
+      </dependency>
 
     <!-- Hibernate 2차 캐시 연동 -->
     <dependency>
@@ -318,6 +306,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-opentelemetry</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>annotations</artifactId>
+          <groupId>org.jetbrains</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- ========================================================= -->
@@ -438,6 +432,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>objenesis</artifactId>
+          <groupId>org.objenesis</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Spring Boot 4 Web MVC 테스트 지원 -->
@@ -487,6 +487,12 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-io</artifactId>
+          <groupId>commons-io</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Testcontainers JDBC -->
