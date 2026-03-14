@@ -2,6 +2,7 @@ package com.daangcool.stack.config;
 
 import com.daangcool.stack.common.util.ProblemUtils;
 import jakarta.annotation.PostConstruct;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -37,16 +38,16 @@ public class TimeMessageSourceConfiguration implements WebMvcConfigurer {
     public void init() {
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
         ProblemUtils.setMessageSource(messageSource);  // 자동 MessageSource 연결
-        log.info(":: Default TimeZone = {}, MessageSource linked", TimeZone.getDefault().getID());
+        log.info("::: Default TimeZone = {}, MessageSource linked", TimeZone.getDefault().getID());
     }
 
     /** 2. ISO 8601 날짜 포맷 등록 (Spring MVC 요청/응답 일관성 유지) */
     @Override
-    public void addFormatters(FormatterRegistry registry) {
+    public void addFormatters(@NonNull FormatterRegistry registry) {
         DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();
         registrar.setUseIsoFormat(true);
         registrar.registerFormatters(registry);
-        log.info(":: ISO DateTime format registered.");
+        log.info("::: ISO DateTime format registered.");
     }
 
     /** 3. MessageSourceAccessor (서비스나 컨트롤러에서도 간단히 사용 가능) */
