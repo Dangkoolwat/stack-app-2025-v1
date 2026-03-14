@@ -53,6 +53,7 @@
     <amazon-awssdk.version>2.25.60</amazon-awssdk.version>
     <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
     <liquibase.version>4.31.0</liquibase.version>
+    <jspecify.version>1.0.0</jspecify.version>
     <!-- Jakarta Persistence API: Liquibase-Hibernate가 엔티티 메타데이터 해석 시 필요 -->
     <jakarta-persistence.version>3.2.0</jakarta-persistence.version>
     <jakarta-validation.version>3.0.2</jakarta-validation.version>
@@ -140,6 +141,13 @@
       <groupId>tech.jhipster</groupId>
       <artifactId>jhipster-framework</artifactId>
       <version>${jhipster-framework.version}</version>
+    </dependency>
+
+    <!-- Nullability annotations (Spring 7+ prefers JSpecify) -->
+    <dependency>
+      <groupId>org.jspecify</groupId>
+      <artifactId>jspecify</artifactId>
+      <version>${jspecify.version}</version>
     </dependency>
 
     <!-- 운영 상태/메트릭/헬스 체크 -->
@@ -623,10 +631,13 @@
               <modelPackage>com.daangcool.stack.service.api.dto</modelPackage>
               <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
               <skipValidateSpec>false</skipValidateSpec>
+              <templateDirectory>${project.basedir}/src/main/resources/openapi-generator-templates/JavaSpring</templateDirectory>
               <configOptions>
                 <delegatePattern>true</delegatePattern>
                 <title>stack</title>
                 <useSpringBoot3>true</useSpringBoot3>
+                <springBootVersion>4.0.3</springBootVersion>
+                <useJakartaEe>true</useJakartaEe>
               </configOptions>
             </configuration>
           </execution>

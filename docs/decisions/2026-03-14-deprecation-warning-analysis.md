@@ -116,10 +116,10 @@ public @Nullable String getTitle() { ... }
 // ... 모든 Optional 필드에 @Nullable 적용
 ```
 
-**원인:** `org.springframework.lang.Nullable`은 Spring 7.0에서  
-Jakarta EE 표준 어노테이션(`jakarta.annotation.Nullable`)으로 이관되었습니다.  
-OpenAPI Generator 7.20.0의 `spring` 제너레이터가 아직 `org.springframework.lang.Nullable`을  
-사용하는 코드를 생성하여 Spring Boot 4.x(Spring 7)에서 deprecation 경고가 발생합니다.
+**원인:** Spring Framework 7.x에서는 자체 nullability 어노테이션(`org.springframework.lang.Nullable`) 사용을
+줄이고 JSpecify(`org.jspecify.annotations.Nullable`) 기반으로 전환하고 있습니다.
+하지만 OpenAPI Generator 7.20.0의 `spring` 제너레이터가 여전히 `org.springframework.lang.Nullable` import를
+생성하여 Spring Boot 4.x(Spring 7)에서 deprecation 경고가 발생합니다.
 
 > **참고:** `InlineObject`는 RFC 7807 ProblemDetail 응답 스키마를 나타내는  
 > 자동생성 클래스입니다. `target/` 폴더는 빌드 산출물이므로 직접 수정하면  
@@ -142,20 +142,35 @@ OpenAPI Generator 7.20.0의 `spring` 제너레이터가 아직 `org.springframew
 > OpenAPI Generator GitHub에서 Spring Boot 4 / Spring 7 지원 여부를 확인하세요:  
 > https://github.com/OpenAPITools/openapi-generator/releases
 
-#### 방안 B: `useJakartaEe` 옵션 활성화
+#### 방안 B: OpenAPI Generator 템플릿 오버라이드로 JSpecify 적용 (단기/권장)
 
-`pom.xml`의 openapi-generator 설정에 `useJakartaEe` configOption을 추가합니다.
+생성 코드가 `org.springframework.lang.Nullable` import를 남기더라도,
+모델 필드/메서드의 `@Nullable` 사용을 **완전히 JSpecify로 고정**하면 deprecation warning을 제거할 수 있습니다.
+
+- 핵심 아이디어: `@Nullable`을 단순 이름이 아니라 `@org.jspecify.annotations.Nullable`로 생성되게 합니다.
+- 구현: OpenAPI generator의 `nullableAnnotation.mustache`를 프로젝트 내 템플릿으로 오버라이드합니다.
 
 ```xml
-<configOptions>
-    <delegatePattern>true</delegatePattern>
-    <title>stack</title>
-    <useSpringBoot3>true</useSpringBoot3>
-    <useJakartaEe>true</useJakartaEe>   <!-- 추가: jakarta.annotation.Nullable 사용 -->
-</configOptions>
+<!-- pom.xml (예시) -->
+<dependency>
+  <groupId>org.jspecify</groupId>
+  <artifactId>jspecify</artifactId>
+  <version>1.0.0</version>
+</dependency>
+
+<plugin>
+  <groupId>org.openapitools</groupId>
+  <artifactId>openapi-generator-maven-plugin</artifactId>
+  <configuration>
+    <templateDirectory>${project.basedir}/src/main/resources/openapi-generator-templates/JavaSpring</templateDirectory>
+  </configuration>
+</plugin>
 ```
 
-`mvn generate-sources` 후 재생성된 `InlineObject.java`를 확인합니다.
+오버라이드 템플릿 파일:
+- `src/main/resources/openapi-generator-templates/JavaSpring/nullableAnnotation.mustache`
+
+수정 후 `./mvnw clean test-compile -Dmaven.compiler.showDeprecation=true`에서 경고가 사라지는지 확인합니다.
 
 #### 방안 C: api.yml에서 InlineObject 스키마 제거 (중장기)
 
@@ -182,13 +197,14 @@ responses:
 |---|------|-----------------|--------|-----------|
 | 1 | `TestUtil.java` | `MediaType` Charset 생성자 | 🟡 Low | `MediaType.APPLICATION_JSON` 상수로 교체 |
 | 2 | `TestUtil.java` | `spring.cglib.Enhancer` | 🟠 High | `ProxyFactory` 또는 테스트 로직 재설계 |
-| 3 | `InlineObject.java` | `spring.lang.Nullable` | 🟡 Low | generator `useJakartaEe=true` 옵션 추가 |
+| 3 | `InlineObject.java` | `spring.lang.Nullable` | 🟡 Low | 템플릿 오버라이드로 `@org.jspecify.annotations.Nullable` 생성 |
 
 > **우선 조치:** 
 > - `TestUtil` #2 (spring.cglib)는 Spring Boot 4 정식 릴리즈(혹은 미래 마이너)에서  
 >   런타임 오류로 전환될 가능성이 있으므로 조기 대응 권장.
-> - `InlineObject` #3은 `useJakartaEe=true` configOption 한 줄 추가로 해결 가능.  
->   옵션 미지원 시 generator 버전 업그레이드.
+> - `InlineObject` #3은 OpenAPI Generator 쪽 템플릿이 업데이트되기 전까지는
+>   “템플릿 오버라이드(fully-qualified JSpecify @Nullable)”가 가장 안정적으로 경고를 제거합니다.
+>   장기적으로는 generator 버전 업그레이드 권장.
 
 ---
 

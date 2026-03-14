@@ -11,16 +11,14 @@ import jakarta.persistence.criteria.Root;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.springframework.cglib.proxy.Enhancer;
-import org.springframework.cglib.proxy.MethodInterceptor;
-import org.springframework.cglib.proxy.MethodProxy;
+import org.springframework.aop.framework.ProxyFactory;
+import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -42,7 +40,7 @@ public final class TestUtil {
 
     private static ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.registerModule(new JavaTimeModule());
         return mapper;
     }
@@ -223,22 +221,18 @@ public final class TestUtil {
 
     @SuppressWarnings("unchecked")
     public static <T> T createUpdateProxyForBean(T update, T original) {
-        Enhancer e = new Enhancer();
-        e.setSuperclass(original.getClass());
-        e.setCallback(
-                new MethodInterceptor() {
-                    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy)
-                            throws Throwable {
-                        Object val = update.getClass().getMethod(method.getName(), method.getParameterTypes())
-                                .invoke(update, args);
-                        if (val == null) {
-                            return original.getClass().getMethod(method.getName(), method.getParameterTypes())
-                                    .invoke(original, args);
-                        }
-                        return val;
-                    }
-                });
-        return (T) e.create();
+        ProxyFactory factory = new ProxyFactory(original);
+        factory.setProxyTargetClass(true);
+        factory.addAdvice((MethodInterceptor) invocation -> {
+            Object val = update.getClass()
+                .getMethod(invocation.getMethod().getName(), invocation.getMethod().getParameterTypes())
+                .invoke(update, invocation.getArguments());
+            if (val == null) {
+                return invocation.proceed();
+            }
+            return val;
+        });
+        return (T) factory.getProxy();
     }
 
     private TestUtil() {
