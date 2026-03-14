@@ -100,7 +100,7 @@ spring:
         #- data      -
   threads:
     virtual:
-      enabled: false
+      enabled: true # SimpleAsyncTaskExecutor 사용
   jmx:
     enabled: false
   data:
