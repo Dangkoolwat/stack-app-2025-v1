@@ -57,5 +57,38 @@ public class ApplicationProperties {
         public String getUploadResourceDir() { return uploadDir; }
     }
 
+    private final RateLimit rateLimit = new RateLimit();
 
+    /**
+     * Rate Limiting 설정을 위한 프로퍼티 그룹 (W-1)
+     */
+    @Getter
+    @Setter
+    public static class RateLimit {
+        private String[] redisServer; // null 인 경우 기본 캐시용 RedissonClient 재사용 가능
+        private boolean cluster = false;
+
+        private Policy authenticate = new Policy(10, 5);
+        private Policy register = new Policy(5, 30);
+        private Policy resetPasswordInit = new Policy(3, 15);
+        private Policy otpRequest = new Policy(5, 10);
+        private Policy otpVerify = new Policy(10, 10);
+
+        /**
+         * 엔드포인트별 세부 정책
+         */
+        @Getter
+        @Setter
+        public static class Policy {
+            private long tokens;
+            private long durationMinutes;
+
+            public Policy() {}
+
+            public Policy(long tokens, long durationMinutes) {
+                this.tokens = tokens;
+                this.durationMinutes = durationMinutes;
+            }
+        }
+    }
 }

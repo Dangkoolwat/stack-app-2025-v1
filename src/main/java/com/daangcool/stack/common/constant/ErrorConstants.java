@@ -88,4 +88,8 @@ public final class ErrorConstants {
     /** 인증 실패 (401 Unauthorized) */
     public static final URI UNAUTHORIZED_TYPE =
         URI.create(PROBLEM_BASE_URL + "/unauthorized");
+
+    /** 요청 횟수 초과 (429 Too Many Requests) */
+    public static final URI TOO_MANY_REQUESTS_TYPE =
+        URI.create(PROBLEM_BASE_URL + "/too-many-requests");
 }

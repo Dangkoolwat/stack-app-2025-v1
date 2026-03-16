@@ -26,16 +26,25 @@ public final class ProblemUtils {
         ProblemUtils.messageSource = source;
     }
 
-    /** ProblemDetail 표준 생성 */
+    /** ProblemDetail 표준 생성 (HttpServletRequest 기반) */
     public static ProblemDetail build(HttpStatus status,
                                       String type,
                                       String title,
                                       String detail,
                                       HttpServletRequest req) {
+        return build(status, type, title, detail, req != null ? req.getRequestURI() : null);
+    }
+
+    /** ProblemDetail 표준 생성 (String instance 경로 기반) */
+    public static ProblemDetail build(HttpStatus status,
+                                      String type,
+                                      String title,
+                                      String detail,
+                                      String instancePath) {
 
         Locale locale = LocaleContextHolder.getLocale();
-        ZoneId zoneId = ZoneId.systemDefault(); // 시스템 시간대 자동 반영
-        String path = req != null ? req.getRequestURI() : "unknown";
+        ZoneId zoneId = ZoneId.systemDefault(); 
+        String path = instancePath != null ? instancePath : "unknown";
 
         ProblemDetail problem = ProblemDetail.forStatus(status);
         problem.setType(URI.create(type));

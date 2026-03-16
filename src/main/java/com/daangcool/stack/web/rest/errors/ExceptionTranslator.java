@@ -199,6 +199,18 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * 요청 횟수 초과 (429 Too Many Requests)
+     */
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<Object> handleTooManyRequests(TooManyRequestsException ex, HttpServletRequest request) {
+        var problem = ex.toProblemDetail(request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .header("Retry-After", String.valueOf(ex.getRetryAfterSeconds()))
+            .body(problem);
+    }
+
+    /**
      * 접근 권한 거부 (403 Forbidden)
      */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)

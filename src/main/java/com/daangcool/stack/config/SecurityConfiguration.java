@@ -1,8 +1,10 @@
 package com.daangcool.stack.config;
 
 import com.daangcool.stack.security.AuthoritiesConstants;
+import com.daangcool.stack.security.RateLimitingRegistry;
 import com.daangcool.stack.security.handler.CustomAccessDeniedHandler;
 import com.daangcool.stack.security.handler.CustomAuthenticationEntryPoint;
+import com.daangcool.stack.web.filter.RateLimitingFilter;
 import com.daangcool.stack.web.filter.SpaWebFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import tech.jhipster.config.JHipsterProperties;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -26,15 +29,26 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfiguration {
 
     private final JHipsterProperties jHipsterProperties;
-    private final ApplicationProperties fileStorageProperties;
+    private final ApplicationProperties applicationProperties;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final ObjectMapper objectMapper;
+    private final RateLimitingRegistry rateLimitingRegistry;
 
-    public SecurityConfiguration(JHipsterProperties jHipsterProperties, ApplicationProperties fileStorageProperties, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
+    public SecurityConfiguration(
+        JHipsterProperties jHipsterProperties,
+        ApplicationProperties applicationProperties,
+        CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+        CustomAccessDeniedHandler customAccessDeniedHandler,
+        ObjectMapper objectMapper,
+        RateLimitingRegistry rateLimitingRegistry
+    ) {
         this.jHipsterProperties = jHipsterProperties;
-        this.fileStorageProperties = fileStorageProperties;
+        this.applicationProperties = applicationProperties;
         this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
+        this.objectMapper = objectMapper;
+        this.rateLimitingRegistry = rateLimitingRegistry;
     }
 
     @Bean
@@ -47,6 +61,7 @@ public class SecurityConfiguration {
         http
             .cors(withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(new RateLimitingFilter(objectMapper, applicationProperties, rateLimitingRegistry), BasicAuthenticationFilter.class)
             .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
             .headers(headers ->
                 headers
@@ -78,10 +93,10 @@ public class SecurityConfiguration {
 
                     // 1. 공개 파일 경로: 인증 없이 접근 허용 (Static Resource Handler가 서빙)
                     // 예: /uploads/public/**
-                    .requestMatchers(fileStorageProperties.getFile().getPublicPath() + "/**").permitAll()
+                    .requestMatchers(applicationProperties.getFile().getPublicPath() + "/**").permitAll()
 
                     // 2.  비공개 파일 폴더 접근 완전 차단
-                    .requestMatchers(fileStorageProperties.getFile().getPrivatePath() + "/**").denyAll()
+                    .requestMatchers(applicationProperties.getFile().getPrivatePath() + "/**").denyAll()
 
                     // 나머지 API / 관리 / 인증 규칙
 

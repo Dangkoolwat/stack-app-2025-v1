@@ -102,6 +102,12 @@
          선언하지 않으면 ${argLine} 이 "null" 문자열로 치환되어 JVM이 종료됩니다. -->
     <!-- ========================================================= -->
     <argLine/>
+
+    <!-- ========================================================= -->
+    <!-- Rate Limiting  -->
+    <!-- ========================================================= -->
+    <com.bucket4j.version>8.10.1</com.bucket4j.version>
+
   </properties>
 
   <dependencyManagement>
@@ -257,6 +263,19 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-data</artifactId>
+    </dependency>
+
+    <!-- Rate Limiting (Token Bucket 알고리즘) — W-1 -->
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j-core</artifactId>
+      <version>${com.bucket4j.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j-redis</artifactId>
+      <version>${com.bucket4j.version}</version>
     </dependency>
 
     <!-- ========================================================= -->

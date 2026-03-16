@@ -176,3 +176,21 @@ application:
     upload-dir: /uploads
     public-path: /uploads/public
     private-path: /uploads/private
+  rate-limit:
+    redis-server: redis://localhost:6379
+    cluster: false
+    authenticate:
+      tokens: 100
+      duration-minutes: 1
+    register:
+      tokens: 100
+      duration-minutes: 1
+    reset-password-init:
+      tokens: 100
+      duration-minutes: 1
+    otp-request:
+      tokens: 100
+      duration-minutes: 1
+    otp-verify:
+      tokens: 100
+      duration-minutes: 1

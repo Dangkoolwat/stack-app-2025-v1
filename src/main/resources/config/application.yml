@@ -240,4 +240,22 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+    rate-limit:
+        redis-server: ${APPLICATION_RATE_LIMIT_REDIS_SERVER:} # 분산 환경 사용 시 기입 (예: redis://localhost:6379), 비어 있으면 기본 RedissonClient 재사용
+        cluster: ${APPLICATION_RATE_LIMIT_REDIS_CLUSTER:false}
+        authenticate:
+            tokens: 10
+            duration-minutes: 5
+        register:
+            tokens: 5
+            duration-minutes: 30
+        reset-password-init:
+            tokens: 3
+            duration-minutes: 15
+        otp-request:
+            tokens: 5
+            duration-minutes: 10
+        otp-verify:
+            tokens: 10
+            duration-minutes: 10
