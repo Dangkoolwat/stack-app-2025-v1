@@ -17,7 +17,6 @@ import tech.jhipster.config.JHipsterProperties;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import javax.cache.expiry.Duration;
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import static com.daangcool.stack.service.GlobalSettingsService.SETTING_CACHE;
@@ -52,15 +51,16 @@ import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_
  * ------------------------------------------------------------------
  * Redis/Redisson 기반 JCache 설정
  *
- * 재점검 내역 (2026-03-14):
- *  - H-1  해결됨: jcacheConfiguration이 redissonClient 빈을 재사용 (이전 세션 적용)
- *  - M-5  개선: buildTTLConfig()를 실제 캐시 등록에 적용 (TTL 세분화)
- *         · 정적/준정적 데이터 (Tag, CommonCode, Settings): 24시간 TTL
- *         · 동적 데이터 (Board, Comment): jhipster 기본 TTL (1시간)
- *         · 사용자 인증 캐시: jhipster 기본 TTL
- *  - BUG  수정: Board.boardTags 중복 등록 제거 (L166, L177 → L166 하나만 유지)
- *  - L-5  잔존: @SuppressWarnings("deprecation") — Redisson 4.x setPassword()
- *          업그레이드 시 제거 예정
+ * 변경 이력:
+ *  - 2026-03-14: H-1 해결 — jcacheConfiguration 이 redissonClient 빈 재사용
+ *  - 2026-03-14: M-5 개선 — buildTTLConfig() TTL 세분화 적용
+ *                · 정적/준정적 데이터 (Tag, CommonCode, Settings): 24시간 TTL
+ *                · 동적 데이터 (Board, Comment): 기본 TTL (1시간)
+ *  - 2026-03-14: BUG 수정 — Board.boardTags 중복 등록 제거
+ *  - 2026-03-15: W-4 해결 — setPassword() deprecated API 제거
+ *                패스워드를 URL 에 포함한 채로 setAddress() 에 전달합니다.
+ *                (redis://:password@host:port 형식)
+ *                @SuppressWarnings("deprecation") 어노테이션 제거 완료.
  * ------------------------------------------------------------------
  */
 @Configuration
@@ -68,8 +68,8 @@ import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_
 public class CacheConfiguration {
 
     // -----------------------------------------------------------------
-    // RedissonClient Bean (단일 인스턴스 — H-1 해결됨)
-    // jcacheConfiguration이 이 빈을 주입받아 재사용합니다.
+    // RedissonClient Bean (단일 인스턴스)
+    // jcacheConfiguration 이 이 빈을 주입받아 재사용합니다.
     // -----------------------------------------------------------------
     @Bean
     public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
@@ -126,12 +126,10 @@ public class CacheConfiguration {
             createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", jcacheConfiguration);
 
             // ── Settings (장기 TTL: 24시간) ──────────────────────────────
-            // 전역 설정은 거의 변하지 않으므로 장기 캐시 적용
             createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), longTtlCacheConfiguration);
             createCache(cm, SETTING_CACHE, longTtlCacheConfiguration);
 
             // ── CommonCode (장기 TTL: 24시간) ────────────────────────────
-            // 공통코드는 배포 시점에만 변하는 정적 데이터
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), longTtlCacheConfiguration);
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), longTtlCacheConfiguration);
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", longTtlCacheConfiguration);
@@ -141,7 +139,6 @@ public class CacheConfiguration {
             createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, longTtlCacheConfiguration);
 
             // ── Tag (장기 TTL: 24시간) ───────────────────────────────────
-            // 태그는 자주 변하지 않으나 인기 태그는 기본 TTL로 분리 가능
             createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), longTtlCacheConfiguration);
             createCache(cm, CACHE_TAG_BY_ID, longTtlCacheConfiguration);
             createCache(cm, CACHE_TAG_ALL, longTtlCacheConfiguration);
@@ -177,7 +174,6 @@ public class CacheConfiguration {
             createCache(cm, CACHE_BOARD_COUNT_BY_USER, jcacheConfiguration);
 
             // ── BoardTag (기본 TTL: 1시간) ────────────────────────────────
-            // 버그 수정: Board.boardTags 중복 등록 제거 (이미 Board 섹션에서 등록)
             createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
 
             // ── EmailOtpLog (기본 TTL: 1시간) ─────────────────────────────
@@ -211,7 +207,6 @@ public class CacheConfiguration {
 
     /**
      * 개별 TTL을 지정한 캐시 설정을 생성합니다.
-     * RedissonClient를 주입받아 Redisson 설정으로 래핑합니다.
      *
      * @param redissonClient Redisson 클라이언트 (단일 인스턴스 재사용)
      * @param duration       TTL 시간값
@@ -229,38 +224,54 @@ public class CacheConfiguration {
 
     /**
      * Redisson 연결 설정을 구성합니다.
-     * L-5 잔존: setPassword()는 Redisson 4.x에서 deprecated.
-     *           Redisson 메이저 업그레이드 시 withPassword() 체이닝으로 전환 필요.
+     *
+     * <p>패스워드 처리 방식 (W-4 개선 — setPassword() deprecated API 제거):
+     * <ul>
+     *   <li>패스워드가 없는 경우: {@code redis://host:port} 그대로 사용</li>
+     *   <li>패스워드가 있는 경우: {@code redis://:password@host:port} 형식으로
+     *       프로퍼티에 기입하면 setAddress() 가 URL 을 직접 파싱합니다.</li>
+     * </ul>
+     *
+     * <p>설정 예시 (application-prod.yml):
+     * <pre>
+     * jhipster:
+     *   cache:
+     *     redis:
+     *       server: redis://:mypassword@localhost:6379
+     * </pre>
+     *
+     * <p>클러스터 모드 예시:
+     * <pre>
+     * jhipster:
+     *   cache:
+     *     redis:
+     *       server: redis://:mypassword@node1:6379,redis://:mypassword@node2:6379
+     *       cluster: true
+     * </pre>
      */
-    @SuppressWarnings("deprecation")
     private Config getRedissonConfig(JHipsterProperties jHipsterProperties) {
-        URI redisUri = URI.create(jHipsterProperties.getCache().getRedis().getServer()[0]);
-
         Config config = new Config();
-        // Fix Hibernate lazy initialization https://github.com/jhipster/generator-jhipster/issues/22889
+        // Hibernate lazy initialization 호환: https://github.com/jhipster/generator-jhipster/issues/22889
         config.setCodec(new org.redisson.codec.SerializationCodec());
+
         if (jHipsterProperties.getCache().getRedis().isCluster()) {
-            ClusterServersConfig clusterServersConfig = config
+            config
                 .useClusterServers()
                 .setMasterConnectionPoolSize(jHipsterProperties.getCache().getRedis().getConnectionPoolSize())
                 .setMasterConnectionMinimumIdleSize(jHipsterProperties.getCache().getRedis().getConnectionMinimumIdleSize())
                 .setSubscriptionConnectionPoolSize(jHipsterProperties.getCache().getRedis().getSubscriptionConnectionPoolSize())
+                // 패스워드가 포함된 경우 redis://:password@host:port 형식으로 기입하면
+                // Redisson 이 URL 을 직접 파싱하여 인증합니다. setPassword() 호출 불필요.
                 .addNodeAddress(jHipsterProperties.getCache().getRedis().getServer());
-
-            if (redisUri.getUserInfo() != null) {
-                clusterServersConfig.setPassword(redisUri.getUserInfo().substring(redisUri.getUserInfo().indexOf(':') + 1));
-            }
         } else {
-            SingleServerConfig singleServerConfig = config
+            config
                 .useSingleServer()
                 .setConnectionPoolSize(jHipsterProperties.getCache().getRedis().getConnectionPoolSize())
                 .setConnectionMinimumIdleSize(jHipsterProperties.getCache().getRedis().getConnectionMinimumIdleSize())
                 .setSubscriptionConnectionPoolSize(jHipsterProperties.getCache().getRedis().getSubscriptionConnectionPoolSize())
+                // 패스워드가 포함된 경우 redis://:password@host:port 형식으로 기입하면
+                // Redisson 이 URL 을 직접 파싱하여 인증합니다. setPassword() 호출 불필요.
                 .setAddress(jHipsterProperties.getCache().getRedis().getServer()[0]);
-
-            if (redisUri.getUserInfo() != null) {
-                singleServerConfig.setPassword(redisUri.getUserInfo().substring(redisUri.getUserInfo().indexOf(':') + 1));
-            }
         }
         return config;
     }
