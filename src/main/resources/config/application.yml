@@ -93,7 +93,7 @@ spring:
     group:
       dev:
         - dev
-        - secret
+#        - secret
         - local-tls
         - api-docs
         # Uncomment to activate TLS for the dev profile

@@ -1,16 +1,5 @@
 # ===================================================================
 # Spring Boot configuration for the "prod" profile.
-#
-# This configuration overrides the application.yml file.
-#
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-# ===================================================================
-# Standard Spring Boot properties.
-# Full reference is available at:
-# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
 logging:
@@ -31,114 +20,172 @@ spring:
       enabled: false
     livereload:
       enabled: false
+
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: system
-    password: oracle
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     hikari:
-      poolName: Hikari
+      # ---------------------------------------------------------------
+      # 풀 이름 — JMX / Micrometer 메트릭에서 이 이름으로 풀을 식별합니다
+      # ---------------------------------------------------------------
+      pool-name: HikariPool-Prod
+
+      # ---------------------------------------------------------------
+      # 트랜잭션 자동 커밋 — JPA/Hibernate 트랜잭션 관리 위임, 반드시 false
+      # ---------------------------------------------------------------
       auto-commit: false
-      maximum-pool-size: 20       # OCI/운영 DB 동시 연결 제한에 맞춰 조정
-      minimum-idle: 5
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      keepalive-time: 30000
+
+      # ---------------------------------------------------------------
+      # 풀 크기 — 운영 핵심 설정
+      #
+      # 산정 공식 (HikariCP 공식 권고):
+      #   pool size = (CPU 코어 수 × 2) + 유효 스핀들 수
+      #   예) 8코어 서버 → 8 × 2 + 1 = 17 → 20으로 설정
+      #
+      # Oracle 주의사항:
+      #   - Oracle 라이선스 / 서버 SESSIONS 파라미터가 허용하는 범위 내에서 설정
+      #   - Oracle 기본 SESSIONS = PROCESSES × 1.1 + 5
+      #   - 여러 애플리케이션 인스턴스가 같은 DB 를 사용하면
+      #     전체 풀 합계 = 인스턴스 수 × maximum-pool-size 로 계산
+      #
+      # minimum-idle = maximum-pool-size 로 맞추면 fixed-size pool 이 되어
+      # 연결 생성/제거 오버헤드가 없어 처리량이 안정적입니다 (HikariCP 공식 권고)
+      # ---------------------------------------------------------------
+      maximum-pool-size: 20      # 운영 기본값 — 서버 사양에 따라 조정
+      minimum-idle: 20           # fixed-size pool: maximum-pool-size 와 동일하게
+
+      # ---------------------------------------------------------------
+      # 연결 타임아웃 — getConnection() 이 풀에서 연결을 기다리는 최대 시간
+      # 초과 시 SQLException 발생 → 부하 급증 시 빠른 실패(Fail Fast) 유도
+      # 운영 권장: 10~20초 (너무 길면 스레드가 쌓여 장애 악화)
+      # ---------------------------------------------------------------
+      connection-timeout: 10000  # 10초 (ms)
+
+      # ---------------------------------------------------------------
+      # 유휴 타임아웃 — minimum-idle < maximum-pool-size 일 때만 동작
+      # fixed-size pool (minimum-idle = maximum-pool-size) 에서는 무시됩니다
+      # 설정은 유지 (혹시 나중에 풀 사이즈 분리 시 동작)
+      # ---------------------------------------------------------------
+      idle-timeout: 600000       # 10분 (ms)
+
+      # ---------------------------------------------------------------
+      # 최대 수명 — 연결 생성 후 이 시간이 지나면 풀에서 제거 후 새 연결 생성
+      # 핵심: Oracle 서버의 아래 설정보다 반드시 짧아야 합니다
+      #   - SQLNET.EXPIRE_TIME (sqlnet.ora)
+      #   - 방화벽 / L4 스위치 세션 타임아웃
+      #   - Oracle User Profile 의 IDLE_TIME (분 단위)
+      #   - Oracle RAC 의 커넥션 드레인 타임
+      # 운영 Oracle 기본 IDLE_TIME = UNLIMITED 이므로 30분은 안전한 값
+      # 운영 방화벽이 짧다면 (예: 15분) → 14분(840000ms) 으로 낮출 것
+      # ---------------------------------------------------------------
+      max-lifetime: 1800000      # 30분 (ms) — Oracle 세션 타임아웃보다 짧게
+
+      # ---------------------------------------------------------------
+      # Keepalive — 유휴 연결에 주기적으로 ping 을 보내 방화벽/Oracle 세션 차단 방지
+      # Oracle 환경에서는 필수 설정 (방화벽 idle 차단이 빈번)
+      # 권장: idle-timeout 의 절반 이하, max-lifetime 보다 짧게
+      # Oracle 에서 keepalive 는 SELECT 1 FROM DUAL 또는 isValid() 로 실행됩니다
+      # ---------------------------------------------------------------
+      keepalive-time: 300000     # 5분 (ms) — idle-timeout(10분)의 절반
+
+      # ---------------------------------------------------------------
+      # 연결 검증 — ojdbc17 은 JDBC4 isValid() 완전 지원
+      # connection-test-query 설정 불필요 (isValid() 가 더 효율적)
+      #
+      # 단, 매우 보수적인 운영 환경에서 명시적 검증이 필요하면 아래 활성화:
+      # connection-test-query: SELECT 1 FROM DUAL
+      # ---------------------------------------------------------------
+
+      # ---------------------------------------------------------------
+      # 연결 초기화 SQL — 새 연결 생성 시 Oracle 세션 파라미터를 고정합니다
+      # 목적:
+      #   - NLS_DATE_FORMAT: 날짜 직렬화 일관성 (앱 전체 동일한 포맷 보장)
+      #   - TIME_ZONE: Hibernate Instant 매핑 시 DB-앱 timezone 불일치 방지
+      #   - NLS_COMP/SORT: 한국어 정렬 및 대소문자 무관 검색 환경 통일
+      # ---------------------------------------------------------------
+      connection-init-sql: >
+        ALTER SESSION SET
+        NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'
+        NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF3'
+        TIME_ZONE = 'Asia/Seoul'
+        NLS_COMP = LINGUISTIC
+        NLS_SORT = BINARY_CI
+
+      # ---------------------------------------------------------------
+      # 유효성 검사 타임아웃 — isValid(timeout) 에 전달되는 값 (초 단위)
+      # 기본값 5초, Oracle 에서는 3초로 낮춰 빠른 감지
+      # ---------------------------------------------------------------
+      validation-timeout: 3000   # 3초 (ms)
+
+      # ---------------------------------------------------------------
+      # 누수 감지 — 지정 시간 이상 대여된 채 반환 안 된 연결을 경고 로그로 출력
+      # 개발/스테이징에서 커넥션 누수 디버깅용 (운영에서는 0으로 비활성화 가능)
+      # 운영에서 활성화 시: 가장 긴 정상 트랜잭션 시간 × 2 이상으로 설정
+      # ---------------------------------------------------------------
+      leak-detection-threshold: 60000  # 60초 이상 미반환 시 경고
+
   jpa:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.OracleDialect
-      hibernate.legacy_limit_handler: true
-      hibernate.show_sql: false
-      hibernate.format_sql: false
-      hibernate.use_sql_comments: false
-      hibernate.ddl-auto: none
-    generate-ddl: true
+        show_sql: false
+        format_sql: false
+        use_sql_comments: false
+        ddl-auto: none
+    generate-ddl: false
 
-
-    # Replace by 'prod, faker' to add the faker context and have sample data loaded in production
   liquibase:
     contexts: prod
     enabled: false
+
   mail:
     host: localhost
     port: 25
     username:
     password:
   messages:
-    cache-duration: PT1H # 1 hour, see the ISO 8601 standard
+    cache-duration: PT1H
   thymeleaf:
     cache: true
 
 # ===================================================================
 # To enable TLS in production, generate a certificate using:
 # keytool -genkey -alias stack -storetype PKCS12 -keyalg RSA -keysize 2048 -keystore keystore.p12 -validity 3650
-#
-# You can also use Let's Encrypt:
-# See details in topic "Create a Java Keystore (.JKS) from Let's Encrypt Certificates" on https://maximilian-boehm.com/en-gb/blog
-#
-# Then, modify the server.ssl properties so your "server" configuration looks like:
-#
-# server:
-#   port: 443
-#   ssl:
-#     key-store: classpath:config/tls/keystore.p12
-#     key-store-password: password
-#     key-store-type: PKCS12
-#     key-alias: selfsigned
-#     # The ciphers suite enforce the security by deactivating some old and deprecated SSL cipher, this list was tested against SSL Labs (https://www.ssllabs.com/ssltest/)
-#     ciphers: TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256 ,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384 ,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,TLS_DHE_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,TLS_RSA_WITH_CAMELLIA_128_CBC_SHA
 # ===================================================================
 server:
   port: 8080
-  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
+  shutdown: graceful
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,application/javascript,application/json,image/svg+xml
     min-response-size: 1024
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
 jhipster:
   http:
-    cache: # Used by the CachingHttpHeadersFilter
+    cache:
       timeToLiveInDays: 1461
-  cache: # Cache configuration
-    redis: # Redis configuration
-      expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
+  cache:
+    redis:
+      expiration: 3600
       server: redis://localhost:6379
       cluster: false
-      # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
-      # cluster: true
   security:
     authentication:
       jwt:
-        # Token is valid 24 hours
+        base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5  }
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
-  mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://my-server-url-to-change # Modify according to your server's URL
+  mail:
+    base-url: http://my-server-url-to-change
   logging:
-    use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+    use-json-format: false
+    logstash:
       enabled: false
       host: localhost
       port: 5000
       ring-buffer-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
 application:
   logging:
@@ -147,8 +194,7 @@ application:
     max-history: 30
     total-size-cap: 1GB
   file:
-    storage-type: SHARE         # 💡 storage-type을 LOCAL로 명시하거나, 아예 생략해도 됩니다. (기본값)
-    upload-dir: /share         # DB에 저장될 웹 접근 경로 접두사  💡 upload-dir만 지정하면 됩니다.
-    public-path: /share/public     #  Public 파일 URL prefix (permitAll)
-    private-path: /share/private   #  Private 파일 URL prefix (Controller 접근
-
+    storage-type: SHARE
+    upload-dir: /share
+    public-path: /share/public
+    private-path: /share/private

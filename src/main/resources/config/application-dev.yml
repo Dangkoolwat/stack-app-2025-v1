@@ -1,16 +1,5 @@
 # ===================================================================
 # Spring Boot configuration for the "dev" profile.
-#
-# This configuration overrides the application.yml file.
-#
-# More information on profiles: https://www.jhipster.tech/profiles/
-# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
-# ===================================================================
-# Standard Spring Boot properties.
-# Full reference is available at:
-# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
 logging:
@@ -18,9 +7,9 @@ logging:
     ROOT: DEBUG
     tech.jhipster: DEBUG
     com.daangcool.stack: DEBUG
-    org.springframework: INFO   # Spring Boot 기본값 유지
-    org.hibernate.SQL: DEBUG    # 실행된 SQL 보여주기
-    org.hibernate.orm.jdbc.bind: TRACE # Hibernate 6.x 파라미터
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
 
 spring:
   devtools:
@@ -28,22 +17,85 @@ spring:
       enabled: true
       additional-exclude: static/**
     livereload:
-      enabled: false # we use Webpack dev server + BrowserSync for livereload
+      enabled: false
   jackson:
     serialization:
       indent-output: true
+
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
-    username: dizzyUncle
-    password: Docker#2020
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:testdb}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     hikari:
-      poolName: Hikari
+      # ---------------------------------------------------------------
+      # 풀 이름 — 모니터링 / 로그에서 풀을 식별합니다
+      # ---------------------------------------------------------------
+      pool-name: HikariPool-Dev
+
+      # ---------------------------------------------------------------
+      # 트랜잭션 자동 커밋 — JPA/Hibernate가 직접 제어하므로 반드시 false
+      # ---------------------------------------------------------------
       auto-commit: false
-      maxLifetime: 1800000   # 30분
-      idleTimeout: 600000    # 10분
-      connectionTimeout: 30000
-      keepaliveTime: 30000   # 30초마다 핑을 보내 연결 유지 확인
+
+      # ---------------------------------------------------------------
+      # 풀 크기 — dev 환경은 소규모로 유지
+      # 공식: (CPU코어 × 2) + 스핀들 수
+      # dev 는 로컬 개발용이므로 최소로 설정
+      # ---------------------------------------------------------------
+      maximum-pool-size: 10      # 개발 환경 최대 연결 수
+      minimum-idle: 2            # 유휴 상태로 유지할 최소 연결 수
+                                 # (HikariCP 권고: pool 크기와 동일하게 하면
+                                 #  fixed-size pool 이 되어 성능이 더 안정적)
+
+      # ---------------------------------------------------------------
+      # 연결 타임아웃 — getConnection() 호출 후 풀에서 연결을 기다리는 최대 시간
+      # 초과 시 SQLException 발생
+      # 권장: 30초 (운영에서는 10~20초로 낮춰 빠른 장애 감지)
+      # ---------------------------------------------------------------
+      connection-timeout: 30000  # 30초 (ms)
+
+      # ---------------------------------------------------------------
+      # 유휴 타임아웃 — minimum-idle < maximum-pool-size 일 때만 동작
+      # 초과 유휴 연결을 풀에서 제거하는 시간
+      # Oracle IDLE_TIME profile 값보다 짧게 설정 필수
+      # 권장: 10분
+      # ---------------------------------------------------------------
+      idle-timeout: 600000       # 10분 (ms)
+
+      # ---------------------------------------------------------------
+      # 최대 수명 — 연결의 최대 사용 시간 (생성 시점 기준)
+      # Oracle SQLNET.EXPIRE_TIME / 방화벽 세션 타임아웃보다 짧게 설정 필수
+      # 권장: 30분 (운영 Oracle 세션 타임아웃이 보통 1시간 이상이므로 여유 확보)
+      # ---------------------------------------------------------------
+      max-lifetime: 1800000      # 30분 (ms)
+
+      # ---------------------------------------------------------------
+      # Keepalive — 유휴 연결에 주기적으로 ping 을 보내 Oracle 방화벽/세션 차단 방지
+      # connectionTestQuery 를 실행하거나 JDBC4 isValid() 를 호출합니다
+      # idle-timeout 보다 짧게 설정, keepaliveTime < idle-timeout 권장
+      # Oracle 에서는 필수 — 방화벽이 INACTIVE 세션을 끊는 경우가 많음
+      # ---------------------------------------------------------------
+      keepalive-time: 120000     # 2분 (ms) — dev 환경에서는 짧게
+
+      # ---------------------------------------------------------------
+      # 연결 검증 쿼리 — JDBC4 드라이버(ojdbc)는 isValid() 지원이므로 생략 가능
+      # ojdbc17 은 JDBC4 완전 지원 → 설정 불필요
+      # 하지만 명시적으로 설정하면 isValid() 대신 이 쿼리로 검증합니다
+      # ---------------------------------------------------------------
+      # connection-test-query: SELECT 1 FROM DUAL  # ojdbc17 에서는 불필요
+
+      # ---------------------------------------------------------------
+      # 연결 초기화 SQL — 풀에서 새 연결 생성 직후 Oracle 세션 파라미터 고정
+      # NLS_DATE_FORMAT: 날짜 직렬화 일관성 보장
+      # TIME_ZONE: 애플리케이션 timezone 과 일치시켜 Instant 매핑 오류 방지
+      # ---------------------------------------------------------------
+      connection-init-sql: >
+        ALTER SESSION SET
+        NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'
+        NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF3'
+        TIME_ZONE = 'Asia/Seoul'
+
   liquibase:
     enabled: true
     change-log: classpath:config/liquibase/master.xml
@@ -55,18 +107,18 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        format_sql: true       # SQL 보기 좋게 줄바꿈/들여쓰기
-        highlight_sql: true    # 콘솔에서 색상 강조
-        use_sql_comments: true # SQL에 주석 포함
-        generate_statistics: true # (선택) 실행 통계
-    show-sql: false            # System.out 출력은 끄고, 로깅으로만
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        generate_statistics: true
+    show-sql: false
 
   mail:
-    host: localhost
-    port: 1025
-    username: ""
-    password: ""
-    from: "test@stack.local"
+    host: ${SPRING_MAIL_HOST:localhost}
+    port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
+    from: ${SPRING_MAIL_FROM:test@stack.local}
     properties:
       mail:
         smtp:
@@ -74,32 +126,21 @@ spring:
           starttls:
             enable: false
   messages:
-    cache-duration: PT1S # 1 second, see the ISO 8601 standard
+    cache-duration: PT1S
   thymeleaf:
     cache: false
 
 server:
   port: 8443
-  # make sure requests the proxy uri instead of the server one
   forward-headers-strategy: native
 
-# ===================================================================
-# JHipster specific properties
-#
-# Full reference is available at: https://www.jhipster.tech/common-application-properties/
-# ===================================================================
-
 jhipster:
-  cache: # Cache configuration
-    redis: # Redis configuration
-      expiration: 3600 # By default objects stay 1 hour (in seconds) in the cache
-      server: redis://localhost:6379
+  cache:
+    redis:
+      expiration: 3600
+      server: ${JHIPSTER_CACHE_REDIS_HOST:redis://localhost:6379}
       cluster: false
-      # server: redis://localhost:6379,redis://localhost:16379,redis://localhost:26379
-      # cluster: true
-  # CORS is only enabled by default with the "dev" profile
   cors:
-    # Allow Ionic for JHipster by default (* no longer allowed in Spring Boot 2.4+)
     allowed-origins: 'https://localhost:3000,https://localhost:8443,http://localhost:9000,https://localhost:9000'
     # Enable CORS when running in GitHub Codespaces
     allowed-origin-patterns: 'https://*.githubpreview.dev'
@@ -111,28 +152,18 @@ jhipster:
   security:
     authentication:
       jwt:
-        # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
-        base64-secret: OTM4MjFjMzMyODM1M2I3MmE3NzlmYjkxNDk0NTA2MWNjNTYxNjFmN2M3NjU3MzBmMmIwMGEyMmZjZjZiZDQ1ODIyYTUxYmY4YjlhMjlkMjYxNTBiZDZjZWJiZTAxODE1OTYyNDQ1MmM4MTc5MjgwMzc4ODBjZDgwYzk2YjAzMTk=
-        # Token is valid 24 hours
+        base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5  }
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
-  mail: # specific JHipster mail property, for standard properties see MailProperties
-    base-url: http://127.0.0.1:8080
+  mail:
+    base-url: ${JHIPSTER_MAIL_BASE_URL:http://127.0.0.1:8080}
   logging:
-    use-json-format: false # By default, logs are not in Json format
-    logstash: # Forward logs to logstash over a socket, used by LoggingConfiguration
+    use-json-format: false
+    logstash:
       enabled: false
       host: localhost
       port: 5000
       ring-buffer-size: 512
-# ===================================================================
-# Application specific properties
-# Add your own application properties here, see the ApplicationProperties class
-# to have type-safe configuration, like in the JHipsterProperties above
-#
-# More documentation is available at:
-# https://www.jhipster.tech/common-application-properties/
-# ===================================================================
 
 application:
   logging:
@@ -141,18 +172,7 @@ application:
     max-history: 7
     total-size-cap: 200MB
   file:
-    storage-type: LOCAL         # 💡 storage-type을 LOCAL로 명시하거나, 아예 생략해도 됩니다. (기본값)
-    upload-dir: /uploads         # DB에 저장될 웹 접근 경로 접두사  💡 upload-dir만 지정하면 됩니다.
-    public-path: /uploads/public     #  Public 파일 URL prefix (permitAll)
-    private-path: /uploads/private   #  Private 파일 URL prefix (Controller 접근
-
-#aws:
-#  s3:
-#    region: ap-northeast-2          # 서울 리전
-#    bucket: my-bucket-name
-#    access-key: YOUR_AWS_ACCESS_KEY
-#    secret-key: YOUR_AWS_SECRET_KEY
-#oci:
-#  namespace: mynamespace
-#  bucket: mybucket
-#  region: ap-seoul-1
+    storage-type: LOCAL
+    upload-dir: /uploads
+    public-path: /uploads/public
+    private-path: /uploads/private

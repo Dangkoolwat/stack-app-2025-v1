@@ -16,7 +16,6 @@
   <artifactId>stack</artifactId>
   <version>2.0.0</version>
   <packaging>jar</packaging>
-  <name>stack-app-2025-v1</name>
   <description>stack-app-2025-v1</description>
 
   <properties>
@@ -34,7 +33,7 @@
     <!-- Framework / BOM Versions -->
     <!-- ========================================================= -->
     <spring-boot.version>${project.parent.version}</spring-boot.version>
-    <spring-cloud-dependencies.version>2024.0.1</spring-cloud-dependencies.version>
+    <spring-cloud-dependencies.version>2025.1.0</spring-cloud-dependencies.version>
     <jhipster-framework.version>9.0.0</jhipster-framework.version>
 
     <!-- ========================================================= -->
@@ -46,17 +45,24 @@
     <archunit-junit5.version>1.4.1</archunit-junit5.version>
     <mapstruct.version>1.6.3</mapstruct.version>
     <jackson-databind-nullable.version>0.2.9</jackson-databind-nullable.version>
-    <oracle.jdbc.version>23.9.0.25.07</oracle.jdbc.version>
     <oracle-oci-sdk.version>3.74.2</oracle-oci-sdk.version>
-    <commons-lang3.version>3.19.0</commons-lang3.version>
-    <commons-io.version>2.16.1</commons-io.version>
-    <amazon-awssdk.version>2.25.60</amazon-awssdk.version>
-    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+    <amazon-awssdk.version>2.42.13</amazon-awssdk.version>
+    <oracle.jdbc.version>23.9.0.25.07</oracle.jdbc.version>
     <liquibase.version>4.31.0</liquibase.version>
+    <!-- liquibase-hibernate6: liquibase-core 와 버전이 독립적입니다.
+         5.0.x 계열부터 Hibernate 6/7 모두 지원합니다 (별도 hibernate7 아티팩트 없음).
+         최신: 5.0.1 (2025-10-06) https://github.com/liquibase/liquibase-hibernate/releases -->
+    <liquibase-hibernate6.version>5.0.1</liquibase-hibernate6.version>
     <jspecify.version>1.0.0</jspecify.version>
     <!-- Jakarta Persistence API: Liquibase-Hibernate가 엔티티 메타데이터 해석 시 필요 -->
     <jakarta-persistence.version>3.2.0</jakarta-persistence.version>
     <jakarta-validation.version>3.0.2</jakarta-validation.version>
+
+    <!-- ========================================================= -->
+    <!-- Apache Modules -->
+    <!-- ========================================================= -->
+    <commons-lang3.version>3.19.0</commons-lang3.version>
+    <commons-io.version>2.18.0</commons-io.version>
 
     <!-- ========================================================= -->
     <!-- Maven Plugin Versions -->
@@ -64,6 +70,7 @@
     <checksum-maven-plugin.version>1.11</checksum-maven-plugin.version>
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
 
     <!-- ========================================================= -->
     <!-- Frontend -->
@@ -87,6 +94,14 @@
     <liquibase-plugin.url/>
     <liquibase-plugin.username/>
     <liquibase-plugin.password/>
+
+    <!-- ========================================================= -->
+    <!-- Surefire / JVM Agent -->
+    <!-- argLine 기본값을 빈 문자열로 선언합니다.
+         JaCoCo 등 다른 플러그인이 이 값에 자신의 인수를 추가(append)합니다.
+         선언하지 않으면 ${argLine} 이 "null" 문자열로 치환되어 JVM이 종료됩니다. -->
+    <!-- ========================================================= -->
+    <argLine/>
   </properties>
 
   <dependencyManagement>
@@ -119,14 +134,13 @@
       </dependency>
 
       <!-- Oracle JDBC BOM -->
-        <dependency>
-          <groupId>com.oracle.database.jdbc</groupId>
-          <artifactId>ojdbc-bom</artifactId>
-          <version>23.26.1.0.0</version>
-          <type>pom</type>
-          <scope>import</scope>
-        </dependency>
-
+      <dependency>
+        <groupId>com.oracle.database.jdbc</groupId>
+        <artifactId>ojdbc-bom</artifactId>
+        <version>23.26.1.0.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -272,13 +286,19 @@
       <groupId>org.liquibase</groupId>
       <artifactId>liquibase-core</artifactId>
       <version>${liquibase.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-text</artifactId>
+          <groupId>org.apache.commons</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Oracle JDBC 번들 -->
-      <dependency>
-        <groupId>com.oracle.database.jdbc</groupId>
-        <artifactId>ojdbc17</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc17</artifactId>
+    </dependency>
 
     <!-- Hibernate 2차 캐시 연동 -->
     <dependency>
@@ -524,16 +544,20 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Liquibase + Hibernate 비교용 -->
+    <!-- Liquibase + Hibernate 비교용 (test scope).
+         liquibase-hibernate6 5.0.1 은 Hibernate 6/7 모두 지원합니다.
+         liquibase.version(4.31.0)과 독립적으로 버전을 관리합니다. -->
     <dependency>
       <groupId>org.liquibase.ext</groupId>
       <artifactId>liquibase-hibernate6</artifactId>
-      <version>${liquibase.version}</version>
+      <version>${liquibase-hibernate6.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
 
   <build>
+    <!--  export $(cat .env | xargs) && ./mvnw spring-boot:run  -->
+    <defaultGoal>spring-boot:run</defaultGoal>
     <resources>
       <!-- application.yml 만 filtering -->
       <resource>
@@ -588,6 +612,28 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <!-- maven-surefire-plugin: Mockito JVM Agent 정식 등록.
+           JDK 21+ 에서 Mockito ByteBuddy 동적 self-attach 경고를 제거합니다.
+           mockito-core 를 JVM 시작 시점에 -javaagent 로 사전 등록합니다.
+           ${argLine} 은 properties 에서 기본값 빈 문자열로 선언했습니다.
+           JaCoCo 등 다른 플러그인이 이 값에 자신의 인수를 append 합니다. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar -XX:+EnableDynamicAgentLoading</argLine>
+          <!-- Force alphabetical order to have a reproducible build -->
+          <runOrder>alphabetical</runOrder>
+          <excludes>
+            <exclude>**/*IT*</exclude>
+            <exclude>**/*IntTest*</exclude>
+          </excludes>
+          <systemPropertyVariables>
+            <java.util.logging.config.file>src/test/resources/logback.xml</java.util.logging.config.file>
+          </systemPropertyVariables>
+        </configuration>
       </plugin>
 
       <!-- Spring Boot 실행 jar 재패키징 -->
@@ -697,28 +743,24 @@
             <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
           </dependency>
-
-          <!-- Hibernate 모델 비교 확장 -->
+          <!-- Hibernate 모델 비교 확장. 5.0.1 은 Hibernate 6/7 모두 지원합니다. -->
           <dependency>
             <groupId>org.liquibase.ext</groupId>
             <artifactId>liquibase-hibernate6</artifactId>
-            <version>${liquibase.version}</version>
+            <version>${liquibase-hibernate6.version}</version>
           </dependency>
-
           <!-- JPA API -->
           <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <version>${jakarta-persistence.version}</version>
           </dependency>
-
           <!-- Validation API -->
           <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
             <version>${jakarta-validation.version}</version>
           </dependency>
-
           <!-- Spring Data JPA / Hibernate 로딩용 -->
           <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -867,7 +909,6 @@
       </properties>
       <build>
         <plugins>
-
           <!-- 프런트엔드 결과물 변경 여부 체크섬 생성 -->
           <plugin>
             <groupId>net.nicoulaj.maven.plugins</groupId>
