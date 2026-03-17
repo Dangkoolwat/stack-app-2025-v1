@@ -20,6 +20,7 @@ public class RedisTestContainer implements InitializingBean, DisposableBean {
     private static final Logger LOG = LoggerFactory.getLogger(RedisTestContainer.class);
 
     @Override
+    @SuppressWarnings("deprecation")
     public void destroy() {
         if (redisContainer != null && redisContainer.isRunning()) {
             redisContainer.close();

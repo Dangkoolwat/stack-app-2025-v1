@@ -13,6 +13,7 @@ import org.springframework.boot.liquibase.autoconfigure.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
 import tech.jhipster.config.DefaultProfileUtil;
+import tech.jhipster.config.JHipsterProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -21,7 +22,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
+@EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class, JHipsterProperties.class })
 public class StackApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(StackApp.class);

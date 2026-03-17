@@ -12,6 +12,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,16 +31,20 @@ public class OpenApiConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = "apiFirstGroupedOpenAPI")
     public GroupedOpenApi apiFirstGroupedOpenAPI(
-        JHipsterOpenApiCustomizer jhipsterOpenApiCustomizer,
+        ObjectProvider<JHipsterOpenApiCustomizer> jhipsterOpenApiCustomizerProvider,
         JHipsterProperties jHipsterProperties
     ) {
         JHipsterProperties.ApiDocs properties = jHipsterProperties.getApiDocs();
 
-        return GroupedOpenApi.builder()
+        GroupedOpenApi.Builder builder = GroupedOpenApi.builder()
             .group("openapi")
-            .addOpenApiCustomizer(jhipsterOpenApiCustomizer)
             .packagesToScan(API_FIRST_PACKAGE)
-            .pathsToMatch(properties.getDefaultIncludePattern())
+            .pathsToMatch(properties.getDefaultIncludePattern());
+
+        // JHipster 커스텀 설정 적용 (존재할 경우)
+        jhipsterOpenApiCustomizerProvider.ifAvailable(builder::addOpenApiCustomizer);
+
+        return builder
             .addOpenApiCustomizer(openApi -> openApi
                 // JWT 인증 스키마 추가
                 .components(new Components()
@@ -50,6 +55,16 @@ public class OpenApiConfiguration {
                             .bearerFormat("JWT")
                             .in(SecurityScheme.In.HEADER)
                             .name(HttpHeaders.AUTHORIZATION))
+                    // 알려진 HTTP 헤더 추가
+                    .addHeaders("X-Forwarded-For", new io.swagger.v3.oas.models.headers.Header()
+                        .description("Client IP address from proxy")
+                        .schema(new StringSchema()))
+                    .addHeaders("X-Rate-Limit-Remaining", new io.swagger.v3.oas.models.headers.Header()
+                        .description("Remaining requests allowed")
+                        .schema(new io.swagger.v3.oas.models.media.IntegerSchema()))
+                    .addHeaders("Retry-After", new io.swagger.v3.oas.models.headers.Header()
+                        .description("Seconds to wait before retrying")
+                        .schema(new io.swagger.v3.oas.models.media.IntegerSchema()))
                     // RFC7807 Problem 응답 스키마 추가
                     .addSchemas("Problem", new Schema<>()
                         .type("object")
@@ -68,7 +83,7 @@ public class OpenApiConfiguration {
                 // 문서 정보 보강
                 .info(new Info()
                     .title("Stack App 2025 API")
-                    .description("Spring Boot 3.5.x / Stack App REST API 문서\nJWT 인증과 RFC7807 오류 응답을 지원합니다.")
+                    .description("Spring Boot 4.x / Stack App REST API 문서\nJWT 인증과 RFC7807 오류 응답을 지원합니다.")
                     .version("v1.0.0")
                     .contact(new Contact()
                         .name("Stack API Support")

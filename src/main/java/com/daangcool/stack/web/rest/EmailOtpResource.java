@@ -92,9 +92,14 @@ public class EmailOtpResource {
         description = "입력된 이메일 주소로 인증번호를 발송합니다. OTP는 5분간 유효하며, 메일 본문에 안내됩니다."
     )
     @PostMapping("/request")
-    public ResponseEntity<Void> requestOtp(@RequestParam("email") @Email String email) {
+    public ResponseEntity<Void> requestOtp(
+        @RequestParam("email") @Email String email,
+        jakarta.servlet.http.HttpServletRequest request
+    ) {
         log.debug("[OTP] requestOtp() called for {}", email);
-        emailOtpService.requestOtp(email);
+        String ip = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        emailOtpService.requestOtp(email, ip, userAgent);
         return ResponseEntity.ok().build();
     }
 

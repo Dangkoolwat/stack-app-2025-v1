@@ -114,13 +114,6 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @JsonIgnore
     private String activationKey;
 
-    // 이메일 opt
-    @Column(name = "otp_code", length = 6)
-    private String otpCode;
-
-    @Column(name = "otp_expire_date")
-    private Instant otpExpireDate;
-
     //비밀번호 제설정
         @Size(max = 20)
     @Column(name = "reset_key", length = 20)

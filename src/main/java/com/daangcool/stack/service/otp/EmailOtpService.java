@@ -1,15 +1,22 @@
 package com.daangcool.stack.service.otp;
 
 
+import com.daangcool.stack.domain.EmailOtpLog;
 import com.daangcool.stack.domain.User;
+import com.daangcool.stack.repository.EmailOtpLogRepository;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.service.MailService;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Email OTP 인증 서비스.
@@ -35,23 +42,29 @@ public class EmailOtpService {
     private static final Logger log = LoggerFactory.getLogger(EmailOtpService.class);
 
     private final UserRepository userRepository;
+    private final EmailOtpLogRepository emailOtpLogRepository;
     private final EmailOtpGenerator otpGenerator;
     private final EmailOtpCacheService otpCacheService;
     private final EmailOtpValidator otpValidator;
     private final MailService mailService;
+    private final RedissonClient redissonClient;
 
     public EmailOtpService(
         UserRepository userRepository,
+        EmailOtpLogRepository emailOtpLogRepository,
         EmailOtpGenerator otpGenerator,
         EmailOtpCacheService otpCacheService,
         EmailOtpValidator otpValidator,
-        MailService mailService
+        MailService mailService,
+        RedissonClient redissonClient
     ) {
         this.userRepository = userRepository;
+        this.emailOtpLogRepository = emailOtpLogRepository;
         this.otpGenerator = otpGenerator;
         this.otpCacheService = otpCacheService;
         this.otpValidator = otpValidator;
         this.mailService = mailService;
+        this.redissonClient = redissonClient;
     }
 
     // ==========================================================
@@ -59,30 +72,59 @@ public class EmailOtpService {
     // ==========================================================
     /**
      * 주어진 이메일 주소로 OTP 인증번호를 생성 및 발송합니다.
+     * <p>Redisson Lock을 사용해 동일 이메일에 대한 중복 요청을 방지합니다.</p>
      *
      * @param email 대상 이메일 주소
+     * @param ip 요청자 IP
+     * @param userAgent 요청자 User-Agent
      */
-    public void requestOtp(String email) {
+    public void requestOtp(String email, String ip, String userAgent) {
         log.debug("[OTP] requestOtp() called for {}", email);
 
-        var userOpt = userRepository.findOneByEmailIgnoreCase(email);
-        if (userOpt.isEmpty()) {
-            log.warn("[OTP] 존재하지 않는 이메일: {}", email);
-            return;
+        RLock lock = redissonClient.getLock("lock:otp:" + email);
+        boolean acquired = false;
+        try {
+            // 5초 대기, 10초 후 자동 해제
+            acquired = lock.tryLock(5, 10, TimeUnit.SECONDS);
+            if (!acquired) {
+                log.warn("[OTP] 중복 요청 감지 (Lock 획득 실패): {}", email);
+                return;
+            }
+
+            var userOpt = userRepository.findOneByEmailIgnoreCase(email);
+            if (userOpt.isEmpty()) {
+                log.warn("[OTP] 존재하지 않는 이메일: {}", email);
+                return;
+            }
+
+            var user = userOpt.get();
+
+            // 6자리 OTP 코드 생성
+            String otpCode = otpGenerator.generateCode();
+
+            // 캐시에 저장 (Redis TTL 적용)
+            otpCacheService.setOtpCode(email, otpCode);
+
+            // 이메일 발송
+            try {
+                mailService.sendEmailOtp(user, otpCode);
+                recordLog(user, otpCode, ip, userAgent, "SENT");
+                log.info("[OTP] {} 에 OTP 코드 발송 완료", email);
+            } catch (Exception e) {
+                log.error("[OTP] 메일 발송 실패: {}", e.getMessage());
+                recordLog(user, otpCode, ip, userAgent, "FAILED_SEND");
+                // 발송 실패 시 캐시 삭제 처리 (필요에 따라 유지 가능)
+                otpCacheService.deleteOtpCode(email);
+            }
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("[OTP] Lock 획득 중 인터럽트 발생: {}", email);
+        } finally {
+            if (acquired && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
-
-        var user = userOpt.get();
-
-        // 6자리 OTP 코드 생성
-        String otpCode = otpGenerator.generateCode();
-
-        // 캐시에 저장 (TTL 예: 5분)
-        otpCacheService.setOtpCode(email, otpCode);
-
-        // 이메일 발송
-        mailService.sendEmailOtp(user, otpCode);
-
-        log.info("[OTP] {} 에 OTP 코드 발송 완료", email);
     }
 
     // ==========================================================
@@ -110,11 +152,43 @@ public class EmailOtpService {
         boolean verified = otpValidator.validateOtp(user, code);
         if (!verified) {
             log.warn("[OTP] 인증 실패: {}", email);
+            recordLog(user, code, null, null, "FAILED_VERIFY");
             return Optional.empty();
         }
 
         // 검증 성공
         log.info("[OTP] 인증 성공: {}", email);
+        recordLog(user, code, null, null, "VERIFIED");
         return Optional.of(user);
+    }
+
+    /**
+     * OTP 인증 관련 로그를 기록합니다.
+     * 트랜잭션 전파를 REQUIRES_NEW로 설정하여 주 트랜잭션 실패와 상관없이 기록되도록 합니다.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    protected void recordLog(User user, String code, String ip, String ua, String status) {
+        try {
+            EmailOtpLog logEntity = new EmailOtpLog();
+            logEntity.setUser(user);
+            logEntity.setEmail(user.getEmail());
+            logEntity.setOtpCode(code); // 보안 정책에 따라 마스킹하거나 제거 가능
+            logEntity.setRequestIp(ip);
+            logEntity.setUserAgent(ua);
+            logEntity.setDeviceType(detectDevice(ua));
+            logEntity.setCreatedDate(Instant.now());
+            logEntity.setStatus(status);
+            emailOtpLogRepository.save(logEntity);
+        } catch (Exception e) {
+            log.error("[OTP LOG] 로그 기록 실패: {}", e.getMessage());
+        }
+    }
+
+    private String detectDevice(String userAgent) {
+        if (userAgent == null) return "unknown";
+        String ua = userAgent.toLowerCase();
+        if (ua.contains("mobile")) return "mobile";
+        if (ua.contains("tablet")) return "tablet";
+        return "desktop";
     }
 }
