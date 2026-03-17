@@ -117,7 +117,6 @@ spring:
       hibernate.connection.provider_disables_autocommit: true
       hibernate.cache.use_second_level_cache: true
       hibernate.cache.use_query_cache: true
-      hibernate.generate_statistics: true
       # modify batch size as necessary
       hibernate.jdbc.batch_size: 25
       hibernate.order_inserts: true
@@ -152,10 +151,10 @@ spring:
   task:
     execution:
       thread-name-prefix: stack-task-
-      pool:
-        core-size: 2
-        max-size: 50
-        queue-capacity: 10000
+      # pool: (Virtual Threads 활성화 시 아래 설정은 적용되지 않으므로 제거)
+      #   core-size: 2
+      #   max-size: 50
+      #   queue-capacity: 10000
     scheduling:
       thread-name-prefix: stack-scheduling-
       pool:
