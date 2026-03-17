@@ -1,9 +1,7 @@
 package com.daangcool.stack.service.otp;
 
 
-import com.daangcool.stack.domain.EmailOtpLog;
 import com.daangcool.stack.domain.User;
-import com.daangcool.stack.repository.EmailOtpLogRepository;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.service.MailService;
 import org.redisson.api.RLock;
@@ -11,10 +9,7 @@ import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +37,7 @@ public class EmailOtpService {
     private static final Logger log = LoggerFactory.getLogger(EmailOtpService.class);
 
     private final UserRepository userRepository;
-    private final EmailOtpLogRepository emailOtpLogRepository;
+    private final EmailOtpLogService emailOtpLogService;
     private final EmailOtpGenerator otpGenerator;
     private final EmailOtpCacheService otpCacheService;
     private final EmailOtpValidator otpValidator;
@@ -51,7 +46,7 @@ public class EmailOtpService {
 
     public EmailOtpService(
         UserRepository userRepository,
-        EmailOtpLogRepository emailOtpLogRepository,
+        EmailOtpLogService emailOtpLogService,
         EmailOtpGenerator otpGenerator,
         EmailOtpCacheService otpCacheService,
         EmailOtpValidator otpValidator,
@@ -59,7 +54,7 @@ public class EmailOtpService {
         RedissonClient redissonClient
     ) {
         this.userRepository = userRepository;
-        this.emailOtpLogRepository = emailOtpLogRepository;
+        this.emailOtpLogService = emailOtpLogService;
         this.otpGenerator = otpGenerator;
         this.otpCacheService = otpCacheService;
         this.otpValidator = otpValidator;
@@ -108,11 +103,11 @@ public class EmailOtpService {
             // 이메일 발송
             try {
                 mailService.sendEmailOtp(user, otpCode);
-                recordLog(user, otpCode, ip, userAgent, "SENT");
+                emailOtpLogService.recordLog(user, otpCode, ip, userAgent, "SENT");
                 log.info("[OTP] {} 에 OTP 코드 발송 완료", email);
             } catch (Exception e) {
                 log.error("[OTP] 메일 발송 실패: {}", e.getMessage());
-                recordLog(user, otpCode, ip, userAgent, "FAILED_SEND");
+                emailOtpLogService.recordLog(user, otpCode, ip, userAgent, "FAILED_SEND");
                 // 발송 실패 시 캐시 삭제 처리 (필요에 따라 유지 가능)
                 otpCacheService.deleteOtpCode(email);
             }
@@ -152,43 +147,15 @@ public class EmailOtpService {
         boolean verified = otpValidator.validateOtp(user, code);
         if (!verified) {
             log.warn("[OTP] 인증 실패: {}", email);
-            recordLog(user, code, null, null, "FAILED_VERIFY");
+            emailOtpLogService.recordLog(user, code, null, null, "FAILED_VERIFY");
             return Optional.empty();
         }
 
         // 검증 성공
         log.info("[OTP] 인증 성공: {}", email);
-        recordLog(user, code, null, null, "VERIFIED");
+        emailOtpLogService.recordLog(user, code, null, null, "VERIFIED");
         return Optional.of(user);
     }
 
-    /**
-     * OTP 인증 관련 로그를 기록합니다.
-     * 트랜잭션 전파를 REQUIRES_NEW로 설정하여 주 트랜잭션 실패와 상관없이 기록되도록 합니다.
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void recordLog(User user, String code, String ip, String ua, String status) {
-        try {
-            EmailOtpLog logEntity = new EmailOtpLog();
-            logEntity.setUser(user);
-            logEntity.setEmail(user.getEmail());
-            logEntity.setOtpCode(code); // 보안 정책에 따라 마스킹하거나 제거 가능
-            logEntity.setRequestIp(ip);
-            logEntity.setUserAgent(ua);
-            logEntity.setDeviceType(detectDevice(ua));
-            logEntity.setCreatedDate(Instant.now());
-            logEntity.setStatus(status);
-            emailOtpLogRepository.save(logEntity);
-        } catch (Exception e) {
-            log.error("[OTP LOG] 로그 기록 실패: {}", e.getMessage());
-        }
-    }
 
-    private String detectDevice(String userAgent) {
-        if (userAgent == null) return "unknown";
-        String ua = userAgent.toLowerCase();
-        if (ua.contains("mobile")) return "mobile";
-        if (ua.contains("tablet")) return "tablet";
-        return "desktop";
-    }
 }
