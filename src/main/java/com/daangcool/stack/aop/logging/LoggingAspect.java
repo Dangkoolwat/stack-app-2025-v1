@@ -53,6 +53,18 @@ public class LoggingAspect {
     }
 
     /**
+     * Pointcut that matches sensitive operations that should not have their arguments logged.
+     */
+    @Pointcut(
+        "execution(* com.daangcool.stack.service.UserService.changePassword(..))" +
+        " || execution(* com.daangcool.stack.service.UserService.registerUser(..))" +
+        " || execution(* com.daangcool.stack.web.rest.AccountResource.changePassword(..))"
+    )
+    public void sensitiveOperationPointcut() {
+        // Method is empty as this is just a Pointcut, the implementations are in the advices.
+    }
+
+    /**
      * Retrieves the {@link Logger} associated to the given {@link JoinPoint}.
      *
      * @param joinPoint join point we want the logger for.
@@ -94,7 +106,7 @@ public class LoggingAspect {
      * @return result.
      * @throws Throwable throws {@link IllegalArgumentException}.
      */
-    @Around("applicationPackagePointcut() && springBeanPointcut()")
+    @Around("applicationPackagePointcut() && springBeanPointcut() && !sensitiveOperationPointcut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         Logger log = logger(joinPoint);
         if (log.isDebugEnabled()) {
