@@ -9,7 +9,7 @@ logging:
     com.daangcool.stack: DEBUG
     org.springframework: INFO
     org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.bind: DEBUG
 
 spring:
   devtools:
