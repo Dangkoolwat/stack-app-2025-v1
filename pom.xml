@@ -281,6 +281,13 @@
       <artifactId>spring-boot-starter-cache</artifactId>
     </dependency>
 
+    <!-- Jakarta Cache API (Spring Boot 4 기반 필수) -->
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
     <!-- Liquibase Spring Boot 통합 -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
