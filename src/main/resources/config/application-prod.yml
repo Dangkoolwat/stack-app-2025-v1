@@ -12,7 +12,7 @@ management:
   prometheus:
     metrics:
       export:
-        enabled: false
+        enabled: true
 
 spring:
   devtools:
