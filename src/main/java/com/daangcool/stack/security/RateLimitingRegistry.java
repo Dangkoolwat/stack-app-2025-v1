@@ -44,7 +44,14 @@ public class RateLimitingRegistry {
     public RateLimitResult tryConsume(String key, long tokens, long durationMinutes) {
         RRateLimiter limiter = redissonClient.getRateLimiter("rl:" + key);
         
-        // 초기 설정 또는 설정 변경 시 업데이트 (trySetRate는 이미 설정된 경우 false 반환)
+        /**
+         * NH-1 보안/성능 개선:
+         * trySetRate는 설정이 존재하지 않을 때만 Redis에 저장합니다 (부하 최소화).
+         * 운영 환경에서 tokens/duration 수치를 변경했을 경우, Admin API의 /clear 
+         * 또는 매일 새벽 스케줄러에 의해 기존 데이터가 삭제된 후 새 설정이 반영됩니다.
+         * 매 요청마다 setRate를 호출하지 않는 이유는 런타임 오버헤드와 
+         * 기존 토큰 잔량의 초기화(Reset) 부작용을 방지하기 위함입니다.
+         */
         limiter.trySetRate(RateType.OVERALL, tokens, Duration.ofMinutes(durationMinutes));
         
         boolean success = limiter.tryAcquire(1);
