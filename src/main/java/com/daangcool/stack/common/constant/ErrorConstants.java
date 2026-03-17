@@ -92,4 +92,8 @@ public final class ErrorConstants {
     /** 요청 횟수 초과 (429 Too Many Requests) */
     public static final URI TOO_MANY_REQUESTS_TYPE =
         URI.create(PROBLEM_BASE_URL + "/too-many-requests");
+
+    /** 유효하지 않은 파일 형식 (Whitelist 미포함, 위변조 등) */
+    public static final URI INVALID_FILE_TYPE =
+        URI.create(PROBLEM_BASE_URL + "/invalid-file");
 }
