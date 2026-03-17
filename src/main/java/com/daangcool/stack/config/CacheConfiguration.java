@@ -176,10 +176,6 @@ public class CacheConfiguration {
             // ── BoardTag (기본 TTL: 1시간) ────────────────────────────────
             createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
 
-            // ── EmailOtpLog (기본 TTL: 1시간) ─────────────────────────────
-            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.EmailOtpLog.class.getName() + ".user", jcacheConfiguration);
-
             // ── Hibernate Query Cache ──────────────────────────────────────
             createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
             createCache(cm, "default-query-results-region", jcacheConfiguration);

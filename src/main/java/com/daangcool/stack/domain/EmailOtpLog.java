@@ -4,8 +4,7 @@ package com.daangcool.stack.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cache;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
@@ -14,7 +13,6 @@ import java.time.Instant;
 @Getter
 @Entity
 @Table(name = "stack_email_otp_log")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class EmailOtpLog implements Serializable {
 
     @Serial
