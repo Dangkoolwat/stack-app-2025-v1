@@ -2,15 +2,15 @@ package com.daangcool.stack.web.filter;
 
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.security.RateLimitingRegistry;
+import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.distributed.BucketProxy;
 import io.github.bucket4j.distributed.proxy.ProxyManager;
 import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
-import io.github.bucket4j.local.LocalBucket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockFilterChain;
@@ -18,11 +18,12 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import tools.jackson.databind.ObjectMapper;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -44,22 +45,48 @@ class RateLimitingFilterTest {
     @Mock
     private RemoteBucketBuilder<String> bucketBuilder;
 
+    private final Map<String, BucketProxy> bucketCache = new ConcurrentHashMap<>();
+
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
         MockitoAnnotations.openMocks(this);
         applicationProperties = new ApplicationProperties();
+        bucketCache.clear();
         
         // ProxyManager Mock 설정
         when(proxyManager.builder()).thenReturn(bucketBuilder);
-        // 실제 테스트에서는 LocalBucket과 유사하게 동작하도록 Mocking 하거나 
-        // 테스트용 단일 버킷을 반환하도록 설정합니다.
-        // 여기서는 필터 로직 자체를 검증하기 위해 간단한 Mock Bucket을 연결합니다.
+        
+        // BucketProxy Mock 설정 (상태 유지 및 ClassCastException 방지)
         when(bucketBuilder.build(anyString(), any(Supplier.class))).thenAnswer(invocation -> {
-            // 테스트 편의를 위해 간단한 로컬 버킷을 생성하여 반환 (실전에서는 Redis 대용)
-            return Bucket.builder().addLimit(limit -> limit.capacity(100).refillGreedy(100, java.time.Duration.ofMinutes(1))).build();
+            String key = invocation.getArgument(0);
+            return bucketCache.computeIfAbsent(key, k -> {
+                Supplier<BucketConfiguration> supplier = invocation.getArgument(1);
+                BucketConfiguration config = supplier.get();
+                
+                // 실제 로직을 수행할 로컬 버킷 생성
+                var builder = Bucket.builder();
+                for (Bandwidth bandwidth : config.getBandwidths()) {
+                    builder.addLimit(bandwidth);
+                }
+                Bucket realBucket = builder.build();
+                
+                BucketProxy mockProxy = mock(BucketProxy.class);
+                when(mockProxy.tryConsume(anyLong())).thenAnswer(i -> realBucket.tryConsume(i.getArgument(0)));
+                when(mockProxy.tryConsumeAndReturnRemaining(anyLong())).thenAnswer(i -> realBucket.tryConsumeAndReturnRemaining(i.getArgument(0)));
+                when(mockProxy.asVerbose()).thenReturn(realBucket.asVerbose());
+                return mockProxy;
+            });
         });
 
-        registry = new RateLimitingRegistry(proxyManager);
+        // registry.clear() 호출 시 내부 캐시도 비우도록 registry를 익명 클래스로 재정의 (테스트용)
+        registry = new RateLimitingRegistry(proxyManager) {
+            @Override
+            public void clear() {
+                super.clear();
+                bucketCache.clear();
+            }
+        };
         filter = new RateLimitingFilter(new ObjectMapper(), applicationProperties, registry);
     }
 
