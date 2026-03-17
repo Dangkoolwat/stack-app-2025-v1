@@ -255,7 +255,7 @@ dev/prod 모두 실무 권장값 적용 완료.
 | ~~🔴 즉시~~ | ~~C-3: prod DB 계정 최소 권한 전환~~ | `application-prod.yml` | ✅ 완료 |
 | 🔴 즉시 | C-4: 파일 업로드 MIME 검증 추가 | `UploadService.java` | 미완료 |
 | ~~🔴 즉시~~ | ~~C-5: Spring Cloud BOM 호환 버전~~ | `pom.xml` | ✅ 2025.1.0 |
-| 🟠 단기 | W-1: Rate Limiting 적용 | `SecurityConfiguration.java` | 미완료 |
+| ~~🟠 단기~~ | ~~W-1: Rate Limiting 적용~~ | `SecurityConfiguration.java` | ✅ 완료 |
 | ~~🟠 단기~~ | ~~W-4: Redisson setPassword() 제거~~ | `CacheConfiguration.java` | ✅ 완료 |
 | 🟠 단기 | W-7: OTP 평문 저장 → Redis TTL 전환 | `User.java`, OTP Service | 미완료 |
 | ~~🟠 단기~~ | ~~W-8: LoggingAspect 파라미터 필터링~~ | `LoggingAspect.java` | ✅ @Profile("dev") 로 운영 비활성 확인 |
@@ -288,4 +288,6 @@ dev/prod 모두 실무 권장값 적용 완료.
 - `docs/agent-log/2026-03-15-hikaricp-oracle-config.md` — HikariCP Oracle 최적화
 - `docs/agent-log/2026-03-16-c1-c2-c3-credentials-env-migration.md` — C-1, C-2, C-3 완료
 - `docs/agent-log/2026-03-16-w8-logging-aspect-review.md` — W-8 재검토 및 완료
+- `docs/agent-log/2026-03-16-rate-limiting-phase3-redis.md` — W-1 Phase 3 Redis 연동 및 고도화
+- `docs/agent-log/2026-03-17-rate-limiting-test-stabilization.md` — W-1 테스트 안정화 및 Mocking 개선
 - `AGENTS.md` — 프로젝트 에이전트 가이드
