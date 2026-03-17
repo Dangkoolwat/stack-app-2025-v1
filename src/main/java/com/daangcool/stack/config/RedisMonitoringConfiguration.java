@@ -82,15 +82,25 @@ public class RedisMonitoringConfiguration {
                            .withDetail("used_memory", usedMemoryStr);
                            
                 } catch (Exception e) {
+                    // NH-2 개선: info() 호출 실패 시에도 ping 성공 여부에 따라 UP 상태 유지
+                    boolean pingSuccess = false;
                     try {
-                        // 기본 연결 확인 (ping) - Single 모드 기준으로 테스트
-                        if (redissonClient.getRedisNodes(RedisNodes.SINGLE).pingAll()) {
-                            builder.up().withDetail("message", "Redis is up, but couldn't fetch detailed info");
+                        RedisNode activeNode = findActiveNode(redissonClient);
+                        if (activeNode != null) {
+                            pingSuccess = activeNode.ping();
                         } else {
-                            builder.down().withDetail("error", "Redis is unreachable or no active node found");
+                            // 노드를 못 찾은 경우 전체 핑 시도
+                            pingSuccess = redissonClient.getRedisNodes(RedisNodes.SINGLE).pingAll();
                         }
                     } catch (Exception pingEx) {
-                        builder.down(pingEx).withDetail("error", "Redis is unreachable: " + pingEx.getMessage());
+                        log.warn("Failed to check Redis connectivity during health check", pingEx);
+                    }
+
+                    if (pingSuccess) {
+                        // 핑은 성공했으나 세부 정보를 못 가져온 경우
+                        builder.up().withDetail("message", "Redis is up, but couldn't fetch detailed info");
+                    } else {
+                        builder.down(e).withDetail("error", "Redis is unreachable or no active node found");
                     }
                 }
             }
