@@ -1,259 +1,80 @@
 # AGENTS.md
 
 ## Purpose
-
-This document defines the project‑level guide for AI coding agents collaborating on this repository.
-The goal is to ensure that multiple agents can work together on a consistent set of rules,
-traceable decisions, and a continuous history of work.  The repository is a JHipster‑based
-Spring Boot backend, and this guide adapts the global agent principles to suit its specific
-architecture and stack.
+이 문서는 이 저장소에서 협업하는 AI 코딩 에이전트를 위한 프로젝트 수준의 가이드입니다. 여러 에이전트가 일관된 규칙, 추적 가능한 결정, 연속적인 작업 이력을 유지하며 협업하는 것을 목표로 합니다.
 
 ## Scope
-
-The instructions in this file apply only to the `stack-app-2025-v1` repository.  They
-extend the global agent rules but never weaken the requirements for accuracy,
-security, verification, completeness, or grounding.  Where ambiguities exist, agents must
-state assumptions explicitly and avoid guessing.  All non‑trivial work must be
-recorded in the agent log as described below.
+본 지침은 `stack-app-2025-v1` 저장소에만 적용되며, 글로벌 에이전트 규칙을 확장합니다. 모든 비자명한 작업은 아래에 기술된 규칙에 따라 기록되어야 합니다.
 
 ## Project Overview
+이 프로젝트는 Spring Boot 4.x 백엔드와 Vue 3 프론트엔드(Vite)가 통합된 Full-Stack 프로젝트입니다.
 
-This repository is a JHipster-based Spring Boot backend.
-
-Stack includes:
-
-- Spring Boot 4.x
-- Java 21+
-- Maven
-- Spring Data JPA
-- Liquibase
-- Redis cache
-- Spring Security with JWT
-- RFC7807 ProblemDetail
-- Swagger/OpenAPI
-- JUnit5 / MockMvc
-
-Architecture pattern:
-
-Controller -> Service -> Domain -> Repository
-
-Controllers should remain thin, delegating business logic to services.  Services contain
-domain logic and orchestrate persistence through repositories.  Domain models should
-stay free of infrastructure concerns, and repositories handle persistence only.
-Avoid mixing transport (controller), business, and persistence logic in the same layer.
+- Backend Stack: Java 21+, Maven, Spring Data JPA, Liquibase, Redis (Redisson), Spring Security + JWT, RFC7807, Swagger/OpenAPI.
+- Frontend Stack: Vue 3, Vite, TypeScript, Pinia, Vue Router, Vitest, Bootstrap-Vue-Next / Bootswatch.
 
 ---
-
-## Backend Architecture Rules
-
-Controllers must remain thin.
-
-Business logic belongs in the service layer.
-
-Repositories handle persistence only.
-
-Domain models should not contain infrastructure concerns.
-
-Avoid mixing transport, persistence, and business logic.
-
----
-
-## API Contract Rules
-
-Backend APIs are the source of truth for:
-
-- authentication
-- authorization
-- domain validation
-- error contracts
-
-Preserve API contracts unless explicitly requested.
-
-When modifying API responses:
-
-- document frontend impact
-- maintain RFC7807 error format
-- verify backward compatibility.
-
----
-
-## Security Rules
-
-High-risk areas include:
-
-- authentication
-- JWT processing
-- authorization checks
-- user management
-- file handling
-- database queries
-- external integrations
-
-Rules:
-
-- validate input at system boundaries
-- never log credentials or tokens
-- maintain role-based access checks
-- prefer secure defaults.
-
 
 ## Standard Project Documentation Structure
-
-Project documentation lives under the repository root in a `docs/` directory.  The
-recommended structure is:
-
+모든 문서는 docs/ 디렉토리 하위에 위치하며, 영역별로 엄격히 구분합니다. 프로젝트 루트 디렉토리에 새로운 폴더나 파일을 생성하는 것은 엄격히 금지됩니다.
 ```
 docs/
-    architecture/
-    security/
-    agent-log/
-    decisions/
+├── backend/                # 백엔드(Spring Boot 4) 관련 문서
+│   ├── architecture/       # 백엔드 설계 및 아키텍처 가이드
+│   ├── agent-log/          # 백엔드 작업 로그 및 계획서 폴더
+│   └── decisions/          # 백엔드 ADR (Architecture Decision Records)
+│
+├── frontend/               # 프론트엔드(Vue 3) 관련 문서
+│   ├── architecture/       # Vue 3 설계 원칙 및 테마 가이드
+│   ├── agent-log/          # 프론트엔드 작업 로그 및 계획서 폴더
+│   └── decisions/          # 프론트엔드 ADR
 ```
+---
 
-- architecture/ – system architecture documentation and diagrams.
-- security/ – security guidelines, authentication notes, threat models, and checklists.
-- agent-log/ – work history for AI agents and task continuity records.
-- decisions/ – Architecture Decision Records and design trade‑offs.
+## Agent Work Log & Output Policy
+모든 비자명한 작업은 에이전트 로그 정책에 따라 기록되어야 합니다.
 
-Agents must preserve and update these folders when adding new documents.  New files
-should be added only when genuinely necessary.
-## Agent Work Log Policy
+### 1. 작업 산출물 위치 강제 (Mandatory Directory)
+에이전트가 생성하는 모든 implementation_plan.md, task.md, walkthrough.md 파일은 절대 루트에 두지 않으며, 아래 경로의 작업명 폴더(YYYY-MM-DD-task-name) 내부에서만 관리합니다.
+- Backend 작업 시: docs/backend/agent-log/YYYY-MM-DD-task-name/
+- Frontend 작업 시: docs/frontend/agent-log/YYYY-MM-DD-task-name/
 
-All non‑trivial work performed by AI agents must be recorded in `docs/agent-log/`.
-Log files follow the naming convention `YYYY-MM-DD-task-name.md` (for example
-`2026-03-09-auth-refactor.md`).  Before starting work, read the most recent
-relevant log entries.  After completing a task, create a new log entry with
-sufficient context so another agent can continue without rediscovery.  Reference
-previous logs when building on earlier work.
+### 2. 로그 파일 명명 규칙
+최종 작업 로그는 YYYY-MM-DD-task-name.md 형식을 따르며, 작업 완료 후 해당 영역의 agent-log/ 폴더에 생성합니다.
 
-## Agent Work Log Entry Requirements
+---
 
-Every log entry should include:
+## Architecture Rules
 
-- Date – in `YYYY-MM-DD` format.
-- Agent – the name or identifier of the AI system or contributor (e.g. ChatGPT, Codex).
-- Task Title – a short descriptive title of the task.
-- Goal – what problem is being solved and the desired outcome.
-- Context – system state before the change, including related features, dependencies,
-  architectural constraints, and links to relevant previous logs.
-- Work Performed – a concise list of actions taken to complete the task.
-- Files Modified – the list of files that were changed.
-- Architecture Impact – whether the change affects project architecture; if none, state
-  “No architectural changes.”
-- Security Impact – describe any security implications; if none, state “No security impact.”
-- Verification – how the change was verified (tests run, build commands, manual checks).
-  If verification could not be performed, explain why.
-- Risks – remaining risks or uncertainties.
-- Next Suggested Tasks – logical follow‑up tasks for future work.
-- Notes for Future Agents – assumptions, limitations, or important design decisions to
-  help the next agent continue safely.
+### Backend Layering
+Controller -> Service -> Domain -> Repository 패턴을 따릅니다. 컨트롤러는 얇게 유지하고 비즈니스 로직은 서비스 레이어에 둡니다.
 
-An example template is available in `docs/agent-log/template.md`.
+### Frontend Layering (Structure.md 참조)
+core(로직) -> themes(표현) -> views(흐름) 계층을 엄격히 분리합니다. 테마 간 독립성을 유지하며 Base 컴포넌트 사용을 권장합니다.
 
-## Engineering Principles
+---
 
-Follow the existing repository architecture and conventions.  Prefer the smallest
-verifiable change that solves the problem.  Avoid unnecessary refactoring or
-dependency changes unless explicitly requested.  Preserve compatibility unless
-breaking changes are clearly required.  When requirements are incomplete, state
-assumptions explicitly rather than filling gaps silently.  Favor maintainability
-and clarity over cleverness.  Do not introduce cross‑layer coupling; respect
-module boundaries and public contracts.
+## Security & API Rules
+- 백엔드 API는 인증, 권한 부여, 유효성 검사 및 에러 계약의 단일 진실 공급원(Source of Truth)입니다.
+- 모든 에러 응답은 RFC 7807 형식을 유지해야 합니다.
+- 민감한 정보(비밀번호, 토큰 등)는 절대 로그에 남기지 않습니다.
 
-## Architecture Awareness
-
-Before modifying code, understand the repository structure, identify the
-architectural layers, and check integration points.  Remember the layering
-pattern (Controller → Service → Domain → Repository).  Controllers must remain
-thin; business logic belongs in the service layer.  Repositories handle
-persistence only, and domain models should not contain infrastructure concerns.
-Avoid mixing transport, persistence, and business logic.  Preserve public API
-contracts unless the task explicitly requires a change.
-
-## API Contract Rules
-
-The backend API is the source of truth for authentication, authorization,
-domain validation, and error contracts.  Preserve these API contracts unless
-explicitly requested to modify them.  When changing API responses:
-
-- Document the impact on the frontend.
-- Maintain the RFC7807 error format.
-- Verify backward compatibility, or clearly state when a breaking change is
-  unavoidable.
-
-## Security Awareness
-
-Treat the following areas as high risk: authentication, JWT processing,
-authorization checks, user management, file handling, database queries, and
-external integrations.  Validate untrusted input at system boundaries, never
-log credentials or tokens, maintain role‑based access checks, and prefer
-secure defaults.  Clearly state security impacts when changes affect these
-areas.
-
-## Persistence Rules
-
-Changes to database schema or persistence logic require careful review.
-Liquibase changes must include the migration intent, address backward
-compatibility, and describe rollback strategies.  Review entity relationships
-and fetch strategies before modifying JPA mappings.  Explain cache implications
-when touching Redis or Hibernate caching.
+---
 
 ## Verification Strategy
+모든 변경 사항은 아래 순서로 검증되어야 합니다.
+1. 유닛 테스트 (JUnit 5 / Vitest)
+2. 통합 테스트 및 API 테스트 (MockMvc)
+3. 빌드 검증 (./mvnw clean package 또는 npm run build)
 
-Every meaningful change must include verification.  Preferred verification
-order:
-
-1. Targeted tests (unit tests)
-2. Broader tests (integration tests)
-3. MockMvc API tests
-4. Maven test lifecycle (`./mvnw test` and `./mvnw verify`)
-5. Build verification (`./mvnw clean package`)
-
-If verification cannot run, clearly state what could not be verified and why.
-Never mark a task complete if required verification is missing.
-
-## Engineering Discussion Rules
-
-When proposing architectural or structural changes, follow this format:
-
-- Problem – describe the limitation in the current structure.
-- Proposal – explain the recommended solution.
-- Alternatives – provide other possible designs.
-- Trade‑offs – discuss impacts on transaction boundaries, domain layering,
-  API contracts, persistence model, caching, and operational complexity.
-- Risks – identify migration or compatibility risks.
-- Decision Needed – clearly indicate when human confirmation is required
-  before applying database, contract, or security‑sensitive changes.
-
-## Frontend Coordination
-
-Backend changes may affect the frontend.  When modifying the authentication
-flow, API contracts, error structures, or authorization rules, explicitly
-state the frontend impact.  Frontend architecture details are defined in
-`vue3.md`.  Coordinate with frontend agents to ensure alignment.
-
-## Completion Requirements
-
-A task is complete only when all requested deliverables exist, verification has
-been performed, documentation is updated when needed, and an agent log entry
-has been created for non‑trivial work.  Before finalizing any task, use
-the following checklist:
-
-- Architecture layering preserved.
-- Security impact reviewed.
-- API contracts validated.
-- Persistence effects checked.
-- Verification executed.
-- Documentation and agent log updated.
+---
 
 ## Final Response Structure
 
-When completing work, the final response should briefly state:
+**모든 대화 및 최종 응답(Final Response)은 반드시 한국어(Korean)로 작성한다.**
 
-- What was changed – a summary of the changes and rationale.
-- Files modified – list of files that were created or updated.
-- Verification performed – how changes were tested or validated.
-- Remaining risks or assumptions – any outstanding issues or assumptions.
-- Agent log entry created – confirmation that a log entry has been recorded.
-
-Following this structure ensures transparency and continuity for the next agent.
+작업 완료 후 응답은 다음을 포함해야 합니다:
+- 변경 요약 및 이유
+- 수정된 파일 목록
+- 수행된 검증 내용
+- 남은 리스크 또는 가정 사항
+- 에이전트 로그 및 Walkthrough 생성 확인

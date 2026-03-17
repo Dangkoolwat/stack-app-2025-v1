@@ -1,7 +1,6 @@
 # 🚀 Stack App 2025 v1
 Spring Boot 4.x 기반 REST API 서버 프레임워크  
-개인 개발자가 온프레미스(On-Prem) 또는 클라우드(OCI/Azure) 환경에서  
-빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project입니다.
+개인 개발자가 온프레미스(On-Prem) 또는 클라우드(OCI/Azure) 환경에서 빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project (Spring Boot 4 + Vue 3)입니다.
 
 현재 Oracle Cloud VM 환경에서 운영 중인 구조를 최신 트렌드에 맞게 개편하고 있으며,  
 실제 프로젝트 경험을 기반으로 생산성과 유지보수성을 극대화하도록 설계했습니다.
@@ -90,20 +89,32 @@ Spring Boot 4.x 기반 REST API 서버 프레임워크
 
 ## 🔧 기술 스택 (Tech Stack)
 
-Framework: Spring Boot 4.x
-Language: Java 21+  
-Build Tool: Maven  
-Database: Oracle / PostgreSQL / MariaDB / MySQL  
-Database Migration: Liquibase  
-Persistence: Spring Data JPA (Hibernate)  
-Caching: Redis + Hibernate 2nd Cache  
-Security: Spring Security, JWT  
-Error Handling: RFC 7807 (ProblemDetail)  
-API Docs: Swagger UI (springdoc-openapi)  
-Testing: JUnit 5, Spring Boot Test, MockMvc  
-Deployment Target: Oracle Cloud Infrastructure (OCI) VM  
-DevOps: Docker, GitHub  
-Messaging Queue: MQTT Integration
+### Backend
+- Framework: Spring Boot 4.x
+- Language: Java 21+  
+- Build Tool: Maven  
+- Database: Oracle / PostgreSQL / MariaDB / MySQL  
+- Database Migration: Liquibase  
+- Persistence: Spring Data JPA (Hibernate)  
+- Caching: Redis (Redisson) + Hibernate 2nd Cache  
+- Security: Spring Security, JWT  
+- Error Handling: RFC 7807 (ProblemDetail)  
+- API Docs: Swagger UI (springdoc-openapi)  
+- Testing: JUnit 5, Spring Boot Test, MockMvc  
+
+### Frontend
+- Framework: Vue 3
+- Build Tool: Vite
+- Language: TypeScript
+- State Management: Pinia
+- UI Components: Bootstrap-Vue-Next / Bootswatch
+- Testing: Vitest
+
+### Infrastructure & DevOps
+- Deployment Target: Oracle Cloud Infrastructure (OCI) VM  
+- Container: Docker, Docker Compose
+- Messaging Queue: MQTT Integration (Eclipse Paho)
+- CI/CD: GitHub Actions (ready) / SonarQube
 
 ---
 
