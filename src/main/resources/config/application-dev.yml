@@ -138,8 +138,8 @@ jhipster:
   cache:
     redis:
       expiration: 3600
-      server: ${JHIPSTER_CACHE_REDIS_HOST:redis://localhost:6379}
-      cluster: false
+      server: ${application.redis.server}
+      cluster: ${application.redis.cluster:false}
   cors:
     allowed-origins: 'https://localhost:3000,https://localhost:8443,http://localhost:9000,https://localhost:9000'
     # Enable CORS when running in GitHub Codespaces
@@ -176,21 +176,3 @@ application:
     upload-dir: /uploads
     public-path: /uploads/public
     private-path: /uploads/private
-  rate-limit:
-    redis-server: redis://localhost:6379
-    cluster: false
-    authenticate:
-      tokens: 100
-      duration-minutes: 1
-    register:
-      tokens: 100
-      duration-minutes: 1
-    reset-password-init:
-      tokens: 100
-      duration-minutes: 1
-    otp-request:
-      tokens: 100
-      duration-minutes: 1
-    otp-verify:
-      tokens: 100
-      duration-minutes: 1

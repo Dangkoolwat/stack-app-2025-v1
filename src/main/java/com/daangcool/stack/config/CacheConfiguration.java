@@ -71,7 +71,7 @@ public class CacheConfiguration {
     // RedissonClient Bean (단일 인스턴스)
     // jcacheConfiguration 이 이 빈을 주입받아 재사용합니다.
     // -----------------------------------------------------------------
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
         Config config = getRedissonConfig(jHipsterProperties);
         return Redisson.create(config);

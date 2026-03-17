@@ -241,6 +241,12 @@ jhipster:
 # ===================================================================
 
 application:
+    redis:
+        # 단일/클러스터 공용 Redis URL (클러스터는 콤마로 여러 개 지정)
+        # 클러스터 사용 시: APPLICATION_REDIS_SERVER="redis://node1:6379,redis://node2:6379", APPLICATION_REDIS_CLUSTER=true
+        # (호환성) 기존 환경변수 JHIPSTER_CACHE_REDIS_HOST 도 fallback으로 지원합니다.
+        server: ${APPLICATION_REDIS_SERVER:${JHIPSTER_CACHE_REDIS_HOST:redis://localhost:6379}}
+        cluster: ${APPLICATION_REDIS_CLUSTER:false}
     file:
         allowed-mime-types:
             - image/jpeg
@@ -254,8 +260,7 @@ application:
             - gif
             - pdf
     rate-limit:
-        redis-server: ${APPLICATION_RATE_LIMIT_REDIS_SERVER:} # 분산 환경 사용 시 기입 (예: redis://localhost:6379), 비어 있으면 기본 RedissonClient 재사용
-        cluster: ${APPLICATION_RATE_LIMIT_REDIS_CLUSTER:false}
+        # Redis 연결은 application.redis.* (및 jhipster.cache.redis.*) 설정을 재사용합니다.
         authenticate:
             tokens: 10
             duration-minutes: 5

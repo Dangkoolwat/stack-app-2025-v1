@@ -16,6 +16,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    private final Redis redis = new Redis();
 
     //Liquibase
     private final Liquibase liquibase = new Liquibase();
@@ -57,6 +58,19 @@ public class ApplicationProperties {
         private String[] allowedExtensions = { "jpg", "jpeg", "png", "gif", "pdf" };
 
         public String getUploadResourceDir() { return uploadDir; }
+    }
+
+    /**
+     * 애플리케이션 공용 Redis 설정 (SSOT).
+     * <p>
+     * - server: 단일 서버는 1개 URL, 클러스터는 콤마로 여러 개 URL 지정 가능
+     * - cluster: true 인 경우 Redisson 클러스터 모드로 동작
+     */
+    @Getter
+    @Setter
+    public static class Redis {
+        private String[] server;
+        private boolean cluster = false;
     }
 
     private final RateLimit rateLimit = new RateLimit();

@@ -7,7 +7,6 @@ import io.github.bucket4j.redis.redisson.cas.RedissonBasedProxyManager;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.command.CommandAsyncExecutor;
-import org.redisson.config.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,30 +23,24 @@ import java.time.Duration;
 @Configuration
 public class RateLimitingConfiguration {
 
-    private final ApplicationProperties applicationProperties;
     private final RedissonClient defaultRedissonClient;
 
     /**
-     * @param applicationProperties 애플리케이션 설정 (redis-server 경로 포함)
      * @param defaultRedissonClient 기본 캐시용 RedissonClient (fallback용)
      */
-    public RateLimitingConfiguration(ApplicationProperties applicationProperties, RedissonClient defaultRedissonClient) {
-        this.applicationProperties = applicationProperties;
+    public RateLimitingConfiguration(RedissonClient defaultRedissonClient) {
         this.defaultRedissonClient = defaultRedissonClient;
     }
 
     /**
      * Rate Limiting 버킷 관리를 위한 ProxyManager 빈을 생성합니다.
-     * 전용 Redis 서버 설정이 있으면 해당 서버를 사용하고, 없으면 기본 캐시 설정을 재사용합니다.
+     * 기본 캐시용 RedissonClient를 재사용합니다. (불필요한 추가 Redis 연결 생성 방지)
      *
      * @return Redisson 기반의 ProxyManager
      */
     @Bean
     public ProxyManager<String> rateLimitProxyManager() {
-        RedissonClient client = createDedicatedClient();
-        if (client == null) {
-            client = defaultRedissonClient;
-        }
+        RedissonClient client = defaultRedissonClient;
 
         // [Phase 3] 타입 호환성(Incompatible types) 문제를 해결하기 위해 
         // 리플렉션을 사용하여 RedissonClient에서 CommandAsyncExecutor를 추출합니다.
@@ -72,25 +65,5 @@ public class RateLimitingConfiguration {
         return RedissonBasedProxyManager.builderFor(commandExecutor)
             .withClientSideConfig(clientSideConfig)
             .build();
-    }
-
-    /**
-     * application.rate-limit.redis-server 설정이 있을 경우 전용 RedissonClient를 생성합니다.
-     */
-    private RedissonClient createDedicatedClient() {
-        String[] servers = applicationProperties.getRateLimit().getRedisServer();
-        if (servers == null || servers.length == 0 || servers[0].isEmpty()) {
-            return null;
-        }
-
-        Config config = new Config();
-        if (applicationProperties.getRateLimit().isCluster()) {
-            config.useClusterServers()
-                .addNodeAddress(servers);
-        } else {
-            config.useSingleServer()
-                .setAddress(servers[0]);
-        }
-        return Redisson.create(config);
     }
 }

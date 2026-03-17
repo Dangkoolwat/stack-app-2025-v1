@@ -169,8 +169,8 @@ jhipster:
   cache:
     redis:
       expiration: 3600
-      server: redis://localhost:6379
-      cluster: false
+      server: ${application.redis.server}
+      cluster: ${application.redis.cluster:false}
   security:
     authentication:
       jwt:
