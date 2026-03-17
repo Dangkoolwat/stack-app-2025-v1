@@ -63,6 +63,7 @@
     <!-- ========================================================= -->
     <commons-lang3.version>3.19.0</commons-lang3.version>
     <commons-io.version>2.18.0</commons-io.version>
+    <tika.version>3.2.3</tika.version>
 
     <!-- ========================================================= -->
     <!-- Maven Plugin Versions -->
@@ -468,6 +469,13 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>${commons-io.version}</version>
+    </dependency>
+
+    <!-- Apache Tika for MIME type detection (C-4) -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>${tika.version}</version>
     </dependency>
 
     <!-- ========================================================= -->

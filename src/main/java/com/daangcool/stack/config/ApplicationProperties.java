@@ -53,6 +53,8 @@ public class ApplicationProperties {
         private String sharePath = "/share";                 // 공유 폴더 경로 또는 클라우드 버킷 이름 (기본값: /share)
         private String publicPath = "/uploads/public";       //  공개 리소스 경로 (정적 매핑 대상)
         private String privatePath = "/uploads/private";     //  비공개 리소스 경로 (Controller 접근 대상)
+        private String[] allowedMimeTypes = { "image/jpeg", "image/png", "image/gif", "application/pdf" };
+        private String[] allowedExtensions = { "jpg", "jpeg", "png", "gif", "pdf" };
 
         public String getUploadResourceDir() { return uploadDir; }
     }

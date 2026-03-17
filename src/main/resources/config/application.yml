@@ -241,6 +241,18 @@ jhipster:
 # ===================================================================
 
 application:
+    file:
+        allowed-mime-types:
+            - image/jpeg
+            - image/png
+            - image/gif
+            - application/pdf
+        allowed-extensions:
+            - jpg
+            - jpeg
+            - png
+            - gif
+            - pdf
     rate-limit:
         redis-server: ${APPLICATION_RATE_LIMIT_REDIS_SERVER:} # 분산 환경 사용 시 기입 (예: redis://localhost:6379), 비어 있으면 기본 RedissonClient 재사용
         cluster: ${APPLICATION_RATE_LIMIT_REDIS_CLUSTER:false}

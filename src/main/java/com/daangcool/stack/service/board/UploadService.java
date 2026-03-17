@@ -7,8 +7,10 @@ import com.daangcool.stack.repository.board.UploadRepository;
 import com.daangcool.stack.service.storage.StorageService;
 import com.daangcool.stack.common.util.UploadFileUtils;
 import com.daangcool.stack.common.exception.FileStorageException;
+import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,6 +48,7 @@ public class UploadService {
     private final StorageService storageService;
     private final ApplicationProperties fileStorageProperties;
     private final CacheManager cacheManager;
+    private final Tika tika = new Tika();
 
     public UploadService(
         UploadRepository uploadRepository,
@@ -62,9 +66,7 @@ public class UploadService {
      * 파일 업로드 및 메타데이터 저장.
      */
     public Upload saveUpload(MultipartFile file, String storageKey, boolean isPublic) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("업로드 파일은 비어 있을 수 없습니다.");
-        }
+        validateFile(file);
 
         try {
             // 실제 파일 저장
@@ -117,6 +119,52 @@ public class UploadService {
             log.info("[UPLOAD] hard-deleted id={}, path={}", id, upload.getFilePath());
         } catch (Exception e) {
             throw new FileStorageException("파일 물리 삭제 처리 중 오류가 발생했습니다. id=" + id, e);
+        }
+    }
+
+    /**
+     * 업로드 파일의 보안 및 유효성 검증 (C-4).
+     * - 파일 비어있음 확인
+     * - 확장자 화이트리스트 검사
+     * - MIME 타입 화이트리스트 검사 (Apache Tika 사용)
+     * - 확장자와 MIME 타입 일치 여부 확인 (스푸핑 방지)
+     */
+    private void validateFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidFileException("업로드 파일은 비어 있을 수 없습니다.");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new InvalidFileException("파일명을 확인할 수 없습니다.");
+        }
+
+        // 1. 확장자 검증
+        String extension = FilenameUtils.getExtension(originalFilename).toLowerCase();
+        List<String> allowedExtensions = List.of(fileStorageProperties.getFile().getAllowedExtensions());
+        if (!allowedExtensions.contains(extension)) {
+            log.warn("[SECURITY] Allowed extensions: {}, requested: {}", allowedExtensions, extension);
+            throw new InvalidFileException("허용되지 않는 파일 확장자입니다: " + extension);
+        }
+
+        // 2. MIME 타입 검증 (Content-based detection)
+        try {
+            String detectedMimeType = tika.detect(file.getInputStream());
+            List<String> allowedMimeTypes = List.of(fileStorageProperties.getFile().getAllowedMimeTypes());
+
+            if (!allowedMimeTypes.contains(detectedMimeType)) {
+                log.warn("[SECURITY] Allowed MIME types: {}, detected: {}", allowedMimeTypes, detectedMimeType);
+                throw new InvalidFileException("허용되지 않는 파일 형식입니다: " + detectedMimeType);
+            }
+
+            // 3. 브라우저 제공 MIME 타입과 실제 감지된 타입 비교 (Mismatch check)
+            String providedMimeType = file.getContentType();
+            if (providedMimeType != null && !providedMimeType.equalsIgnoreCase(detectedMimeType)) {
+                log.warn("[SECURITY] MIME type mismatch. Provided: {}, Detected: {}", providedMimeType, detectedMimeType);
+            }
+
+        } catch (IOException e) {
+            throw new InvalidFileException("파일 콘텐츠 분석 중 오류가 발생했습니다.");
         }
     }
 
