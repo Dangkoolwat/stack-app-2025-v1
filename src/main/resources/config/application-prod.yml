@@ -174,7 +174,11 @@ jhipster:
   security:
     authentication:
       jwt:
-        base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5  }
+        # [NC-1 수정] fallback 기본값 완전 제거.
+        # JWT_SECRET 환경변수가 주입되지 않으면 애플리케이션 시작 즉시 실패합니다.
+        # 운영 배포 전 반드시 강력한 랜덤 base64 시크릿을 환경변수로 주입하세요.
+        # 생성 예시: openssl rand -base64 64
+        base64-secret: ${JWT_SECRET}
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   mail:

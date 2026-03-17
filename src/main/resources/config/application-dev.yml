@@ -152,7 +152,11 @@ jhipster:
   security:
     authentication:
       jwt:
-        base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5  }
+        # [NC-1 수정] dev 전용 fallback 시크릿 — prod와 완전히 분리된 값 사용.
+        # prod 환경에서는 이 값이 절대 사용되지 않습니다 (prod는 fallback 없음 → 미주입 시 시작 실패).
+        # 로컬 개발 편의를 위해 fallback을 유지하되 prod 값과 다른 값으로 지정합니다.
+        # 실제 JWT_SECRET 환경변수가 있으면 이 값은 무시됩니다.
+        base64-secret: ${JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   mail:
