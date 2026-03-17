@@ -81,8 +81,6 @@ public class ApplicationProperties {
     @Getter
     @Setter
     public static class RateLimit {
-        private String[] redisServer; // null 인 경우 기본 캐시용 RedissonClient 재사용 가능
-        private boolean cluster = false;
 
         private Policy authenticate = new Policy(10, 5);
         private Policy register = new Policy(5, 30);
