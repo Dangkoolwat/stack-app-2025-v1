@@ -104,10 +104,7 @@
     <!-- ========================================================= -->
     <argLine/>
 
-    <!-- ========================================================= -->
-    <!-- Rate Limiting  -->
-    <!-- ========================================================= -->
-    <com.bucket4j.version>8.10.1</com.bucket4j.version>
+
 
   </properties>
 
@@ -266,18 +263,7 @@
       <artifactId>spring-security-data</artifactId>
     </dependency>
 
-    <!-- Rate Limiting (Token Bucket 알고리즘) — W-1 -->
-    <dependency>
-      <groupId>com.bucket4j</groupId>
-      <artifactId>bucket4j-core</artifactId>
-      <version>${com.bucket4j.version}</version>
-    </dependency>
 
-    <dependency>
-      <groupId>com.bucket4j</groupId>
-      <artifactId>bucket4j-redis</artifactId>
-      <version>${com.bucket4j.version}</version>
-    </dependency>
 
     <!-- ========================================================= -->
     <!-- Database / Persistence -->

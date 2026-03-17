@@ -43,28 +43,29 @@ class RedisMonitoringConfigurationTest {
     }
 
     @Test
-    void redisServerHealthIndicator_ShouldReturnUpWithDetails() throws Exception {
+    void redisServerHealthIndicator_ShouldReturnUpWithDetails() {
         // Given
         RedisSingle redisSingle = mock(RedisSingle.class);
         RedisMaster redisNode = mock(RedisMaster.class);
-        
+
         when(redissonClient.getRedisNodes(any())).thenReturn(redisSingle);
         when(redisSingle.getInstance()).thenReturn(redisNode);
-        
+
         Map<String, String> info = new HashMap<>();
         info.put("used_memory", "1048576");
         info.put("used_memory_human", "1MB");
         info.put("maxmemory_human", "100MB");
         info.put("mem_fragmentation_ratio", "1.5");
-        
+
         when(redisNode.info(any())).thenReturn(info);
-        
+
         HealthIndicator healthIndicator = configuration.redisServerHealthIndicator(redissonClient);
 
         // When
         Health health = healthIndicator.health();
 
         // Then
+        assert health != null;
         assertThat(health.getStatus().getCode()).isEqualTo("UP");
         assertThat(health.getDetails())
             .containsEntry("used_memory", "1048576")
@@ -73,23 +74,24 @@ class RedisMonitoringConfigurationTest {
     }
 
     @Test
-    void redisServerHealthIndicator_WhenInfoFailsButPingWorks_ShouldReturnUp() throws Exception {
+    void redisServerHealthIndicator_WhenInfoFailsButPingWorks_ShouldReturnUp() {
         // Given
         RedisSingle redisSingle = mock(RedisSingle.class);
         RedisMaster redisNode = mock(RedisMaster.class);
-        
+
         when(redissonClient.getRedisNodes(any())).thenReturn(redisSingle);
         when(redisSingle.getInstance()).thenReturn(redisNode);
-        
+
         when(redisNode.info(any())).thenThrow(new RuntimeException("Info failed"));
         when(redisNode.ping()).thenReturn(true);
-        
+
         HealthIndicator healthIndicator = configuration.redisServerHealthIndicator(redissonClient);
 
         // When
         Health health = healthIndicator.health();
 
         // Then
+        assert health != null;
         assertThat(health.getStatus().getCode()).isEqualTo("UP");
         assertThat(health.getDetails()).containsEntry("message", "Redis is up, but couldn't fetch detailed info");
     }

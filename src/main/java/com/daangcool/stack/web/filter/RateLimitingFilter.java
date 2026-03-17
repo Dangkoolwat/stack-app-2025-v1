@@ -4,10 +4,6 @@ import com.daangcool.stack.common.constant.ErrorConstants;
 import com.daangcool.stack.common.util.ProblemUtils;
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.security.RateLimitingRegistry;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +17,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -115,28 +110,21 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String clientIp = resolveClientIp(request);
         String bucketKey = clientIp + ":" + path;
 
-        // 분산 환경(Redis) 대응을 위해 정책 설정을 Registry로 전달하여 버킷을 가져옴
-        BucketConfiguration bucketConfiguration = BucketConfiguration.builder()
-            .addLimit(Bandwidth.builder()
-                .capacity(policy.getTokens())
-                .refillGreedy(policy.getTokens(), Duration.ofMinutes(policy.getDurationMinutes()))
-                .build())
-            .build();
-        
-        Bucket bucket = registry.getBucket(bucketKey, bucketConfiguration);
+        // Redisson Native RRateLimiter를 통한 승인 시도
+        RateLimitingRegistry.RateLimitResult result = registry.tryConsume(
+            bucketKey, 
+            policy.getTokens(), 
+            policy.getDurationMinutes()
+        );
 
-        // 토큰 1개 소모 시도 (tryConsume은 소모 성공 여부를 반환함)
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
-        
-        if (probe.isConsumed()) {
-            // 요청 허용: 잔여 토큰 정보를 헤더(X-Rate-Limit-Remaining)에 포함하여 응답
-            response.setHeader("X-Rate-Limit-Remaining",
-                String.valueOf(probe.getRemainingTokens()));
+        if (result.isConsumed()) {
+            // 요청 허용: 잔여 토큰 정보를 헤더에 포함
+            response.setHeader("X-Rate-Limit-Remaining", String.valueOf(result.remainingTokens()));
             filterChain.doFilter(request, response);
         } else {
             // 요청 거부: 한도를 초과함 (429 Too Many Requests)
-            // 재도전 가능 시간(초) 계산
-            long retryAfterSeconds = probe.getNanosToWaitForRefill() / 1_000_000_000 + 1;
+            // Redisson RRateLimiter는 대기 시간을 직접 반환하지 않으므로 정책 기반 최대 대기 시간을 표시합니다.
+            long retryAfterSeconds = policy.getDurationMinutes() * 60;
             log.warn("[429] Rate limit exceeded: ip={}, path={}, retryAfter={}s",
                 clientIp, path, retryAfterSeconds);
 

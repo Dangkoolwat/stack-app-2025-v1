@@ -2,12 +2,9 @@ package com.daangcool.stack.web.filter;
 
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.security.RateLimitingRegistry;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.BucketConfiguration;
-import io.github.bucket4j.distributed.BucketProxy;
-import io.github.bucket4j.distributed.proxy.ProxyManager;
-import io.github.bucket4j.distributed.proxy.RemoteBucketBuilder;
+import org.redisson.api.RKeys;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RedissonClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,7 +17,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -40,51 +36,69 @@ class RateLimitingFilterTest {
     private RateLimitingRegistry registry;
 
     @Mock
-    private ProxyManager<String> proxyManager;
+    private RedissonClient redissonClient;
 
     @Mock
-    private RemoteBucketBuilder<String> bucketBuilder;
+    private RKeys redissonKeys;
 
-    private final Map<String, BucketProxy> bucketCache = new ConcurrentHashMap<>();
+    private final Map<String, RRateLimiter> limiterCache = new ConcurrentHashMap<>();
 
     @BeforeEach
-    @SuppressWarnings("unchecked")
     void setUp() {
         MockitoAnnotations.openMocks(this);
         applicationProperties = new ApplicationProperties();
-        bucketCache.clear();
+        limiterCache.clear();
         
-        // ProxyManager Mock 설정
-        when(proxyManager.builder()).thenReturn(bucketBuilder);
-        
-        // BucketProxy Mock 설정 (상태 유지 및 ClassCastException 방지)
-        when(bucketBuilder.build(anyString(), any(Supplier.class))).thenAnswer(invocation -> {
-            String key = invocation.getArgument(0);
-            return bucketCache.computeIfAbsent(key, k -> {
-                Supplier<BucketConfiguration> supplier = invocation.getArgument(1);
-                BucketConfiguration config = supplier.get();
+        when(redissonClient.getKeys()).thenReturn(redissonKeys);
+
+        // RRateLimiter Mock 설정 (상태 유지)
+        when(redissonClient.getRateLimiter(anyString())).thenAnswer(invocation -> {
+            String name = invocation.getArgument(0);
+            return limiterCache.computeIfAbsent(name, k -> {
+                RRateLimiter mockLimiter = mock(RRateLimiter.class);
                 
-                // 실제 로직을 수행할 로컬 버킷 생성
-                var builder = Bucket.builder();
-                for (Bandwidth bandwidth : config.getBandwidths()) {
-                    builder.addLimit(bandwidth);
-                }
-                Bucket realBucket = builder.build();
-                
-                BucketProxy mockProxy = mock(BucketProxy.class);
-                when(mockProxy.tryConsume(anyLong())).thenAnswer(i -> realBucket.tryConsume(i.getArgument(0)));
-                when(mockProxy.tryConsumeAndReturnRemaining(anyLong())).thenAnswer(i -> realBucket.tryConsumeAndReturnRemaining(i.getArgument(0)));
-                when(mockProxy.asVerbose()).thenReturn(realBucket.asVerbose());
-                return mockProxy;
+                // 간단한 상태 관리를 위한 익명 클래스 스타일 사용 가능하나, 여기서는 필드/변수로 관리
+                final long[] permits = {0}; // 초기에는 0 (trySetRate 전)
+                final long[] capacity = {0};
+
+                when(mockLimiter.trySetRate(any(), anyLong(), any(), any())).thenAnswer(i -> {
+                    if (capacity[0] == 0) {
+                        capacity[0] = i.getArgument(1);
+                        permits[0] = capacity[0];
+                        return true;
+                    }
+                    return false;
+                });
+
+                when(mockLimiter.trySetRate(any(), anyLong(), any())).thenAnswer(i -> {
+                    if (capacity[0] == 0) {
+                        capacity[0] = i.getArgument(1);
+                        permits[0] = capacity[0];
+                        return true;
+                    }
+                    return false;
+                });
+
+                when(mockLimiter.tryAcquire(anyLong())).thenAnswer(i -> {
+                    long toAcquire = i.getArgument(0);
+                    if (permits[0] >= toAcquire) {
+                        permits[0] -= toAcquire;
+                        return true;
+                    }
+                    return false;
+                });
+
+                when(mockLimiter.availablePermits()).thenAnswer(i -> permits[0]);
+
+                return mockLimiter;
             });
         });
 
-        // registry.clear() 호출 시 내부 캐시도 비우도록 registry를 익명 클래스로 재정의 (테스트용)
-        registry = new RateLimitingRegistry(proxyManager) {
+        registry = new RateLimitingRegistry(redissonClient) {
             @Override
             public void clear() {
                 super.clear();
-                bucketCache.clear();
+                limiterCache.clear();
             }
         };
         filter = new RateLimitingFilter(new ObjectMapper(), applicationProperties, registry);
