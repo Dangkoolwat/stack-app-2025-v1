@@ -3,6 +3,8 @@ package com.daangcool.stack.config;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import org.redisson.api.RedissonClient;
+import org.redisson.api.redisnode.RedisCluster;
+import org.redisson.api.redisnode.RedisMasterSlave;
 import org.redisson.api.redisnode.RedisNode;
 import org.redisson.api.redisnode.RedisNodes;
 import org.redisson.api.redisnode.RedisSingle;
@@ -49,6 +51,7 @@ public class RedisMonitoringConfiguration {
 
     /**
      * Redis 서버의 세부 정보(메모리 사용량 등)를 Actuator Health 에 포함합니다.
+     * 클러스터 및 센티널 모드를 지원하도록 노드 감지 로직을 고도화했습니다.
      */
     @Bean
     public HealthIndicator redisServerHealthIndicator(RedissonClient redissonClient) {
@@ -56,12 +59,10 @@ public class RedisMonitoringConfiguration {
             @Override
             protected void doHealthCheck(Health.Builder builder) throws Exception {
                 try {
-                    // INFO command 를 통해 메모리 정보 추출
-                    RedisSingle nodes = redissonClient.getRedisNodes(RedisNodes.SINGLE);
-                    RedisNode node = nodes.getInstance();
+                    RedisNode node = findActiveNode(redissonClient);
                     
                     if (node == null) {
-                        builder.unknown().withDetail("message", "No single Redis node found");
+                        builder.unknown().withDetail("message", "No active Redis node found (checked Single, Cluster, Sentinel)");
                         return;
                     }
 
@@ -81,19 +82,44 @@ public class RedisMonitoringConfiguration {
                            .withDetail("used_memory", usedMemoryStr);
                            
                 } catch (Exception e) {
-                    log.warn("[MONITORING] Failed to fetch Redis memory info for health check: {}", e.getMessage());
-                    // 기본 연결 확인 (ping)
                     try {
-                        RedisSingle nodes = redissonClient.getRedisNodes(RedisNodes.SINGLE);
-                        if (nodes != null && nodes.getInstance() != null && nodes.getInstance().ping()) {
+                        // 기본 연결 확인 (ping) - Single 모드 기준으로 테스트
+                        if (redissonClient.getRedisNodes(RedisNodes.SINGLE).pingAll()) {
                             builder.up().withDetail("message", "Redis is up, but couldn't fetch detailed info");
                         } else {
-                            builder.down().withDetail("error", "Redis is unreachable");
+                            builder.down().withDetail("error", "Redis is unreachable or no active node found");
                         }
                     } catch (Exception pingEx) {
                         builder.down(pingEx).withDetail("error", "Redis is unreachable: " + pingEx.getMessage());
                     }
                 }
+            }
+
+            private RedisNode findActiveNode(RedissonClient client) {
+                // 1. Single Node 시도
+                try {
+                    RedisSingle single = client.getRedisNodes(RedisNodes.SINGLE);
+                    if (single != null && single.getInstance() != null) return single.getInstance();
+                } catch (Exception ignored) {}
+
+                // 2. Cluster Nodes 시도 (첫 번째 마스터 노드)
+                try {
+                    RedisCluster cluster = client.getRedisNodes(RedisNodes.CLUSTER);
+                    if (cluster != null && !cluster.getMasters().isEmpty()) {
+                        return cluster.getMasters().iterator().next();
+                    }
+                } catch (Exception ignored) {}
+
+                // 3. Sentinel Nodes 시도
+                try {
+                    // SENTINEL_MASTER_SLAVE 를 사용하여 마스터 노드를 시도합니다.
+                    RedisMasterSlave sentinel = client.getRedisNodes(RedisNodes.SENTINEL_MASTER_SLAVE);
+                    if (sentinel != null) {
+                        return sentinel.getMaster();
+                    }
+                } catch (Exception ignored) {}
+
+                return null;
             }
         };
     }
