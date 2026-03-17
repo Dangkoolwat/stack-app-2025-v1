@@ -130,9 +130,11 @@ Explain how the change was verified.
 
 Examples
 
-npm run lint  
-npm run build  
-manual UI verification
+- `./mvnw test`
+- `./mvnw verify`
+- `./mvnw clean package`
+- Targeted unit/integration tests (JUnit5 / MockMvc)
+- Manual API verification (if applicable)
 
 If verification could not be performed, explain why.
 

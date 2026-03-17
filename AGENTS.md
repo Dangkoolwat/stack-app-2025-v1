@@ -22,8 +22,8 @@ This repository is a JHipster-based Spring Boot backend.
 
 Stack includes:
 
-- Spring Boot 3.x
-- Java 17+
+- Spring Boot 4.x
+- Java 21+
 - Maven
 - Spring Data JPA
 - Liquibase
