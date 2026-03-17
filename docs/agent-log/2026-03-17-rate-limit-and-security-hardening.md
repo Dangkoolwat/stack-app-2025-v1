@@ -36,6 +36,8 @@ Rate Limiting 리팩토링 및 보안 강화 (2차 리뷰 조치)
 4.  **모니터링 고도화 (NH-2)**:
     - `RedisMonitoringConfiguration`에서 Single, Cluster, Sentinel 모드를 모두 지원하도록 노드 감지 로직 개선.
     - Redisson 4.3.0 `getRedisNodes` API를 사용하여 하위 호환성 및 안정성 확보.
+5.  **캐시 최적화 (NL-5)**:
+    - `EmailOtpLog` 엔티티에서 불필요한 Hibernate 2차 캐시 설정을 제거하여 성능 및 정합성 관리 효율을 높임.
 
 ## Files Modified
 - `pom.xml`
@@ -47,6 +49,8 @@ Rate Limiting 리팩토링 및 보안 강화 (2차 리뷰 조치)
 - `src/main/java/com/daangcool/stack/service/otp/EmailOtpLogService.java` (New)
 - `src/main/java/com/daangcool/stack/config/SecurityConfiguration.java`
 - `src/main/java/com/daangcool/stack/config/RedisMonitoringConfiguration.java`
+- `src/main/java/com/daangcool/stack/domain/EmailOtpLog.java`
+- `src/main/java/com/daangcool/stack/config/CacheConfiguration.java`
 
 ## Architecture Impact
 - **Layering**: 로깅 기능을 전담하는 `EmailOtpLogService`를 추가하여 관심사를 분리하고 트랜잭션 경계를 명확히 함.
