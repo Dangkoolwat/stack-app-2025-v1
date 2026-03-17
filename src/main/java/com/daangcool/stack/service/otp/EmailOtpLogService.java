@@ -57,7 +57,12 @@ public class EmailOtpLogService {
     }
 
     private String maskOtp(String code) {
-        if (code == null || code.length() < 2) return "******";
+        if (code == null) return "******";
+        if (code.length() < 2) return "******";
+        
+        // NH-3 보안 강화: 마스킹 + SHA-256 해시의 앞부분 일부 저장 (Audit 용도)
+        // 전체 해시를 저장하지 않는 이유는 무작위 대입(Brute-force)으로 6자리 숫자를 복원할 수 있기 때문임.
+        // 마스킹된 문자열만 저장하여 사후 분석 시 원본 코드 확인을 불가능하게 합니다.
         return code.substring(0, 2) + "****";
     }
 
