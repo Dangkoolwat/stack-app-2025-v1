@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin/rate-limit")
 public class AdminRateLimitResource {
 
-    private final Logger log = LoggerFactory.getLogger(AdminRateLimitResource.class);
+    private static final Logger log = LoggerFactory.getLogger(AdminRateLimitResource.class);
 
     private final RateLimitingManagementService rateLimitingManagementService;
 
