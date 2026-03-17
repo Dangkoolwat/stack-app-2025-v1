@@ -6,6 +6,7 @@ import com.daangcool.stack.domain.enumeration.FileStorageType;
 import com.daangcool.stack.repository.board.UploadRepository;
 import com.daangcool.stack.service.storage.StorageService;
 import com.daangcool.stack.common.util.UploadFileUtils;
+import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,12 +60,20 @@ class UploadServiceT {
     @BeforeEach
     void setUp() {
         // 테스트에 사용할 가짜 MultipartFile을 생성합니다.
+        // JPEG magic bytes: FF D8 FF E0
+        byte[] jpegContent = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 74, 70, 73, 70};
         multipartFile = new MockMultipartFile(
             "file",
             "test.jpg",
             "image/jpeg",
-            "test image content".getBytes()
+            jpegContent
         );
+
+        // ApplicationProperties Mock 기본 설정
+        ApplicationProperties.File fileProps = new ApplicationProperties.File();
+        fileProps.setAllowedExtensions(new String[]{"jpg", "jpeg", "png", "gif", "pdf"});
+        fileProps.setAllowedMimeTypes(new String[]{"image/jpeg", "image/png", "image/gif", "application/pdf"});
+        lenient().when(applicationProperties.getFile()).thenReturn(fileProps);
 
         // 테스트에 사용할 Upload 엔티티를 생성합니다.
         upload = new Upload();
@@ -97,6 +106,64 @@ class UploadServiceT {
         assertThat(result).isNotNull();
         assertThat(result.getFilePath()).isEqualTo(dummyStoragePath);
         assertThat(result.getSourceFilename()).isEqualTo("test.jpg");
+    }
+
+    /**
+     * 파일 업로드 테스트 (허용되지 않는 확장자)
+     */
+    @Test
+    void saveUpload_InvalidExtension_ShouldThrowInvalidFileException() {
+        // given
+        MockMultipartFile invalidFile = new MockMultipartFile(
+            "file",
+            "test.exe",
+            "image/jpeg",
+            "fake content".getBytes()
+        );
+
+        // when & then
+        assertThatThrownBy(() -> uploadService.saveUpload(invalidFile, "TEST_KEY", true))
+            .isInstanceOf(InvalidFileException.class)
+            .hasMessageContaining("허용되지 않는 파일 확장자");
+    }
+
+    /**
+     * 파일 업로드 테스트 (허용되지 않는 MIME 타입 - 콘텐츠 분석 기반)
+     */
+    @Test
+    void saveUpload_InvalidMimeType_ShouldThrowInvalidFileException() {
+        // given
+        // 확장자는 jpg지만 내용은 쉘 스크립트인 경우
+        MockMultipartFile maliciousFile = new MockMultipartFile(
+            "file",
+            "test.jpg",
+            "image/jpeg",
+            "#!/bin/bash\necho hello".getBytes()
+        );
+
+        // when & then
+        assertThatThrownBy(() -> uploadService.saveUpload(maliciousFile, "TEST_KEY", true))
+            .isInstanceOf(InvalidFileException.class)
+            .hasMessageContaining("허용되지 않는 파일 형식");
+    }
+
+    /**
+     * 파일 업로드 테스트 (비어있는 파일)
+     */
+    @Test
+    void saveUpload_EmptyFile_ShouldThrowInvalidFileException() {
+        // given
+        MockMultipartFile emptyFile = new MockMultipartFile(
+            "file",
+            "test.jpg",
+            "image/jpeg",
+            new byte[0]
+        );
+
+        // when & then
+        assertThatThrownBy(() -> uploadService.saveUpload(emptyFile, "TEST_KEY", true))
+            .isInstanceOf(InvalidFileException.class)
+            .hasMessageContaining("비어 있을 수 없습니다");
     }
 
     /**

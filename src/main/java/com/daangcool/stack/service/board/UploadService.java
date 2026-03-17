@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -66,7 +67,7 @@ public class UploadService {
      * 파일 업로드 및 메타데이터 저장.
      */
     public Upload saveUpload(MultipartFile file, String storageKey, boolean isPublic) {
-        validateFile(file);
+        String detectedMimeType = validateFile(file);
 
         try {
             // 실제 파일 저장
@@ -80,7 +81,7 @@ public class UploadService {
             upload.setFilePath(storageFilePath);
             upload.setFileSize(file.getSize());
             upload.setFileExtension(UploadFileUtils.getExtension(file.getOriginalFilename()));
-            upload.setMimeType(file.getContentType());
+            upload.setMimeType(detectedMimeType); // (C-4) 실제 감지된 MIME 타입 사용
             upload.setPublic(isPublic);
 
             // DB 저장
@@ -128,8 +129,10 @@ public class UploadService {
      * - 확장자 화이트리스트 검사
      * - MIME 타입 화이트리스트 검사 (Apache Tika 사용)
      * - 확장자와 MIME 타입 일치 여부 확인 (스푸핑 방지)
+     *
+     * @return 감지된 MIME 타입
      */
-    private void validateFile(MultipartFile file) {
+    private String validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new InvalidFileException("업로드 파일은 비어 있을 수 없습니다.");
         }
@@ -148,8 +151,8 @@ public class UploadService {
         }
 
         // 2. MIME 타입 검증 (Content-based detection)
-        try {
-            String detectedMimeType = tika.detect(file.getInputStream());
+        try (InputStream is = file.getInputStream()) {
+            String detectedMimeType = tika.detect(is);
             List<String> allowedMimeTypes = List.of(fileStorageProperties.getFile().getAllowedMimeTypes());
 
             if (!allowedMimeTypes.contains(detectedMimeType)) {
@@ -162,6 +165,8 @@ public class UploadService {
             if (providedMimeType != null && !providedMimeType.equalsIgnoreCase(detectedMimeType)) {
                 log.warn("[SECURITY] MIME type mismatch. Provided: {}, Detected: {}", providedMimeType, detectedMimeType);
             }
+
+            return detectedMimeType;
 
         } catch (IOException e) {
             throw new InvalidFileException("파일 콘텐츠 분석 중 오류가 발생했습니다.");
