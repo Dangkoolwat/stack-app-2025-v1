@@ -255,7 +255,6 @@ public class UserService {
             });
     }
 
-    @Transactional
     public void changePassword(String currentClearTextPassword, String newPassword) {
         SecurityUtils.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
