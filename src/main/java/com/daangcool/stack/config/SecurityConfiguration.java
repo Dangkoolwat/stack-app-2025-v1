@@ -125,8 +125,8 @@ public class SecurityConfiguration {
 
                     .requestMatchers("/api/**").authenticated()
                     .requestMatchers("/websocket/**").authenticated()
-//                    .requestMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers("/management/health", "/management/health/**", "/management/info", "/management/prometheus").permitAll()
+                    .requestMatchers("/management/health", "/management/health/**", "/management/info").permitAll()
+                    .requestMatchers("/management/prometheus").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
 
             )
