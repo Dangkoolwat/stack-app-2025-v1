@@ -161,7 +161,7 @@ java -jar target/app.jar
 
 ## 📜 안내 (About)
 이 프로젝트는 개발자로서 쌓아온 경험과 생산성을 정리한  
-개인 Legacy Project이자, Full-Stack Starter Framework입니다.  
+개인 Project이자, Full-Stack Starter Framework입니다.  
 온프레미스와 클라우드 어디서나 빠르게 서비스를 구축할 수 있도록 설계되어 있으며,  
 앞으로도 지속적으로 개선될 예정입니다.
 
