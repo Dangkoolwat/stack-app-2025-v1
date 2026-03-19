@@ -55,6 +55,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         if (!user.isActivated()) {
             throw new UserNotActivatedException("User " + lowercaseLogin + " was not activated");
         }
+
         return UserWithId.fromUser(user);
     }
 
