@@ -88,7 +88,9 @@
   <logger name="org.apache.tomcat.util.compat" level="INFO"/> # Java 22 compatibility check noise suppression
   <logger name="org.apache.tomcat.util.net.jsse.JSSEUtil" level="INFO"/> # SSL Ciphers Debug Log Suppress
   <logger name="org.apache.tomcat.util.net.openssl.ciphers.OpenSSLCipherConfigurationParser" level="INFO"/> # SSL Ciphers Debug Log Suppress
-
+  <logger name="io.opentelemetry.sdk.trace.SdkSpan" level="INFO"/> 
+  <logger name="io.opentelemetry.extension.trace.propagation" level="INFO"/> 
+  <logger name="io.micrometer.tracing" level="INFO"/>
 
   <!-- Dev 프로파일: 콘솔만 -->
   <springProfile name="dev">
