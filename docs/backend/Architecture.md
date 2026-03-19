@@ -27,3 +27,112 @@
 ## 5. 보안 및 에러 표준
 - 인증: JWT 기반 Stateless 보안 시스템을 따릅니다.
 - 에러 응답: RFC 7807 표준을 준수하는 `ProblemDetail` 형식을 클라이언트에 반환합니다.
+
+## 6. JSON & Serialization Standard (Jackson Policy)
+
+### 6.1 기본 원칙
+본 프로젝트는 Spring Boot 4 기반이며, JSON 직렬화 표준은 Jackson 3를 기준으로 한다.
+
+- Jackson 3 (`tools.jackson` 계열)을 단일 표준으로 사용한다
+- Jackson 2 (`com.fasterxml.jackson`)는 사용하지 않는다
+- 두 계열의 혼용은 금지한다
+
+### 6.2 금지 사항
+- Jackson 2 + Jackson 3 혼용
+- ObjectMapper 직접 생성 (`new ObjectMapper()`)
+- 캐시용과 API용 ObjectMapper 분리
+
+### 6.3 적용 규칙
+- ObjectMapper는 반드시 Spring Bean으로 주입받아 사용한다
+- 모든 직렬화 계층(API, Cache, OpenAPI)은 동일한 mapper 체계를 사용한다
+- transitive dependency까지 포함하여 Jackson 2는 완전히 제거한다
+
+### 6.4 목적
+- 직렬화/역직렬화 불일치 방지
+- 캐시 데이터 안정성 확보
+- Swagger/OpenAPI 일관성 유지
+
+## 7. Cache & Redis Architecture Policy
+
+### 7.1 기본 원칙
+
+본 시스템의 캐시 전략은 다음을 따른다:
+
+- Redis 연결은 중앙 집중형으로 관리한다
+- 서비스마다 Redis 연결을 생성하지 않는다
+- 캐시는 연결이 아니라 “영역(cache name)”으로 분리한다
+
+### 7.2 Redis 연결 전략
+
+#### 올바른 방식
+- 공용 RedissonClient 사용
+- 필요 시 목적별 최소 Bean만 허용
+- cache namespace 기반 분리
+
+#### 금지
+- 서비스마다 RedisClient 생성
+- 기능별 Redis 연결 추가
+- 인증 캐시를 별도 Redis로 분리
+
+### 7.3 Cache 책임 분리
+
+- 캐시는 서비스 레이어에서 관리한다
+- 각 서비스는 자신의 cache key, TTL, eviction 정책을 가진다
+- 인프라 레벨에서 비즈니스 로직을 알지 않는다
+
+---
+
+### 7.4 Cache 유형 분리
+
+#### Hibernate L2 Cache
+- 엔티티 레벨 캐시
+- Binary codec 사용
+- ORM 성능 최적화 목적
+
+#### Application Cache (@Cacheable)
+- 서비스 응답 캐시
+- JSON 직렬화 가능
+- 명확한 TTL 필수
+
+---
+
+### 7.5 인증 캐시 정책 (중요)
+
+다음 데이터는 캐시 대상에서 제외한다:
+
+- 사용자 인증 정보
+- 로그인 처리 결과
+- UserDetails
+- 권한 정보
+- 계정 상태 (활성화/잠금 등)
+
+#### 이유
+- stale 데이터 → 보안 문제
+- JWT 구조에서는 캐시 이점이 낮음
+- DB 상태와 캐시 상태 불일치 위험
+
+---
+
+### 7.6 TTL 전략
+
+- 설정 / 공통코드 → Long TTL
+- 조회 데이터 → 중간 TTL
+- 통계 / 카운트 → 짧은 TTL
+- 인증 관련 → 캐시 금지
+
+---
+
+### 7.7 직렬화 정책
+
+- 동일 데이터는 동일 codec 사용
+- Binary / JSON 혼용 시 영역 분리
+- ObjectMapper는 반드시 단일 체계 유지
+
+---
+
+### 7.8 최종 원칙 요약
+
+- Redis 연결은 적게
+- Cache는 서비스 단에서 분리
+- 인증은 캐시하지 않는다
+- 직렬화는 단일 체계 유지

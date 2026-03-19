@@ -37,3 +37,72 @@
 - [ ] Liquibase 변경 로그가 오라클 문법 및 식별자 제약을 준수하는가?
 - [ ] 모든 API 응답이 DTO를 통해 정규화된 에러 형식을 따르는가?
 - [ ] 작업 완료 후 최종 문서 업데이트가 완료되었는가?
+
+## 5. JSON / Cache 변경 작업 규칙
+
+### 5.1 Jackson 변경 작업
+
+Jackson 관련 변경 작업은 반드시 아래 절차를 따른다.
+
+#### Step 1: dependency 분석
+- mvn dependency:tree 수행
+- Jackson 2 존재 여부 확인
+
+#### Step 2: 혼용 제거
+- com.fasterxml.jackson 전부 제거
+- tools.jackson으로 통일
+
+#### Step 3: 코드 정리
+- import 전수 교체
+- ObjectMapper 직접 생성 제거
+
+#### Step 4: 검증
+- Swagger 정상 동작 확인
+- /v3/api-docs 확인
+- JSON 직렬화 오류 확인
+
+---
+
+### 5.2 Cache 변경 작업
+
+Cache 구조 변경 시 반드시 다음을 따른다.
+
+#### Step 1: 캐시 대상 분류
+- 인증 데이터인지 여부 확인
+- 조회 데이터인지 여부 확인
+
+#### Step 2: 금지 대상 확인
+다음은 캐시 적용 금지:
+
+- 로그인 관련
+- UserDetails
+- 권한 정보
+
+#### Step 3: TTL 설계
+- 데이터 성격별 TTL 정의
+
+#### Step 4: 영향 분석
+- Hibernate L2와 중복 여부
+- JSON/Binary 충돌 여부
+
+---
+
+### 5.3 Redis 변경 작업
+
+#### 필수 확인
+- Redis 연결 수 증가 여부
+- RedissonClient 중복 생성 여부
+
+#### 금지
+- 서비스별 RedisClient 생성
+- 기능별 Redis 연결 확장
+
+---
+
+### 5.4 리뷰 체크리스트 (추가)
+
+- [ ] Jackson 혼용이 없는가?
+- [ ] ObjectMapper가 단일 체계인가?
+- [ ] 인증 데이터 캐시가 없는가?
+- [ ] Redis 연결이 중앙 집중형인가?
+- [ ] 캐시 TTL이 적절한가?

@@ -78,3 +78,12 @@ core(로직) -> themes(표현) -> views(흐름) 계층을 엄격히 분리합니
 - 수행된 검증 내용
 - 남은 리스크 또는 가정 사항
 - 에이전트 로그 및 Walkthrough 생성 확인
+
+## Additional Architecture Enforcement
+
+모든 에이전트는 Backend Architecture.md의 다음 정책을 반드시 따른다:
+
+- Jackson 단일화 정책
+- Redis 중앙 집중 연결 정책
+- 인증 캐시 금지 정책
+
