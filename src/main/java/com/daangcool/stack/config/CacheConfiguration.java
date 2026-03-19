@@ -1,6 +1,6 @@
 package com.daangcool.stack.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.hibernate.cache.jcache.ConfigSettings;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -54,6 +54,7 @@ import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_
  *  - 2026-03-14: M-5 개선 — buildTTLConfig() TTL 세분화 적용
  *  - 2026-03-17: NM-5 해결 — Redisson 코덱을 JsonJacksonCodec으로 전환
  *  - 2026-03-17: IDE 심볼 오류 조치 — javax.cache:cache-api 의존성 명시 및 패키지 복구
+ *  - 2026-03-20: C-1 리팩토링 — 인증 캐시(User, Authority) 제거 및 캐시 영역 서비스 단위 그룹화/TTL 재설계
  * ------------------------------------------------------------------
  */
 @Configuration
@@ -68,10 +69,11 @@ public class CacheConfiguration {
     }
 
     @Bean(name = "redissonJsonClient", destroyMethod = "shutdown")
-    public RedissonClient redissonJsonClient(JHipsterProperties jHipsterProperties) {
-        // Specialized client: JSON codec for Spring @Cacheable readability and entity support
+    public RedissonClient redissonJsonClient(JHipsterProperties jHipsterProperties, ObjectMapper objectMapper) {
+        // [REFAC] NM-5: ObjectMapper를 직접 생성하지 않고 Spring 빈 주입 방식으로 변경 (Jackson 3 호환)
         Config config = getRedissonConfig(jHipsterProperties);
-        config.setCodec(new org.redisson.codec.JsonJacksonCodec(createSpringCacheObjectMapper()));
+        // [REFAC] JsonJacksonCodec 대신 Jackson 3를 지원하는 JsonJackson3Codec 사용
+        config.setCodec(new org.redisson.codec.JsonJackson3Codec(objectMapper));
         return Redisson.create(config);
     }
 
@@ -99,76 +101,73 @@ public class CacheConfiguration {
         RedissonClient redissonClient, // Primary (Binary)
         JHipsterProperties jHipsterProperties
     ) {
-        // Spring Caches: Use JSON client
-        javax.cache.configuration.Configuration<Object, Object> springConfig = buildTTLConfig(
+        // Spring Caches: Use JSON client (Default TTL 1h / Long TTL 24h)
+        javax.cache.configuration.Configuration<Object, Object> applicationDefaultConfig = buildTTLConfig(
             redissonJsonClient,
             jHipsterProperties.getCache().getRedis().getExpiration(),
             TimeUnit.SECONDS
         );
-        javax.cache.configuration.Configuration<Object, Object> springLongTtlConfig = buildTTLConfig(redissonJsonClient, 86400, TimeUnit.SECONDS);
+        javax.cache.configuration.Configuration<Object, Object> applicationLongConfig = buildTTLConfig(redissonJsonClient, 86400, TimeUnit.SECONDS);
 
-        // Hibernate L2 Cache regions: Use Binary client (via jcacheConfiguration / longTtlCacheConfiguration)
-        javax.cache.configuration.Configuration<Object, Object> binaryConfig = buildTTLConfig(
+        // Hibernate L2 Cache regions: Use Binary client (Default TTL 1h / Long TTL 24h)
+        javax.cache.configuration.Configuration<Object, Object> hibernateDefaultConfig = buildTTLConfig(
             redissonClient,
             jHipsterProperties.getCache().getRedis().getExpiration(),
             TimeUnit.SECONDS
         );
-        javax.cache.configuration.Configuration<Object, Object> binaryLongConfig = buildTTLConfig(redissonClient, 86400, TimeUnit.SECONDS);
+        javax.cache.configuration.Configuration<Object, Object> hibernateLongConfig = buildTTLConfig(redissonClient, 86400, TimeUnit.SECONDS);
 
         return cm -> {
-            // createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_LOGIN_CACHE, binaryConfig); // Removed to break loop
-            // createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_EMAIL_CACHE, binaryConfig); // Removed to break loop
+            // A. 전역 설정 및 공통 코드 (Long TTL)
+            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), hibernateLongConfig);
+            createCache(cm, SETTING_CACHE, applicationLongConfig);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), hibernateLongConfig);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), hibernateLongConfig);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", hibernateLongConfig);
+            createCache(cm, COMMON_GROUP_CACHE, applicationLongConfig);
+            createCache(cm, COMMON_GROUP_LIST_CACHE, applicationLongConfig);
+            createCache(cm, COMMON_DETAIL_CACHE, applicationLongConfig);
+            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, applicationLongConfig);
 
-            createCache(cm, com.daangcool.stack.domain.User.class.getName(), binaryConfig);
-            createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), binaryConfig);
-            createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", binaryConfig);
+            // B. 게시판 (Board) 서비스 캐시
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), hibernateDefaultConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", hibernateDefaultConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", hibernateDefaultConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", hibernateDefaultConfig);
+            createCache(cm, CACHE_BOARD_BY_ID, applicationDefaultConfig);
+            createCache(cm, CACHE_BOARD_PAGE, applicationDefaultConfig);
+            createCache(cm, CACHE_BOARD_SEARCH, applicationDefaultConfig);
+            createCache(cm, CACHE_BOARD_NOTICE_LIST, applicationDefaultConfig);
+            createCache(cm, CACHE_BOARD_COUNT_TOTAL, applicationDefaultConfig);
+            createCache(cm, CACHE_BOARD_COUNT_BY_USER, applicationDefaultConfig);
 
-            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), binaryLongConfig);
-            createCache(cm, SETTING_CACHE, springLongTtlConfig);
+            // C. 댓글 (Comment) 서비스 캐시
+            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), hibernateDefaultConfig);
+            createCache(cm, CACHE_COMMENT_BY_ID, applicationDefaultConfig);
+            createCache(cm, CACHE_COMMENT_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, CACHE_COMMENT_SEARCH, applicationDefaultConfig);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, applicationDefaultConfig);
+            createCache(cm, CACHE_COMMENT_STATS, applicationDefaultConfig);
 
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), binaryLongConfig);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), binaryLongConfig);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", binaryLongConfig);
-            createCache(cm, COMMON_GROUP_CACHE, springLongTtlConfig);
-            createCache(cm, COMMON_GROUP_LIST_CACHE, springLongTtlConfig);
-            createCache(cm, COMMON_DETAIL_CACHE, springLongTtlConfig);
-            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, springLongTtlConfig);
+            // D. 태그 (Tag) 서비스 캐시
+            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), hibernateLongConfig);
+            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), hibernateDefaultConfig);
+            createCache(cm, CACHE_TAG_BY_ID, applicationLongConfig);
+            createCache(cm, CACHE_TAG_ALL, applicationLongConfig);
+            createCache(cm, CACHE_TAG_PREFIX, applicationLongConfig);
+            createCache(cm, CACHE_TAG_POPULAR, applicationDefaultConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), binaryLongConfig);
-            createCache(cm, CACHE_TAG_BY_ID, springLongTtlConfig);
-            createCache(cm, CACHE_TAG_ALL, springLongTtlConfig);
-            createCache(cm, CACHE_TAG_PREFIX, springLongTtlConfig);
-            createCache(cm, CACHE_TAG_POPULAR, springConfig);
+            // E. 업로드 (Upload) 서비스 캐시
+            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), hibernateDefaultConfig);
+            createCache(cm, CACHE_UPLOAD_BY_ID, applicationDefaultConfig);
+            createCache(cm, CACHE_UPLOAD_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, CACHE_UPLOAD_ALL, applicationDefaultConfig);
+            createCache(cm, CACHE_UPLOAD_STATS, applicationDefaultConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), binaryConfig);
-            createCache(cm, CACHE_UPLOAD_BY_ID, springConfig);
-            createCache(cm, CACHE_UPLOAD_BY_BOARD, springConfig);
-            createCache(cm, CACHE_UPLOAD_ALL, springConfig);
-            createCache(cm, CACHE_UPLOAD_STATS, springConfig);
-
-            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), binaryConfig);
-            createCache(cm, CACHE_COMMENT_BY_ID, springConfig);
-            createCache(cm, CACHE_COMMENT_BY_BOARD, springConfig);
-            createCache(cm, CACHE_COMMENT_SEARCH, springConfig);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, springConfig);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, springConfig);
-            createCache(cm, CACHE_COMMENT_STATS, springConfig);
-
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), binaryConfig);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", binaryConfig);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", binaryConfig);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", binaryConfig);
-            createCache(cm, CACHE_BOARD_BY_ID, springConfig);
-            createCache(cm, CACHE_BOARD_PAGE, springConfig);
-            createCache(cm, CACHE_BOARD_SEARCH, springConfig);
-            createCache(cm, CACHE_BOARD_NOTICE_LIST, springConfig);
-            createCache(cm, CACHE_BOARD_COUNT_TOTAL, springConfig);
-            createCache(cm, CACHE_BOARD_COUNT_BY_USER, springConfig);
-
-            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), binaryConfig);
-
-            createCache(cm, "default-update-timestamps-region", binaryConfig);
-            createCache(cm, "default-query-results-region", binaryConfig);
+            // F. 하이버네이트 기본 시스템 캐시
+            createCache(cm, "default-update-timestamps-region", hibernateDefaultConfig);
+            createCache(cm, "default-query-results-region", hibernateDefaultConfig);
         };
     }
 
@@ -196,21 +195,7 @@ public class CacheConfiguration {
         return RedissonConfiguration.fromInstance(redissonClient, config);
     }
 
-    private ObjectMapper createSpringCacheObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.findAndRegisterModules();
-        mapper.setAnnotationIntrospector(
-            new com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector() {
-                @Override
-                public boolean hasIgnoreMarker(com.fasterxml.jackson.databind.introspect.AnnotatedMember m) {
-                    return false;
-                }
-            }
-        );
-        mapper.addMixIn(org.hibernate.collection.spi.PersistentSet.class, HibernateSetMixIn.class);
-        mapper.addMixIn(org.hibernate.collection.spi.PersistentBag.class, HibernateBagMixIn.class);
-        return mapper;
-    }
+
 
     private Config getRedissonConfig(JHipsterProperties jHipsterProperties) {
         Config config = new Config();
@@ -232,11 +217,4 @@ public class CacheConfiguration {
         return config;
     }
 
-    @com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NONE)
-    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(as = java.util.HashSet.class)
-    abstract static class HibernateSetMixIn {}
-
-    @com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NONE)
-    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(as = java.util.ArrayList.class)
-    abstract static class HibernateBagMixIn {}
 }

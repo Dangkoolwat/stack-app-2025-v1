@@ -12,7 +12,7 @@ import com.daangcool.stack.repository.board.CommentRepository;
 import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
 import com.daangcool.stack.service.dto.CommentDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;

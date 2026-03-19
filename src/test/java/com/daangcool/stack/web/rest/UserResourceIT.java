@@ -12,7 +12,7 @@ import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.UserService;
 import com.daangcool.stack.service.dto.AdminUserDTO;
 import com.daangcool.stack.service.mapper.UserMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import java.util.*;
 import java.util.function.Consumer;
@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
+ * 2026-03-20: 인증 캐시 제거로 인해 USERS_BY_LOGIN_CACHE 상태를 검증하던 Assertion 코드를 삭제함.
  */
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
@@ -273,8 +274,6 @@ class UserResourceIT {
         // Initialize the database
         userRepository.saveAndFlush(user);
 
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin(), User.class)).isNull();
-
         // Get the user
         restUserMockMvc
             .perform(get("/api/admin/users/{login}", user.getLogin()))
@@ -286,8 +285,6 @@ class UserResourceIT {
             .andExpect(jsonPath("$.email").value(DEFAULT_EMAIL))
             .andExpect(jsonPath("$.imageUrl").value(DEFAULT_IMAGEURL))
             .andExpect(jsonPath("$.langKey").value(DEFAULT_LANGKEY));
-
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin(), User.class)).isNotNull();
     }
 
     @Test
@@ -470,8 +467,6 @@ class UserResourceIT {
         restUserMockMvc
             .perform(delete("/api/admin/users/{login}", user.getLogin()).accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent());
-
-        assertThat(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).get(user.getLogin(), User.class)).isNull();
 
         // Validate the database is empty
         assertPersistedUsers(users -> assertThat(users).hasSize(databaseSizeBeforeDelete - 1));

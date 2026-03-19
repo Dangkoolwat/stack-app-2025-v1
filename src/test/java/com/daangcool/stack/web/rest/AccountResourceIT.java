@@ -15,7 +15,7 @@ import com.daangcool.stack.service.dto.AdminUserDTO;
 import com.daangcool.stack.service.dto.PasswordChangeDTO;
 import com.daangcool.stack.web.rest.vm.KeyAndPasswordVM;
 import com.daangcool.stack.web.rest.vm.ManagedUserVM;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;

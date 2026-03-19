@@ -9,7 +9,7 @@ import tools.jackson.datatype.hibernate7.Hibernate7Module.Feature;
 public class JacksonHibernateConfiguration {
 
     /*
-     * Support for Hibernate types in Jackson.
+     * Hibernate 엔티티 직렬화 지원 (Jackson 3)
      */
     @Bean
     public Hibernate7Module hibernate7Module() {
