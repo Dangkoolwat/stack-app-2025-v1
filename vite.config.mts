@@ -1,4 +1,5 @@
 import { URL, fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import { defineConfig, normalizePath } from 'vite';
 
 import vue from '@vitejs/plugin-vue';
@@ -52,11 +53,17 @@ let config = defineConfig({
   server: {
     host: true,
     port: 9000,
+    https: {
+      key: fs.readFileSync(fileURLToPath(new URL('./src/main/webapp/cert/localhost.key.pem', import.meta.url))),
+      cert: fs.readFileSync(fileURLToPath(new URL('./src/main/webapp/cert/localhost.cer.pem', import.meta.url))),
+    },
     proxy: Object.fromEntries(
       ['/api', '/management', '/v3/api-docs', '/login', '/websocket'].map(res => [
         res,
         {
-          target: 'http://localhost:8080',
+          target: 'https://localhost:8443',
+          changeOrigin: true,
+          secure: false,
           ws: res === '/websocket',
         },
       ]),
