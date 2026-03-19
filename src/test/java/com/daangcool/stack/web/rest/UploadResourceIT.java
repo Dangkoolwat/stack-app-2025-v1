@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +18,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 /**
  * 통합 테스트: UploadResource (API 계층)
@@ -100,10 +100,10 @@ class UploadResourceIT {
      * - 인증된 사용자가 비공개 다운로드 API를 통해 파일을 성공적으로 받는지 확인합니다.
      */
     @Test
-    @WithMockUser // 이 어노테이션으로 인증된 사용자를 시뮬레이션합니다.
     @Transactional
     void downloadPrivateFile_WithAuth_ShouldSucceed() throws Exception {
-        restMockMvc.perform(get("/api/uploads/private/{id}/download", privateUpload.getId()))
+        restMockMvc.perform(get("/api/uploads/private/{id}/download", privateUpload.getId())
+                .with(user("user").roles("USER", "ADMIN")))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Type", "text/plain"))
             .andExpect(content().string("Hello, World!"));
@@ -130,7 +130,7 @@ class UploadResourceIT {
         restMockMvc.perform(get("/api/uploads/{id}/preview", publicUpload.getId()))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Type", "text/plain"))
-            .andExpect(header().string("Content-Disposition", containsString("inline; filename=")))
+            .andExpect(header().string("Content-Disposition", containsString("inline; filename*=UTF-8''")))
             .andExpect(content().string("Hello, World!"));
     }
 }

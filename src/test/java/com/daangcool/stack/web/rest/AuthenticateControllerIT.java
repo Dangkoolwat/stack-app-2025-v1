@@ -14,7 +14,7 @@ import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.service.GlobalSettingsService;
 import com.daangcool.stack.web.rest.vm.LoginVM;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

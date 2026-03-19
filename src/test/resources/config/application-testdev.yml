@@ -31,7 +31,7 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: com.daangcool.stack.config.OracleCaseInsensitiveNamingStrategy
-        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        implicit-strategy: org.springframework.boot.hibernate.SpringImplicitNamingStrategy
     properties:
       hibernate.show_sql: true
       hibernate.id.new_generator_mappings: true
