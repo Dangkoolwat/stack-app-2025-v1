@@ -137,7 +137,6 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
