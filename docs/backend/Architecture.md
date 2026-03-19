@@ -16,6 +16,17 @@
 - 상용 환경: Oracle 상용 에디션(On-prem/Cloud)을 사용합니다.
 - 스키마 관리: 모든 DB 변경 사항은 `src/main/resources/config/liquibase/` 경로의 changelog를 통해서만 관리하며, 수동 SQL 조작은 금지됩니다.
 
+### 3.1 DB 사용 제한 정책 (Critical Guardrail)
+
+- 본 시스템은 Oracle DB를 유일한 데이터베이스로 사용한다
+- In-memory DB(H2, HSQL 등)는 어떤 환경에서도 사용하지 않는다
+- 로컬 개발 환경에서도 Oracle 컨테이너를 기준으로 실행해야 한다
+
+#### 금지 사항
+- H2 dependency 추가
+- 테스트 편의를 위한 DB 변경
+- DB 연결 실패 시 대체 DB 도입
+
 ## 4. 오라클 및 DB 설계 핵심 원칙 (Database Guardrails)
 - P1. 식별자 명명 규칙: 테이블 및 컬럼명은 오라클 호환성을 위해 30자 이내로 작성하며, 가독성을 위해 언더바(`_`)를 사용하는 스네이크 케이스를 따릅니다.
 - P2. 시퀀스 전략: 모든 PK는 오라클 `SEQUENCE` 전략을 사용합니다. JHipster 관례에 따라 시퀀스 명명 규칙을 준수합니다.

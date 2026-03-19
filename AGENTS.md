@@ -87,3 +87,41 @@ core(로직) -> themes(표현) -> views(흐름) 계층을 엄격히 분리합니
 - Redis 중앙 집중 연결 정책
 - 인증 캐시 금지 정책
 
+## Local Execution & Environment Rules (MANDATORY)
+
+모든 에이전트는 로컬 실행 시 다음 규칙을 반드시 따른다:
+
+### 1. .env 기반 실행 강제
+- 애플리케이션 로컬 실행은 반드시 `.env` 설정을 기준으로 한다
+- DB, Redis, Mail 등 모든 인프라 설정은 `.env`를 Source of Truth로 간주한다
+- 설정 오류 발생 시 `.env`를 수정해야 하며, 대체 기술을 도입하지 않는다
+
+### 2. Database 정책 (절대 중요)
+- 본 프로젝트의 DB는 Oracle을 기준으로 한다
+- H2, HSQL, SQLite 등 In-Memory DB 사용을 금지한다
+- 테스트 또는 로컬 실행을 이유로 DB를 변경하지 않는다
+
+### 3. 금지 사항 (Critical Ban)
+다음 행위는 절대 금지한다:
+
+- H2 dependency 추가
+- application.yml / properties에 H2 설정 추가
+- "임시 테스트용" DB로 H2 도입
+- DB 연결 실패를 이유로 DB 종류 변경
+
+### 4. 장애 대응 원칙
+DB 연결 실패 시:
+
+- 올바른 대응:
+  - `.env` 설정 확인
+  - Oracle 컨테이너 상태 확인
+  - JDBC URL 검증
+
+- 잘못된 대응:
+  - H2로 교체
+  - Embedded DB 추가
+  - DB 설정 우회
+
+### 5. Redis 정책
+- Redis는 `.env`에 정의된 설정을 사용한다
+- Redis 연결 실패 시 새로운 Redis를 추가하지 않는다
