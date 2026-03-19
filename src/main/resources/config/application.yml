@@ -176,7 +176,7 @@ server:
 springdoc:
   show-actuator: true
   api-docs:
-    path: /api-docs          # OpenAPI JSON 문서 엔드포인트
+    path: /v3/api-docs          # OpenAPI JSON 문서 엔드포인트
     enabled: true
     groups:
       enabled: true
