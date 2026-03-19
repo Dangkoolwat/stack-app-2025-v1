@@ -1,5 +1,6 @@
 package com.daangcool.stack.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.cache.jcache.ConfigSettings;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -14,7 +15,6 @@ import tech.jhipster.config.JHipsterProperties;
 
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
-import javax.cache.expiry.Duration;
 import java.util.concurrent.TimeUnit;
 
 import static com.daangcool.stack.service.GlobalSettingsService.SETTING_CACHE;
@@ -61,25 +61,30 @@ import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_
 public class CacheConfiguration {
 
     @Bean(destroyMethod = "shutdown")
+    @org.springframework.context.annotation.Primary
     public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
+        // Default client: Binary codec for internal Hibernate L2 cache stability
+        return Redisson.create(getRedissonConfig(jHipsterProperties));
+    }
+
+    @Bean(name = "redissonJsonClient", destroyMethod = "shutdown")
+    public RedissonClient redissonJsonClient(JHipsterProperties jHipsterProperties) {
+        // Specialized client: JSON codec for Spring @Cacheable readability and entity support
         Config config = getRedissonConfig(jHipsterProperties);
+        config.setCodec(new org.redisson.codec.JsonJacksonCodec(createSpringCacheObjectMapper()));
         return Redisson.create(config);
     }
 
     @Bean
     public javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration(
-            RedissonClient redissonClient, JHipsterProperties props) {
-        MutableConfiguration<Object, Object> jcacheConfig = new MutableConfiguration<>();
-        jcacheConfig.setStatisticsEnabled(true);
-        jcacheConfig.setExpiryPolicyFactory(
-            CreatedExpiryPolicy.factoryOf(new Duration(TimeUnit.SECONDS,
-                props.getCache().getRedis().getExpiration())));
-        return RedissonConfiguration.fromInstance(redissonClient, jcacheConfig);
+        RedissonClient redissonClient,
+        JHipsterProperties props
+    ) {
+        return buildTTLConfig(redissonClient, props.getCache().getRedis().getExpiration(), TimeUnit.SECONDS);
     }
 
     @Bean
-    public javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration(
-            RedissonClient redissonClient) {
+    public javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration(RedissonClient redissonClient) {
         return buildTTLConfig(redissonClient, 24, TimeUnit.HOURS);
     }
 
@@ -90,61 +95,80 @@ public class CacheConfiguration {
 
     @Bean
     public JCacheManagerCustomizer cacheManagerCustomizer(
-            javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration,
-            javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration) {
+        @org.springframework.beans.factory.annotation.Qualifier("redissonJsonClient") RedissonClient redissonJsonClient,
+        RedissonClient redissonClient, // Primary (Binary)
+        JHipsterProperties jHipsterProperties
+    ) {
+        // Spring Caches: Use JSON client
+        javax.cache.configuration.Configuration<Object, Object> springConfig = buildTTLConfig(
+            redissonJsonClient,
+            jHipsterProperties.getCache().getRedis().getExpiration(),
+            TimeUnit.SECONDS
+        );
+        javax.cache.configuration.Configuration<Object, Object> springLongTtlConfig = buildTTLConfig(redissonJsonClient, 86400, TimeUnit.SECONDS);
+
+        // Hibernate L2 Cache regions: Use Binary client (via jcacheConfiguration / longTtlCacheConfiguration)
+        javax.cache.configuration.Configuration<Object, Object> binaryConfig = buildTTLConfig(
+            redissonClient,
+            jHipsterProperties.getCache().getRedis().getExpiration(),
+            TimeUnit.SECONDS
+        );
+        javax.cache.configuration.Configuration<Object, Object> binaryLongConfig = buildTTLConfig(redissonClient, 86400, TimeUnit.SECONDS);
+
         return cm -> {
-            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_LOGIN_CACHE, jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_EMAIL_CACHE, jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.User.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            // createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_LOGIN_CACHE, binaryConfig); // Removed to break loop
+            // createCache(cm, com.daangcool.stack.repository.UserRepository.USERS_BY_EMAIL_CACHE, binaryConfig); // Removed to break loop
 
-            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), longTtlCacheConfiguration);
-            createCache(cm, SETTING_CACHE, longTtlCacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.User.class.getName(), binaryConfig);
+            createCache(cm, com.daangcool.stack.domain.Authority.class.getName(), binaryConfig);
+            createCache(cm, com.daangcool.stack.domain.User.class.getName() + ".authorities", binaryConfig);
 
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), longTtlCacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), longTtlCacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", longTtlCacheConfiguration);
-            createCache(cm, COMMON_GROUP_CACHE, longTtlCacheConfiguration);
-            createCache(cm, COMMON_GROUP_LIST_CACHE, longTtlCacheConfiguration);
-            createCache(cm, COMMON_DETAIL_CACHE, longTtlCacheConfiguration);
-            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, longTtlCacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), binaryLongConfig);
+            createCache(cm, SETTING_CACHE, springLongTtlConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), longTtlCacheConfiguration);
-            createCache(cm, CACHE_TAG_BY_ID, longTtlCacheConfiguration);
-            createCache(cm, CACHE_TAG_ALL, longTtlCacheConfiguration);
-            createCache(cm, CACHE_TAG_PREFIX, longTtlCacheConfiguration);
-            createCache(cm, CACHE_TAG_POPULAR, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), binaryLongConfig);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), binaryLongConfig);
+            createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", binaryLongConfig);
+            createCache(cm, COMMON_GROUP_CACHE, springLongTtlConfig);
+            createCache(cm, COMMON_GROUP_LIST_CACHE, springLongTtlConfig);
+            createCache(cm, COMMON_DETAIL_CACHE, springLongTtlConfig);
+            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, springLongTtlConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_ALL, jcacheConfiguration);
-            createCache(cm, CACHE_UPLOAD_STATS, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), binaryLongConfig);
+            createCache(cm, CACHE_TAG_BY_ID, springLongTtlConfig);
+            createCache(cm, CACHE_TAG_ALL, springLongTtlConfig);
+            createCache(cm, CACHE_TAG_PREFIX, springLongTtlConfig);
+            createCache(cm, CACHE_TAG_POPULAR, springConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_SEARCH, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, jcacheConfiguration);
-            createCache(cm, CACHE_COMMENT_STATS, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), binaryConfig);
+            createCache(cm, CACHE_UPLOAD_BY_ID, springConfig);
+            createCache(cm, CACHE_UPLOAD_BY_BOARD, springConfig);
+            createCache(cm, CACHE_UPLOAD_ALL, springConfig);
+            createCache(cm, CACHE_UPLOAD_STATS, springConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", jcacheConfiguration);
-            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_BY_ID, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_PAGE, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_SEARCH, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_NOTICE_LIST, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_COUNT_TOTAL, jcacheConfiguration);
-            createCache(cm, CACHE_BOARD_COUNT_BY_USER, jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), binaryConfig);
+            createCache(cm, CACHE_COMMENT_BY_ID, springConfig);
+            createCache(cm, CACHE_COMMENT_BY_BOARD, springConfig);
+            createCache(cm, CACHE_COMMENT_SEARCH, springConfig);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, springConfig);
+            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, springConfig);
+            createCache(cm, CACHE_COMMENT_STATS, springConfig);
 
-            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), binaryConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", binaryConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", binaryConfig);
+            createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", binaryConfig);
+            createCache(cm, CACHE_BOARD_BY_ID, springConfig);
+            createCache(cm, CACHE_BOARD_PAGE, springConfig);
+            createCache(cm, CACHE_BOARD_SEARCH, springConfig);
+            createCache(cm, CACHE_BOARD_NOTICE_LIST, springConfig);
+            createCache(cm, CACHE_BOARD_COUNT_TOTAL, springConfig);
+            createCache(cm, CACHE_BOARD_COUNT_BY_USER, springConfig);
 
-            createCache(cm, "default-update-timestamps-region", jcacheConfiguration);
-            createCache(cm, "default-query-results-region", jcacheConfiguration);
+            createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), binaryConfig);
+
+            createCache(cm, "default-update-timestamps-region", binaryConfig);
+            createCache(cm, "default-query-results-region", binaryConfig);
         };
     }
 
@@ -162,19 +186,34 @@ public class CacheConfiguration {
     }
 
     private javax.cache.configuration.Configuration<Object, Object> buildTTLConfig(
-            RedissonClient redissonClient, long duration, TimeUnit unit) {
+        RedissonClient redissonClient,
+        long duration,
+        TimeUnit unit
+    ) {
         MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
         config.setStatisticsEnabled(true);
-        config.setExpiryPolicyFactory(
-            CreatedExpiryPolicy.factoryOf(new javax.cache.expiry.Duration(unit, duration))
-        );
+        config.setExpiryPolicyFactory(CreatedExpiryPolicy.factoryOf(new javax.cache.expiry.Duration(unit, duration)));
         return RedissonConfiguration.fromInstance(redissonClient, config);
+    }
+
+    private ObjectMapper createSpringCacheObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.findAndRegisterModules();
+        mapper.setAnnotationIntrospector(
+            new com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector() {
+                @Override
+                public boolean hasIgnoreMarker(com.fasterxml.jackson.databind.introspect.AnnotatedMember m) {
+                    return false;
+                }
+            }
+        );
+        mapper.addMixIn(org.hibernate.collection.spi.PersistentSet.class, HibernateSetMixIn.class);
+        mapper.addMixIn(org.hibernate.collection.spi.PersistentBag.class, HibernateBagMixIn.class);
+        return mapper;
     }
 
     private Config getRedissonConfig(JHipsterProperties jHipsterProperties) {
         Config config = new Config();
-        config.setCodec(new org.redisson.codec.JsonJacksonCodec());
-
         if (jHipsterProperties.getCache().getRedis().isCluster()) {
             config
                 .useClusterServers()
@@ -192,4 +231,12 @@ public class CacheConfiguration {
         }
         return config;
     }
+
+    @com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NONE)
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(as = java.util.HashSet.class)
+    abstract static class HibernateSetMixIn {}
+
+    @com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NONE)
+    @com.fasterxml.jackson.databind.annotation.JsonDeserialize(as = java.util.ArrayList.class)
+    abstract static class HibernateBagMixIn {}
 }
