@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
@@ -16,9 +14,9 @@ import java.util.Objects;
  */
 @Entity
 @Table(name = "stack_authority")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties(value = { "new", "id" })
 @SuppressWarnings("common-java:DuplicatedBlocks")
+// 2026-03-20: 인증 데이터 stale 방지를 위해 L2 캐시 제거 (보안 정책 적용)
 public class Authority implements Serializable, Persistable<String> {
 
     private static final long serialVersionUID = 1L;

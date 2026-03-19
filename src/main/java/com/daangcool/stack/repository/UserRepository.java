@@ -13,12 +13,10 @@ import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the {@link User} entity.
+ * 2026-03-20: 인증 캐시 제거 정책에 따라 USERS_BY_LOGIN_CACHE, USERS_BY_EMAIL_CACHE 상수를 삭제함.
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    String USERS_BY_LOGIN_CACHE = "usersByLogin";
-
-    String USERS_BY_EMAIL_CACHE = "usersByEmail";
     Optional<User> findOneByActivationKey(String activationKey);
     List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
     Optional<User> findOneByResetKey(String resetKey);

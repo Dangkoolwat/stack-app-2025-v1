@@ -11,8 +11,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -26,7 +24,7 @@ import java.util.Set;
 @Table(name = "stack_user")
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+// 2026-03-20: 인증 데이터 stale 방지를 위해 L2 캐시 제거 (보안 정책 적용)
 public class User extends AbstractAuditingEntity<Long> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -133,7 +131,6 @@ public class User extends AbstractAuditingEntity<Long> implements Serializable {
         joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") },
         inverseJoinColumns = { @JoinColumn(name = "authority_name", referencedColumnName = "name") }
     )
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
 

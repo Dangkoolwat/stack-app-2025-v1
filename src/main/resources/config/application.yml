@@ -181,11 +181,13 @@ springdoc:
     groups:
       enabled: true
   swagger-ui:
+    # 2026-03-20: Swagger UI 새로고침 시에도 인증 토큰이 유지되도록 설정 추가
     path: /swagger-ui.html   # Swagger UI 접근 경로
     operations-sorter: method
     tags-sorter: alpha
     tryItOutEnabled: true
     display-request-duration: true
+    persistAuthorization: true
 # Properties to be exposed on the /info management endpoint
 info:
   # Comma separated list of profiles that will trigger the ribbon to show
