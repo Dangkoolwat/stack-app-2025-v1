@@ -1,0 +1,21 @@
+# Task: Jackson 혼용 제거 및 의존성 정리
+
+- [ ] Planning 및 환경 분석 [/]
+    - [x] 프로젝트 내 Jackson 2, 3 혼용 현황 파악
+    - [x] `mvn dependency:tree`를 통한 전이 의존성 확인
+    - [ ] `implementation_plan.md` 작성 및 승인 받기
+- [ ] 의존성 정리 (pom.xml) [ ]
+    - [ ] `com.fasterxml.jackson` 관련 모든 의존성 제거
+    - [ ] `tools.jackson` 관련 의존성 추가 및 버전 최적화 (Spring Boot 4 기준)
+    - [ ] 타 라이브러리(Redisson, OpenAPI 등)에서 유입되는 Jackson 2 exclude 처리
+- [ ] 코드 전수 수정 [ ]
+    - [ ] Java 소스 코드 내 `com.fasterxml.jackson.*` 임포트를 `tools.jackson.*`으로 교체
+    - [ ] `ObjectMapper` 직접 생성(`new ObjectMapper()`) 지점 찾아 Spring Bean 주입 방식으로 변경
+    - [ ] `CacheConfiguration` 내 Jackson 관련 설정 수정 (Redisson 등)
+- [ ] Swagger / OpenAPI 검증 [ ]
+    - [ ] OpenAPI DTO 및 설정 Jackson 3 호환성 확인
+    - [ ] Swagger UI 정상 렌더링 확인
+- [ ] 빌드 및 런타임 검증 [ ]
+    - [ ] `./mvnw clean package` 빌드 성공 확인
+    - [ ] 애플리케이션 실행 및 통합 테스트
+    - [ ] 로그인, 캐시 사용 API 동작 확인
