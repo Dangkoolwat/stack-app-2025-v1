@@ -228,6 +228,23 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     }
 
     /**
+     * 인증 실패 (401 Unauthorized)
+     */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<Object> handleAuthentication(Exception ex, HttpServletRequest request) {
+        var problem = ProblemUtils.build(
+            HttpStatus.UNAUTHORIZED,
+            ErrorConstants.UNAUTHORIZED_TYPE.toString(),
+            "problem.unauthorized",
+            "Authentication failed",
+            request
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
+    }
+
+    /**
      * 처리되지 않은 예외 (500 Internal Server Error)
      * - 내부 스택트레이스 메시지는 감춤
      */
