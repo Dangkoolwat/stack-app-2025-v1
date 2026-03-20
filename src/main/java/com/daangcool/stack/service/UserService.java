@@ -26,33 +26,33 @@ import java.util.stream.Collectors;
 
 /**
  * Service class for managing users.
+ *
+ * 변경 이력:
+ *  - 2026-03-20: C-1 — 인증 캐시 제거 (User JPA 엔티티 직렬화 문제로 clearUserCaches 삭제)
+ *  - 현재: UserAuthCacheService 기반 2차 캐시 재도입.
+ *    상태 변경(비밀번호·권한·활성화·삭제) 시 Redis evict 호출.
  */
 @Service
 @Transactional
-/**
- * UserService
- * 2026-03-20: 인증 캐시 제거 정책에 따라 사용자 정보 변경 시 캐시를 직접 만료하던 logic(clearUserCaches)을 삭제함.
- */
 public class UserService {
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthorityRepository authorityRepository;
-
-
+    private final UserAuthCacheService userAuthCacheService;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
-        AuthorityRepository authorityRepository
+        AuthorityRepository authorityRepository,
+        UserAuthCacheService userAuthCacheService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.userAuthCacheService = userAuthCacheService;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -60,9 +60,9 @@ public class UserService {
         return userRepository
             .findOneByActivationKey(key)
             .map(user -> {
-                // activate given user for the registration key.
                 user.setActivated(true);
                 user.setActivationKey(null);
+                userAuthCacheService.evict(user.getLogin()); // 활성화 → 캐시 무효화
                 LOG.debug("Activated user: {}", user);
                 return user;
             });
@@ -77,6 +77,7 @@ public class UserService {
                 user.setPassword(passwordEncoder.encode(newPassword));
                 user.setResetKey(null);
                 user.setResetDate(null);
+                userAuthCacheService.evict(user.getLogin()); // 비밀번호 재설정 → 캐시 무효화
                 return user;
             });
     }
@@ -112,7 +113,6 @@ public class UserService {
         User newUser = new User();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setLogin(userDTO.getLogin().toLowerCase());
-        // new user gets initially a generated password
         newUser.setPassword(encryptedPassword);
         newUser.setFirstName(userDTO.getFirstName());
         newUser.setLastName(userDTO.getLastName());
@@ -121,9 +121,7 @@ public class UserService {
         }
         newUser.setImageUrl(userDTO.getImageUrl());
         newUser.setLangKey(userDTO.getLangKey());
-        // new user is not active
         newUser.setActivated(false);
-        // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
@@ -152,7 +150,7 @@ public class UserService {
         }
         user.setImageUrl(userDTO.getImageUrl());
         if (userDTO.getLangKey() == null) {
-            user.setLangKey(Constants.DEFAULT_LANGUAGE); // default language
+            user.setLangKey(Constants.DEFAULT_LANGUAGE);
         } else {
             user.setLangKey(userDTO.getLangKey());
         }
@@ -178,9 +176,7 @@ public class UserService {
 
     /**
      * Update all information for a specific user, and return the modified user.
-     *
-     * @param userDTO user to update.
-     * @return updated user.
+     * 권한 포함 모든 정보 변경 → 캐시 무효화.
      */
     public Optional<AdminUserDTO> updateUser(AdminUserDTO userDTO) {
         return Optional.of(userRepository.findById(userDTO.getId()))
@@ -206,6 +202,7 @@ public class UserService {
                     .map(Optional::get)
                     .forEach(managedAuthorities::add);
                 userRepository.save(user);
+                userAuthCacheService.evict(user.getLogin()); // 관리자 수정 → 캐시 무효화
                 LOG.debug("Changed Information for User: {}", user);
                 return user;
             })
@@ -217,18 +214,14 @@ public class UserService {
             .findOneByLogin(login)
             .ifPresent(user -> {
                 userRepository.delete(user);
+                userAuthCacheService.evict(login); // 탈퇴 → 캐시 무효화
                 LOG.debug("Deleted User: {}", user);
             });
     }
 
     /**
      * Update basic information (first name, last name, email, language) for the current user.
-     *
-     * @param firstName first name of user.
-     * @param lastName  last name of user.
-     * @param email     email id of user.
-     * @param langKey   language key.
-     * @param imageUrl  image URL of user.
+     * 프로필 변경 — 보안 관련 필드(권한·활성화)는 변경 없으나 일관성을 위해 evict.
      */
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
         SecurityUtils.getCurrentUserLogin()
@@ -242,6 +235,7 @@ public class UserService {
                 user.setLangKey(langKey);
                 user.setImageUrl(imageUrl);
                 userRepository.save(user);
+                userAuthCacheService.evict(user.getLogin()); // 프로필 변경 → 캐시 무효화
                 LOG.debug("Changed Information for User: {}", user);
             });
     }
@@ -256,6 +250,7 @@ public class UserService {
                 }
                 String encryptedPassword = passwordEncoder.encode(newPassword);
                 user.setPassword(encryptedPassword);
+                userAuthCacheService.evict(user.getLogin()); // 비밀번호 변경 → 캐시 무효화
                 LOG.debug("Changed password for User: {}", user);
             });
     }
@@ -282,26 +277,21 @@ public class UserService {
 
     /**
      * Not activated users should be automatically deleted after 3 days.
-     * <p>
-     * This is scheduled to get fired every day, at 01:00 (am).
      */
     @Scheduled(cron = "0 0 1 * * ?")
     public void removeNotActivatedUsers() {
         userRepository
-            .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
+            .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(
+                Instant.now().minus(3, ChronoUnit.DAYS))
             .forEach(user -> {
                 LOG.debug("Deleting not activated user {}", user.getLogin());
                 userRepository.delete(user);
+                userAuthCacheService.evict(user.getLogin()); // 만료 계정 삭제 → 캐시 무효화
             });
     }
 
-    /**
-     * Gets a list of all the authorities.
-     * @return a list of all the authorities.
-     */
     @Transactional(readOnly = true)
     public List<String> getAuthorities() {
         return authorityRepository.findAll().stream().map(Authority::getName).toList();
     }
-
 }

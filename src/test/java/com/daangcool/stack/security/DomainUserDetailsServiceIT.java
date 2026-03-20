@@ -6,11 +6,13 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import com.daangcool.stack.IntegrationTest;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
+import com.daangcool.stack.service.UserAuthCacheService;
 import com.daangcool.stack.service.UserService;
-import java.util.Locale;
+import com.daangcool.stack.service.dto.UserAuthCacheDto;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,8 +20,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+import java.util.Optional;
+
 /**
- * Integrations tests for {@link DomainUserDetailsService}.
+ * DomainUserDetailsService 통합 테스트
+ *
+ * 기존 케이스(로그인/이메일/비활성화) 유지 + 2차 캐시 동작 검증 추가.
+ *
+ * 캐시 검증 항목:
+ *  - 첫 번째 loadUserByUsername() 호출 후 Redis 에 DTO 저장됨
+ *  - 두 번째 호출은 Redis 캐시에서 반환됨 (DB 쿼리 생략)
+ *  - evict() 후 재호출 시 DB 재조회 후 캐시 복구됨
  */
 @Transactional
 @IntegrationTest
@@ -41,6 +53,13 @@ class DomainUserDetailsServiceIT {
     @Autowired
     @Qualifier("userDetailsService")
     private UserDetailsService domainUserDetailsService;
+
+    @Autowired
+    private UserAuthCacheService userAuthCacheService;
+
+    // ──────────────────────────────────────────────
+    // 테스트 데이터
+    // ──────────────────────────────────────────────
 
     public User getUserOne() {
         User userOne = new User();
@@ -90,7 +109,15 @@ class DomainUserDetailsServiceIT {
         userService.deleteUser(USER_ONE_LOGIN);
         userService.deleteUser(USER_TWO_LOGIN);
         userService.deleteUser(USER_THREE_LOGIN);
+        // 테스트 후 캐시도 정리
+        userAuthCacheService.evict(USER_ONE_LOGIN);
+        userAuthCacheService.evict(USER_TWO_LOGIN);
+        userAuthCacheService.evict(USER_THREE_LOGIN);
     }
+
+    // ──────────────────────────────────────────────
+    // 기존 테스트 (변경 없이 유지)
+    // ──────────────────────────────────────────────
 
     @Test
     void assertThatUserCanBeFoundByLogin() {
@@ -132,5 +159,66 @@ class DomainUserDetailsServiceIT {
         assertThatExceptionOfType(UserNotActivatedException.class).isThrownBy(() ->
             domainUserDetailsService.loadUserByUsername(USER_THREE_LOGIN)
         );
+    }
+
+    // ──────────────────────────────────────────────
+    // 2차 캐시 검증 테스트 (신규)
+    // ──────────────────────────────────────────────
+
+    @Test
+    @DisplayName("loadUserByUsername() 호출 후 Redis 에 UserAuthCacheDto 가 저장된다")
+    void loadUserByUsername_ShouldPopulateCache() {
+        // 캐시 비어있음 확인
+        assertThat(userAuthCacheService.get(USER_ONE_LOGIN)).isEmpty();
+
+        // 로그인 → DB 조회 후 캐시 저장
+        domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+
+        // Redis 에 캐시 저장됨
+        Optional<UserAuthCacheDto> cached = userAuthCacheService.get(USER_ONE_LOGIN);
+        assertThat(cached).isPresent();
+        assertThat(cached.get().login()).isEqualTo(USER_ONE_LOGIN);
+        assertThat(cached.get().activated()).isTrue();
+        assertThat(cached.get().id()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("두 번째 loadUserByUsername() 호출은 Redis 캐시에서 반환된다")
+    void loadUserByUsername_SecondCall_ShouldUseCachedDto() {
+        // 첫 번째 호출 → DB + 캐시 저장
+        UserDetails first = domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+
+        // 두 번째 호출 → 캐시 반환
+        UserDetails second = domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+
+        // 동일한 username 반환
+        assertThat(first.getUsername()).isEqualTo(second.getUsername());
+    }
+
+    @Test
+    @DisplayName("evict() 후 loadUserByUsername() 호출 시 DB 재조회 후 캐시 복구된다")
+    void loadUserByUsername_AfterEvict_ShouldRebuildCache() {
+        // 캐시 채우기
+        domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+        assertThat(userAuthCacheService.get(USER_ONE_LOGIN)).isPresent();
+
+        // 캐시 무효화
+        userAuthCacheService.evict(USER_ONE_LOGIN);
+        assertThat(userAuthCacheService.get(USER_ONE_LOGIN)).isEmpty();
+
+        // 재조회 → DB 에서 읽어 캐시 복구
+        domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+        assertThat(userAuthCacheService.get(USER_ONE_LOGIN)).isPresent();
+    }
+
+    @Test
+    @DisplayName("authorities 정보가 캐시에 올바르게 저장된다")
+    void loadUserByUsername_ShouldCacheAuthorities() {
+        domainUserDetailsService.loadUserByUsername(USER_ONE_LOGIN);
+
+        Optional<UserAuthCacheDto> cached = userAuthCacheService.get(USER_ONE_LOGIN);
+        assertThat(cached).isPresent();
+        // 기본 가입 사용자는 ROLE_USER 를 가짐
+        assertThat(cached.get().authorities()).isNotEmpty();
     }
 }

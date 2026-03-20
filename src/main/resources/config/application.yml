@@ -260,6 +260,10 @@ application:
             - png
             - gif
             - pdf
+    auth-cache:
+        # 인증 2차 캐시 TTL (분). Access Token 유효기간보다 짧게 유지.
+        # Redis 장애 시 DB fallback 자동 동작 (서비스 중단 없음).
+        ttl-minutes: 5
     rate-limit:
         # Redis 연결은 application.redis.* (및 jhipster.cache.redis.*) 설정을 재사용합니다.
         authenticate:

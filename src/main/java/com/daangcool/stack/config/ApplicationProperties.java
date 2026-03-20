@@ -73,6 +73,20 @@ public class ApplicationProperties {
         private boolean cluster = false;
     }
 
+    private final AuthCache authCache = new AuthCache();
+
+    /**
+     * 인증 2차 캐시 설정
+     * Redis 에 UserAuthCacheDto 를 저장하는 TTL 을 외부화합니다.
+     * Access Token 유효기간보다 짧게 유지하는 것을 권장합니다 (기본: 5분).
+     */
+    @Getter
+    @Setter
+    public static class AuthCache {
+        /** 캐시 TTL (분). 기본값 5분. */
+        private long ttlMinutes = 5;
+    }
+
     private final RateLimit rateLimit = new RateLimit();
 
     /**
