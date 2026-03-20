@@ -1,19 +1,53 @@
 {
   "home": {
-    "title": "Welcome, Java Hipster!",
-    "subtitle": "This is your homepage",
+    "title": "Stack App 2025 v1",
+    "subtitle": "REST API Server Framework based on Spring Boot 4.x",
+    "intro": "A Full-Stack Starter Project (Spring Boot 4 + Vue 3) for individual developers to quickly build scalable backend services in on-premise or cloud environments.",
     "logged": {
-      "message": "You are logged in as user \"{ username }\"."
+      "message": "You are logged in as \"{ username }\".",
+      "guide": "You can use various management functions through the top menu, such as User Management, Entity Management, and System Monitoring.",
+      "info": "Current Connection Info"
     },
-    "question": "If you have any questions on JHipster:",
-    "link": {
-      "homepage": "JHipster homepage",
-      "stackoverflow": "JHipster on Stack Overflow",
-      "bugtracker": "JHipster bug tracker",
-      "chat": "JHipster public chat room",
-      "follow": "follow {'@'}jhipster on Twitter"
+    "goals": {
+      "title": "Project Goals",
+      "consistency": {
+        "title": "API Consistency",
+        "desc": "RFC 7807-based common error response structure for consistent exception handling across all clients."
+      },
+      "security": {
+        "title": "Enhanced Security",
+        "desc": "Provides Spring Security + JWT-based authentication/authorization and Role-based access control."
+      },
+      "performance": {
+        "title": "Performance Optimization",
+        "desc": "Leverages Hibernate 2nd Cache and Redis to reduce DB load and improve response times."
+      },
+      "scalability": {
+        "title": "Scalability",
+        "desc": "Seamless integration with various infrastructures like Redis, Kafka, and MQTT."
+      },
+      "docs": {
+        "title": "Auto Documentation",
+        "desc": "Automatically generate and test API documentation via Swagger (OpenAPI)."
+      }
     },
-    "like": "If you like JHipster, don't forget to give us a star on",
-    "github": "GitHub"
+    "features": {
+      "title": "Key Features",
+      "arch": "Standard Backend Architecture (Controller-Service-Domain-Repository)",
+      "db": "Liquibase-based DB version control and multi-DB compatibility",
+      "cloud": "Supports immediate deployment to Cloud (OCI, Azure) and On-premise",
+      "vue": "Frontend based on Vue 3 + Vite + TypeScript + Pinia"
+    },
+    "tech": {
+      "title": "Tech Stack",
+      "backend": {
+        "title": "Backend",
+        "stack": "Spring Boot 4, Java 21, JPA, Redis, Liquibase, Security"
+      },
+      "frontend": {
+        "title": "Frontend",
+        "stack": "Vue 3, Vite, Pinia, TypeScript, Bootstrap"
+      }
+    }
   }
 }

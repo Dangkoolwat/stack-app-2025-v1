@@ -1,19 +1,53 @@
 {
   "home": {
-    "title": "Java Hipster 에 오신 것을 환영합니다!",
-    "subtitle": "이것은 당신의 홈페이지입니다.",
+    "title": "Stack App 2025 v1",
+    "subtitle": "Spring Boot 4.x 기반 REST API 서버 프레임워크",
+    "intro": "개인 개발자가 온프레미스 또는 클라우드 환경에서 빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project입니다.",
     "logged": {
-      "message": "\"{ username }\"(으)로 로그인하셨습니다."
+      "message": "\"{ username }\"(으)로 로그인하셨습니다.",
+      "guide": "상단 메뉴를 통해 사용자 관리, 엔티티 관리, 시스템 상태 모니터링 기능을 이용할 수 있습니다.",
+      "info": "현재 접속 정보"
     },
-    "question": "JHipster에 질문이 있다면:",
-    "link": {
-      "homepage": "JHipster 홈페이지",
-      "stackoverflow": "JHipster Stack Overflow",
-      "bugtracker": "JHipster 버그 트랙커",
-      "chat": "JHipster public chat room",
-      "follow": "트위터에서 {'@'}jhipster 에 접속하세요."
+    "goals": {
+      "title": "프로젝트 목적",
+      "consistency": {
+        "title": "API 일관성",
+        "desc": "RFC 7807 기반 공통 에러 응답 구조로 모든 클라이언트에서 일관성 있는 예외 처리가 가능합니다."
+      },
+      "security": {
+        "title": "보안 강화",
+        "desc": "Spring Security + JWT 기반 인증/인가 및 Role 기반 접근 제어를 제공합니다."
+      },
+      "performance": {
+        "title": "성능 최적화",
+        "desc": "Hibernate 2nd Cache와 Redis를 활용하여 DB 부하를 절감하고 응답 속도를 향상했습니다."
+      },
+      "scalability": {
+        "title": "확장성",
+        "desc": "Redis, Kafka, MQTT 등 다양한 인프라와 자연스러운 통합이 가능합니다."
+      },
+      "docs": {
+        "title": "문서화 자동화",
+        "desc": "Swagger(OpenAPI)를 통해 API 문서를 자동으로 생성하고 테스트할 수 있습니다."
+      }
     },
-    "like": "JHipster 가 마음에 든다면, 별을 주는 것을 잊지 마세요.",
-    "github": "GitHub"
+    "features": {
+      "title": "주요 특징",
+      "arch": "표준 백엔드 아키텍처 (Controller-Service-Domain-Repository)",
+      "db": "Liquibase 기반 DB 버전 관리 및 다중 DB 호환",
+      "cloud": "클라우드(OCI, Azure) 및 온프레미스 즉시 배포 지원",
+      "vue": "Vue 3 + Vite + TypeScript + Pinia 기반 프런트엔드"
+    },
+    "tech": {
+      "title": "기술 스택",
+      "backend": {
+        "title": "Backend",
+        "stack": "Spring Boot 4, Java 21, JPA, Redis, Liquibase, Security"
+      },
+      "frontend": {
+        "title": "Frontend",
+        "stack": "Vue 3, Vite, Pinia, TypeScript, Bootstrap"
+      }
+    }
   }
 }

@@ -73,6 +73,10 @@
             <font-awesome-icon icon="heart" />
             <span>{{ t$('global.menu.admin.health') }}</span>
           </b-dropdown-item>
+          <b-dropdown-item v-if="openAPIEnabled" to="/admin/docs" active-class="active">
+            <font-awesome-icon icon="book" />
+            <span>{{ t$('global.menu.admin.apidocs') }}</span>
+          </b-dropdown-item>
           <b-dropdown-item to="/admin/configuration" active-class="active">
             <font-awesome-icon icon="cogs" />
             <span>{{ t$('global.menu.admin.configuration') }}</span>
@@ -81,10 +85,7 @@
             <font-awesome-icon icon="tasks" />
             <span>{{ t$('global.menu.admin.logs') }}</span>
           </b-dropdown-item>
-          <b-dropdown-item v-if="openAPIEnabled" to="/admin/docs" active-class="active">
-            <font-awesome-icon icon="book" />
-            <span>{{ t$('global.menu.admin.apidocs') }}</span>
-          </b-dropdown-item>
+
         </b-nav-item-dropdown>
         <b-nav-item-dropdown id="languagesnavBarDropdown" end v-if="languages && Object.keys(languages).length > 1">
           <template #button-content>
