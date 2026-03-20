@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "board": {
+      "menu": "Board Management",
+      "title": "Board List",
+      "detail": {
+        "title": "Board Detail"
+      },
+      "form": {
+        "id": "ID",
+        "title": "Title",
+        "content": "Content",
+        "notice": "Is Notice",
+        "viewCount": "View Count",
+        "boardTypeCode": "Board Type",
+        "createdDate": "Created Date",
+        "createdBy": "Created By",
+        "lastModifiedDate": "Last Modified Date",
+        "lastModifiedBy": "Last Modified By"
+      },
+      "actions": {
+        "create": "Create a new Post",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View",
+        "back": "Back",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "created": "A board post has been created with identifier {param}.",
+        "updated": "A board post has been updated with identifier {param}.",
+        "deleted": "A board post has been deleted with identifier {param}.",
+        "deleteConfirm": "Are you sure you want to delete board {id}?",
+        "notFound": "Board not found."
+      }
+    }
+  }
+}

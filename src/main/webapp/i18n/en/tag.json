@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "tag": {
+      "menu": "Tag Management",
+      "title": "Tag List",
+      "detail": {
+        "title": "Tag Detail"
+      },
+      "form": {
+        "id": "ID",
+        "name": "Tag Name",
+        "usageCount": "Usage Count",
+        "deleted": "Is Deleted"
+      },
+      "actions": {
+        "create": "Add Tag",
+        "delete": "Delete",
+        "view": "View",
+        "save": "Save",
+        "cancel": "Cancel",
+        "undelete": "Restore"
+      },
+      "messages": {
+        "created": "Tag {param} created successfully.",
+        "deleted": "Tag {param} deleted successfully.",
+        "undeleted": "Tag {param} restored successfully.",
+        "deleteConfirm": "Are you sure you want to delete tag {id}?",
+        "notFound": "Tag not found."
+      }
+    }
+  }
+}

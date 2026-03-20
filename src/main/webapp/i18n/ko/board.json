@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "board": {
+      "menu": "게시판 관리",
+      "title": "게시판 목록",
+      "detail": {
+        "title": "게시판 상세"
+      },
+      "form": {
+        "id": "ID",
+        "title": "제목",
+        "content": "내용",
+        "notice": "공지 여부",
+        "viewCount": "조회수",
+        "boardTypeCode": "게시판 유형",
+        "createdDate": "작성일",
+        "createdBy": "작성자",
+        "lastModifiedDate": "수정일",
+        "lastModifiedBy": "수정자"
+      },
+      "actions": {
+        "create": "게시글 등록",
+        "edit": "수정",
+        "delete": "삭제",
+        "view": "보기",
+        "back": "뒤로",
+        "save": "저장",
+        "cancel": "취소"
+      },
+      "messages": {
+        "created": "게시글이 등록되었습니다. (ID: {param})",
+        "updated": "게시글이 수정되었습니다. (ID: {param})",
+        "deleted": "게시글이 삭제되었습니다. (ID: {param})",
+        "deleteConfirm": "정말 게시글 {id}번을 삭제하시겠습니까?",
+        "notFound": "게시글을 찾을 수 없습니다."
+      }
+    }
+  }
+}

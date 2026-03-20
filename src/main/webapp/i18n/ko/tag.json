@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "tag": {
+      "menu": "태그 관리",
+      "title": "태그 목록",
+      "detail": {
+        "title": "태그 상세"
+      },
+      "form": {
+        "id": "ID",
+        "name": "태그명",
+        "usageCount": "사용 횟수",
+        "deleted": "삭제 여부"
+      },
+      "actions": {
+        "create": "태그 추가",
+        "delete": "삭제",
+        "view": "보기",
+        "save": "저장",
+        "cancel": "취소",
+        "undelete": "복구"
+      },
+      "messages": {
+        "created": "태그 {param}이 생성되었습니다.",
+        "deleted": "태그 {param}이 삭제되었습니다.",
+        "undeleted": "태그 {param}이 복구되었습니다.",
+        "deleteConfirm": "정말 태그 {id}를 삭제하시겠습니까?",
+        "notFound": "태그를 찾을 수 없습니다."
+      }
+    }
+  }
+}

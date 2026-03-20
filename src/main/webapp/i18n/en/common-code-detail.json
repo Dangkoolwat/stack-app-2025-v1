@@ -1,0 +1,39 @@
+{
+  "entities": {
+    "commonCodeDetail": {
+      "menu": "Common Code Detail Management",
+      "title": "Common Code Detail List",
+      "detail": {
+        "title": "Common Code Detail View"
+      },
+      "form": {
+        "id": "ID",
+        "groupCode": "Group Code",
+        "code": "Code",
+        "name": "Code Name",
+        "sortOrder": "Sort Order",
+        "description": "Description",
+        "attribute1": "Attr 1",
+        "attribute2": "Attr 2",
+        "attribute3": "Attr 3",
+        "attribute4": "Attr 4",
+        "attribute5": "Attr 5"
+      },
+      "actions": {
+        "create": "Add Detail Code",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "created": "Detail code {param} created successfully.",
+        "updated": "Detail code {param} updated successfully.",
+        "deleted": "Detail code {param} deleted successfully.",
+        "deleteConfirm": "Are you sure you want to delete detail code {id}?",
+        "notFound": "Detail code not found."
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "entities": {
+    "commonCodeGroup": {
+      "menu": "Common Code Group Management",
+      "title": "Common Code Group List",
+      "detail": {
+        "title": "Common Code Group Detail"
+      },
+      "form": {
+        "groupCode": "Group Code",
+        "groupName": "Group Name",
+        "displayOrder": "Display Order",
+        "description": "Description",
+        "deleted": "Is Deleted"
+      },
+      "actions": {
+        "create": "Add Group",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View Details",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "created": "Common Code Group {param} created successfully.",
+        "updated": "Common Code Group {param} updated successfully.",
+        "deleted": "Common Code Group {param} deleted successfully.",
+        "deleteConfirm": "Are you sure you want to (soft) delete group {id}?",
+        "notFound": "Common code group not found."
+      }
+    }
+  }
+}
