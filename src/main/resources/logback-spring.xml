@@ -28,8 +28,9 @@
 
   <!-- Hibernate 잡음 억제 -->
   <logger name="org.hibernate" level="WARN"/>
-  <logger name="org.hibernate.SQL" level="WARN"/>
+  <!-- Hibernate SQL/Bind loging is controlled by application-dev.yml in dev profile -->
   <logger name="org.hibernate.type" level="WARN"/>
+
   <logger name="org.hibernate.validator" level="WARN"/>
   <logger name="org.hibernate.ejb.HibernatePersistence" level="OFF"/>
 
@@ -94,10 +95,14 @@
 
   <!-- Dev 프로파일: 콘솔만 -->
   <springProfile name="dev">
+    <logger name="com.daangcool.stack" level="DEBUG"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.orm.jdbc.bind" level="TRACE"/>
     <root level="DEBUG">
       <appender-ref ref="CONSOLE"/>
     </root>
   </springProfile>
+
 
   <!-- Prod 프로파일: RollingFileAppender -->
   <springProfile name="prod">
