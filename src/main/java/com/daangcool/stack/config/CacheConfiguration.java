@@ -1,6 +1,10 @@
 package com.daangcool.stack.config;
 
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
+
+
 import org.hibernate.cache.jcache.ConfigSettings;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -72,10 +76,38 @@ public class CacheConfiguration {
     public RedissonClient redissonJsonClient(JHipsterProperties jHipsterProperties, ObjectMapper objectMapper) {
         // [REFAC] NM-5: ObjectMapper를 직접 생성하지 않고 Spring 빈 주입 방식으로 변경 (Jackson 3 호환)
         Config config = getRedissonConfig(jHipsterProperties);
+
+        /**
+         * [IMPORTANT] Jackson 3 / Redis Cache 설정 (NM-5)
+         * ---------------------------------------------------
+         * 1. DefaultTyping 활성화: 
+         *    JSON 저장 시 타입 정보(@class)를 포함하여 역직렬화 시의 타입 불일치(Map으로 복원됨) 문제를 해결합니다.
+         * 2. objectMapper.rebuild() 사용 이유:
+         *    Jackson 3의 ObjectMapper는 Immutable하므로, Spring Boot가 구성한 기본 설정(Hibernate7Module, Customizers 등)을 
+         *    그대로 상속받기 위해 rebuild()를 사용합니다. 이를 통해 지연 로딩된 컬렉션 직렬화 시 
+         *    LazyInitializationException이 발생하는 것을 방지하고 프로젝트의 캐시 정책을 유지합니다.
+         * 3. [주의사항] Redis 캐시 초기화 필요:
+         *    기존에 타입 정보 없이 저장된 캐시 데이터가 있을 경우 역직렬화 에러가 발생할 수 있습니다.
+         *    배포 후 반드시 Redis 캐시 초기화(예: redis-cli flushall)를 수행해야 합니다.
+         * ---------------------------------------------------
+         */
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+            .allowIfBaseType(Object.class)
+            .build();
+
+        ObjectMapper redisMapper = ((tools.jackson.databind.cfg.MapperBuilder<?, ?>) objectMapper.rebuild())
+            .activateDefaultTyping(ptv, tools.jackson.databind.DefaultTyping.NON_FINAL, com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY)
+            .build();
+
         // [REFAC] JsonJacksonCodec 대신 Jackson 3를 지원하는 JsonJackson3Codec 사용
-        config.setCodec(new org.redisson.codec.JsonJackson3Codec(objectMapper));
+        config.setCodec(new org.redisson.codec.JsonJackson3Codec(redisMapper));
         return Redisson.create(config);
     }
+
+
+
+
+
 
     @Bean
     public javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration(
