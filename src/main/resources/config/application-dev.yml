@@ -111,7 +111,7 @@ spring:
         highlight_sql: true
         use_sql_comments: true
         generate_statistics: true
-    show-sql: false
+    show-sql: true
 
   mail:
     host: ${SPRING_MAIL_HOST:localhost}
