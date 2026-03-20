@@ -61,7 +61,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     /**
      * 공지글 목록 (is_notice = true)
      */
-    @Cacheable("board-notice-cache")
+    @Cacheable(com.daangcool.stack.service.board.BoardService.CACHE_BOARD_NOTICE_LIST)
     @EntityGraph(attributePaths = {"user"})
     // @SQLRestriction이 있으므로 b.deleted = false 조건은 제거함.
     @Query("SELECT b FROM Board b WHERE b.notice = true ORDER BY b.id DESC")
