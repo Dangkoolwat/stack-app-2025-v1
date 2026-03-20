@@ -28,5 +28,20 @@
         }
       }
     }
+  },
+  "stackApp": {
+    "settings": {
+      "menu": "Server Global Settings",
+      "home": {
+        "viewLabel": "Server Global Settings",
+        "createOrEditLabel": "Edit Server Global Settings"
+      },
+      "tokenValiditySeconds": "Token Validity (Seconds)",
+      "tokenValiditySecondsForRememberMe": "Token Validity for Remember Me (Seconds)",
+      "loginMaxFailureAttempts": "Max Login Failure Attempts",
+      "description": "Description",
+      "updated": "Server settings updated successfully."
+    }
   }
 }
+

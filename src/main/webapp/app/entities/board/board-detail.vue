@@ -49,7 +49,7 @@
             <span>{{ board.createdDate ? $d(board.createdDate, 'long') : '' }}</span>
           </dd>
         </dl>
-        <button type="submit" @click.prevent="previousState()" class="btn btn-info btn-sm" data-cy="entityDetailsBackButton">
+        <button type="submit" @click.prevent="previousState()" class="btn btn-info btn-sm me-2" data-cy="entityDetailsBackButton">
           <font-awesome-icon icon="arrow-left"></font-awesome-icon>&nbsp;<span v-text="t$('entities.board.actions.back')"></span>
         </button>
         <router-link v-if="board.id" :to="{ name: 'BoardEdit', params: { id: board.id } }" custom v-slot="{ navigate }">

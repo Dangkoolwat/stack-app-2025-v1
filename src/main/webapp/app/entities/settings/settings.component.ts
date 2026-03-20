@@ -29,7 +29,9 @@ export default defineComponent({
       try {
         await settingsService.update(settings.value);
         alertService.showInfo(t$('stackApp.settings.updated', { param: settings.value.id }));
-        router.go(-1);
+        // [FIX] 페이지 이동 대신 데이터 재조회로 현재 페이지 유지
+        await retrieveSettings();
+
       } catch (error: any) {
         alertService.showHttpError(error.response);
       } finally {

@@ -31,7 +31,7 @@
             <span>{{ commonCodeGroup.description }}</span>
           </dd>
         </dl>
-        <button type="submit" @click.prevent="previousState()" class="btn btn-info btn-sm" data-cy="entityDetailsBackButton">
+        <button type="submit" @click.prevent="previousState()" class="btn btn-info btn-sm me-2" data-cy="entityDetailsBackButton">
           <font-awesome-icon icon="arrow-left"></font-awesome-icon>&nbsp;<span v-text="t$('entities.commonCodeGroup.actions.cancel')"></span>
         </button>
         <router-link

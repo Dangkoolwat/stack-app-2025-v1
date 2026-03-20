@@ -53,7 +53,7 @@
             />
           </div>
         </div>
-        <div>
+        <div class="mt-3">
           <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary btn-sm me-2" v-on:click="previousState()">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entities.commonCodeGroup.actions.cancel')"></span>
           </button>

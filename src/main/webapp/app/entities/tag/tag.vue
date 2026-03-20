@@ -52,7 +52,7 @@
       </div>
       <template #footer>
         <div>
-          <button type="button" class="btn btn-secondary btn-sm" v-text="t$('entities.tag.actions.cancel')" @click="removeTag()"></button>
+          <button type="button" class="btn btn-secondary btn-sm me-2" v-text="t$('entities.tag.actions.cancel')" @click="removeTag()"></button>
           <button
             type="button"
             class="btn btn-primary btn-sm"

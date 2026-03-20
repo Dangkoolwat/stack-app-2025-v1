@@ -85,7 +85,7 @@
       </div>
       <template #footer>
         <div>
-          <button type="button" class="btn btn-secondary btn-sm" v-text="t$('entities.commonCodeDetail.actions.cancel')" @click="removeDetail()"></button>
+          <button type="button" class="btn btn-secondary btn-sm me-2" v-text="t$('entities.commonCodeDetail.actions.cancel')" @click="removeDetail()"></button>
           <button
             type="button"
             class="btn btn-primary btn-sm"
