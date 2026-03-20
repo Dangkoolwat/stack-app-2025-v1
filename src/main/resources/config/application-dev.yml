@@ -25,8 +25,8 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: ${SPRING_DATASOURCE_URL:jdbc:oracle:thin:@//localhost:1521/FREEPDB1}
-    username: ${SPRING_DATASOURCE_USERNAME:dizzyUncle}
-    password: ${SPRING_DATASOURCE_PASSWORD:Docker#2020}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:sa#2020}
     hikari:
       # ---------------------------------------------------------------
       # 풀 이름 — 모니터링 / 로그에서 풀을 식별합니다
