@@ -68,22 +68,64 @@ Jackson 관련 변경 작업은 반드시 아래 절차를 따른다.
 Cache 구조 변경 시 반드시 다음을 따른다.
 
 #### Step 1: 캐시 대상 분류
-- 인증 데이터인지 여부 확인
-- 조회 데이터인지 여부 확인
+- JPA 엔티티인지 여부 확인 (엔티티이면 무조건 DTO 변환 필요)
+- 조회 데이터인지 / 인증 주변 데이터인지 여부 확인
 
-#### Step 2: 금지 대상 확인
-다음은 캐시 적용 금지:
+#### Step 2: 캐시 금지 대상 판별
 
-- 로그인 관련
-- UserDetails
-- 권한 정보
+아래 조건 중 하나라도 해당하면 **그 객체 자체를 캐시하는 것은 금지**:
 
-#### Step 3: TTL 설계
-- 데이터 성격별 TTL 정의
+| 금지 대상 | 이유 |
+|-----------|------|
+| `@Entity` JPA 클래스 직접 저장 | Hibernate `$HibernateProxy$xxxx` @class 불일치로 역직렬화 실패 |
+| `@Cacheable`로 UserDetails 캐시 | Spring Security 프록시 + LazyLoad 컬렉션 직렬화 실패 |
+| `@Cacheable`로 Authority 컬렉션 캐시 | 동일 이유 (Hibernate Proxy 감쌈) |
+| Hibernate L2 영역과 Application 캐시 혼용 | Binary vs JSON 코덱 충돌 |
 
-#### Step 4: 영향 분석
+> ⚠️ **에이전트 오판 방지 주의사항**
+> "인증 관련 데이터는 캐시 금지"라는 표현은 **JPA 엔티티를 직접 캐시하지 말라는 의미**입니다.
+> OTP, Rate Limiting, UserAuthCacheDto(record DTO) 같은 인증 주변 인프라는
+> 명시적 저장소 패턴(Redisson RBucket/RMapCache)으로 Redis 활용이 **허용되고 권장**됩니다.
+
+#### Step 3: 캐시 전용 DTO 설계 (금지 대상 우회 방법)
+
+캐시에 저장할 객체는 반드시 아래 조건을 모두 만족해야 한다:
+
+- `record` 또는 `@Data @NoArgsConstructor` Lombok 클래스
+- 필드는 단순 타입만 허용: `Long`, `String`, `boolean`, `Set<String>`, `List<String>` 등
+- JPA 연관 관계 필드(`@ManyToOne`, `@OneToMany` 등) 포함 금지
+- 민감 정보(`password`, `activationKey`, `resetKey`) 포함 금지
+- `from(Entity entity)` 정적 변환 메서드를 트랜잭션 안에서 호출하여 LazyLoad 해소
+
+```java
+// ✅ 올바른 패턴 예시
+public record UserAuthCacheDto(
+    Long id, String login, boolean activated, Set<String> authorities
+) {
+    public static UserAuthCacheDto from(User user) {
+        // 트랜잭션 안에서 호출 → authorities LazyLoad 해소
+        Set<String> authNames = user.getAuthorities().stream()
+            .map(Authority::getName)
+            .collect(Collectors.toUnmodifiableSet());
+        return new UserAuthCacheDto(user.getId(), user.getLogin(), user.isActivated(), authNames);
+    }
+}
+
+// ❌ 잘못된 패턴 (절대 금지)
+@Cacheable("users")
+public User loadUser(String login) { ... }  // JPA 엔티티 직접 캐시
+```
+
+#### Step 4: TTL 설계
+- Long TTL(24h): 공통코드, 태그, 시스템 설정
+- Default TTL(1h): 게시글, 댓글, 업로드
+- Short TTL(5min): 인증 정보(UserAuthCacheDto)
+
+#### Step 5: 영향 분석
 - Hibernate L2와 중복 여부
 - JSON/Binary 충돌 여부
+- 상태 변경 시 evict() 호출 위치 명시
+- Redis 장애 시 fallback 전략 정의 (서비스 중단 없어야 함)
 
 ---
 
@@ -103,6 +145,13 @@ Cache 구조 변경 시 반드시 다음을 따른다.
 
 - [ ] Jackson 혼용이 없는가?
 - [ ] ObjectMapper가 단일 체계인가?
-- [ ] 인증 데이터 캐시가 없는가?
-- [ ] Redis 연결이 중앙 집중형인가?
-- [ ] 캐시 TTL이 적절한가?
+- [ ] JPA 엔티티(@Entity)를 직접 Redis 에 저장하고 있지 않은가?
+  - `@Cacheable` 대상이 엔티티라면 반드시 DTO 변환 후 캐시할 것
+  - `Cache.put(key, entity)` 형태가 코드에 없는지 확인
+- [ ] 캐시 전용 DTO가 단순 타입만 포함하는가? (JPA 연관관계 필드 없는가?)
+- [ ] DTO 변환이 트랜잭션(영속성 컨텍스트) 안에서 이루어지는가? (LazyLoad 해소)
+- [ ] 상태 변경 시 evict() 호출이 모든 변경 지점에 연동되어 있는가?
+- [ ] Redis 장애 시 DB fallback 이 보장되는가? (예외를 삼키고 Optional.empty() 반환)
+- [ ] Redis 연결이 중앙 집중형인가? (서비스별 RedissonClient 생성 없음)
+- [ ] 캐시 TTL이 데이터 성격에 맞게 설정되어 있는가?
+  - Long(24h): 공통코드·태그·설정 / Default(1h): 게시글·댓글 / Short(5min): 인증정보

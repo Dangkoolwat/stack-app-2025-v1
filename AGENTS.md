@@ -68,6 +68,25 @@ Do NOT jump to solution before defining the problem.
 - Never log sensitive data
 - Review cache safety
 
+### Cache Safety 세부 규칙 (에이전트 오판 방지)
+
+**금지:**
+- JPA `@Entity` 클래스를 직접 Redis 캐시 대상으로 사용
+  → `User`, `Authority`, `Board` 등을 `Cache.put(key, entity)` 또는
+    `@Cacheable` 대상으로 직접 지정하는 행위
+  → Hibernate Proxy(@class 불일치) 및 LazyLoading 세션 소멸 문제 로 역직렬화 실패
+- `@Cacheable`로 `UserDetails` 또는 `GrantedAuthority` 컨렉션 직접 캐시
+
+**허용 (온바른 방식):**
+- 캐시 전용 DTO(`record` 또는 단순 POJO)를 사용
+  → `UserAuthCacheDto`, `CommonCodeCacheDto.GroupDto` 등 예시 참조
+- OTP, Rate Limiting, 분산 Lock 등 인증 주변 인프라는 Redis 활용 제한 없음
+- 상태 변경 시 반드시 명시적 `evict()` 호출, Redis 장애 시 DB fallback 보장
+
+> ⚠️ "인증/로그인 관련은 캐시 금지"라는 표현은
+> **JPA 엔티티 직접 캐시 금지**를 의미하는 것으로 해석할 것.
+> 인증 주변 데이터의 Redis 활용 자체는 실무 표준입니다.
+
 ---
 
 ## Recommended Defaults
