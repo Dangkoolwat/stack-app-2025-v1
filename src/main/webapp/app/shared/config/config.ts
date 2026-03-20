@@ -8,21 +8,38 @@ import { faBan } from '@fortawesome/free-solid-svg-icons/faBan';
 import { faBars } from '@fortawesome/free-solid-svg-icons/faBars';
 import { faBell } from '@fortawesome/free-solid-svg-icons/faBell';
 import { faBook } from '@fortawesome/free-solid-svg-icons/faBook';
+import { faBolt } from '@fortawesome/free-solid-svg-icons/faBolt';
+import { faBullseye } from '@fortawesome/free-solid-svg-icons/faBullseye';
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
 import { faCloud } from '@fortawesome/free-solid-svg-icons/faCloud';
+
+
+import { faCode } from '@fortawesome/free-solid-svg-icons/faCode';
 import { faCogs } from '@fortawesome/free-solid-svg-icons/faCogs';
 import { faDatabase } from '@fortawesome/free-solid-svg-icons/faDatabase';
+import { faDesktop } from '@fortawesome/free-solid-svg-icons/faDesktop';
+import { faExpandArrowsAlt } from '@fortawesome/free-solid-svg-icons/faExpandArrowsAlt';
+import { faFileAlt } from '@fortawesome/free-solid-svg-icons/faFileAlt';
+import { faHashtag } from '@fortawesome/free-solid-svg-icons/faHashtag';
+import { faLayerGroup } from '@fortawesome/free-solid-svg-icons/faLayerGroup';
+import { faList } from '@fortawesome/free-solid-svg-icons/faList';
+import { faListUl } from '@fortawesome/free-solid-svg-icons/faListUl';
 import { faEye } from '@fortawesome/free-solid-svg-icons/faEye';
 import { faFlag } from '@fortawesome/free-solid-svg-icons/faFlag';
 import { faHeart } from '@fortawesome/free-solid-svg-icons/faHeart';
-import { faHome } from '@fortawesome/free-solid-svg-icons/faHome';
-import { faList } from '@fortawesome/free-solid-svg-icons/faList';
 import { faLock } from '@fortawesome/free-solid-svg-icons/faLock';
+
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons/faPencilAlt';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { faRoad } from '@fortawesome/free-solid-svg-icons/faRoad';
+
+import { faRocket } from '@fortawesome/free-solid-svg-icons/faRocket';
 import { faSave } from '@fortawesome/free-solid-svg-icons/faSave';
 import { faSearch } from '@fortawesome/free-solid-svg-icons/faSearch';
+import { faServer } from '@fortawesome/free-solid-svg-icons/faServer';
+import { faShieldAlt } from '@fortawesome/free-solid-svg-icons/faShieldAlt';
 import { faSignInAlt } from '@fortawesome/free-solid-svg-icons/faSignInAlt';
+
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons/faSignOutAlt';
 import { faSort } from '@fortawesome/free-solid-svg-icons/faSort';
 import { faSortDown } from '@fortawesome/free-solid-svg-icons/faSortDown';
@@ -65,14 +82,27 @@ export function initFortAwesome(vue: App) {
     faBars,
     faBell,
     faBook,
+    faBullseye,
+    faCheck,
     faCloud,
     faCogs,
     faDatabase,
     faEye,
     faFlag,
-    faHeart,
-    faHome,
+    faBolt,
+    faCode,
+    faDesktop,
+    faExpandArrowsAlt,
+    faRocket,
+    faServer,
+    faShieldAlt,
+    faLayerGroup,
     faList,
+    faListUl,
+    faFileAlt,
+    faHashtag,
+    faHeart,
+
     faLock,
     faPencilAlt,
     faPlus,
