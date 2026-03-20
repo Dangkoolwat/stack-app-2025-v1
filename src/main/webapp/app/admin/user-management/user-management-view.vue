@@ -68,7 +68,7 @@
           </dd>
         </dl>
         <router-link custom v-slot="{ navigate }" :to="{ name: 'JhiUser' }">
-          <button @click="navigate" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <button @click="navigate" class="btn btn-info btn-sm" data-cy="entityDetailsBackButton">
             <font-awesome-icon icon="arrow-left"></font-awesome-icon>&nbsp;<span>{{ t$('entity.action.back') }}</span>
           </button>
         </router-link>

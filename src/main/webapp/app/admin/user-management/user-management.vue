@@ -4,19 +4,20 @@
       <span id="user-management-page-heading" data-cy="UserManagementHeading">{{ t$('userManagement.home.title') }}</span>
 
       <div class="d-flex justify-content-end">
-        <button class="btn btn-info me-2" @click="handleSyncList" :disabled="isLoading">
+        <button class="btn btn-info btn-sm me-2" @click="handleSyncList" :disabled="isLoading">
           <font-awesome-icon icon="sync" :spin="isLoading"></font-awesome-icon>
           <span>{{ t$('userManagement.home.refreshListLabel') }}</span>
         </button>
         <router-link custom v-slot="{ navigate }" :to="{ name: 'JhiUserCreate' }">
-          <button @click="navigate" class="btn btn-primary jh-create-entity" data-cy="entityCreateButton">
+          <button @click="navigate" class="btn btn-primary btn-sm jh-create-entity" data-cy="entityCreateButton">
             <font-awesome-icon icon="plus"></font-awesome-icon> <span>{{ t$('userManagement.home.createLabel') }}</span>
           </button>
         </router-link>
       </div>
     </h2>
     <div class="table-responsive" v-if="users">
-      <table class="table table-striped" aria-describedby="Users">
+      <table class="table table-striped table-sm" aria-describedby="Users">
+
         <thead>
           <tr>
             <th scope="col" @click="changeOrder('id')">
@@ -62,17 +63,18 @@
             <td>{{ user.login }}</td>
             <td class="jhi-user-email">{{ user.email }}</td>
             <td>
-              <button class="btn btn-danger btn-sm deactivated" @click="setActive(user, true)" v-if="!user.activated">
+              <button class="btn btn-danger btn-sm py-0 px-2 small deactivated" @click="setActive(user, true)" v-if="!user.activated">
                 {{ t$('userManagement.deactivated') }}
               </button>
               <button
-                class="btn btn-success btn-sm"
+                class="btn btn-success btn-sm py-0 px-2 small"
                 @click="setActive(user, false)"
                 v-if="user.activated"
                 :disabled="username === user.login"
               >
                 {{ t$('userManagement.activated') }}
               </button>
+
             </td>
             <td>{{ user.langKey }}</td>
             <td>
@@ -100,7 +102,9 @@
                 <b-button
                   @click="prepareRemove(user)"
                   variant="danger"
-                  class="btn btn-sm delete"
+                  size="sm"
+                  class="delete"
+
                   :disabled="username === user.login"
                   data-cy="entityDeleteButton"
                 >
@@ -143,7 +147,7 @@
         <jhi-item-count :page="page" :total="queryCount" :items-per-page="itemsPerPage"></jhi-item-count>
       </div>
       <div class="d-flex justify-content-center">
-        <b-pagination size="md" :total-rows="totalItems" v-model="page" :per-page="itemsPerPage" :change="loadPage(page)"></b-pagination>
+        <b-pagination size="sm" :total-rows="totalItems" v-model="page" :per-page="itemsPerPage" :change="loadPage(page)"></b-pagination>
       </div>
     </div>
   </div>

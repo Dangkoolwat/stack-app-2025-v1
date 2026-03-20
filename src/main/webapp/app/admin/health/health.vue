@@ -2,7 +2,7 @@
   <div>
     <h2>
       <span id="health-page-heading" data-cy="healthPageHeading">{{ t$('health.title') }}</span>
-      <button class="btn btn-primary float-end" @click="refresh()" :disabled="updatingHealth">
+      <button class="btn btn-primary btn-sm float-end" @click="refresh()" :disabled="updatingHealth">
         <font-awesome-icon icon="sync"></font-awesome-icon> <span>{{ t$("health['refresh.button']") }}</span>
       </button>
     </h2>

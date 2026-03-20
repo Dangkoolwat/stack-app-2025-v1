@@ -2,7 +2,7 @@
   <div>
     <h2>
       <span id="metrics-page-heading" data-cy="metricsPageHeading">{{ t$('metrics.title') }}</span>
-      <button class="btn btn-primary float-end" @click="refresh()">
+      <button class="btn btn-primary btn-sm float-end" @click="refresh()">
         <font-awesome-icon icon="sync"></font-awesome-icon> <span>{{ t$("metrics['refresh.button']") }}</span>
       </button>
     </h2>
