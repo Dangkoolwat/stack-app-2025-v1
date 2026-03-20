@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# 1. 새로운 JWT Secret 생성 (무작위 64바이트 base64 인코딩)
-NEW_JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
+# 1. JWT Secret 확인 및 생성 (없을 경우에만 생성)
+if ! grep -q "^JWT_SECRET=" .env || [ -z "$(grep "^JWT_SECRET=" .env | cut -d'=' -f2)" ]; then
+    NEW_JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
+    # .env 파일에 JWT_SECRET 추가 또는 교체
+    if grep -q "^JWT_SECRET=" .env; then
+        sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${NEW_JWT_SECRET}|" .env
+    else
+        echo "JWT_SECRET=${NEW_JWT_SECRET}" >> .env
+    fi
+    echo "New JWT_SECRET generated and updated in .env"
+else
+    echo "Using existing JWT_SECRET from .env"
+fi
 
-# 2. .env 파일의 JWT_SECRET 값 교체
-# macOS와 Linux(Ubuntu 등)에서 모두 작동하도록 구성했습니다.
-sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${NEW_JWT_SECRET}|" .env
-
-# 3. 변경된 내용 콘솔에 출력
-echo "----------------------------------------------------------"
-echo "New JWT_SECRET generated and updated in .env"
-echo "JWT_SECRET=${NEW_JWT_SECRET}"
-echo "----------------------------------------------------------"
-
-# 4. 레디스 데이터 초기화 명령어 출력 및 실행
+# 4. 레디스 데이터 초기화
 echo "Running: docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL"
-docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL
+docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL || echo "Redis flush failed (check container name)"
 
-# 5. 환경 변수 로드 및 스프링 부트 실행 명령어 출력 및 실행
-echo "Running: export \$(cat .env | xargs) && ./mvnw spring-boot:run"
-export $(cat .env | xargs) && ./mvnw spring-boot:run
+# 5. 환경 변수 로드 및 스프링 부트 실행 (프로필 추가)
+echo "Running: export \$(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls"
+export $(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls
