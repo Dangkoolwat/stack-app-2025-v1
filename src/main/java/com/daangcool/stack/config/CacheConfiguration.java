@@ -95,8 +95,12 @@ public class CacheConfiguration {
             .allowIfBaseType(Object.class)
             .build();
 
+        tools.jackson.databind.module.SimpleModule simpleKeyModule = new tools.jackson.databind.module.SimpleModule();
+        simpleKeyModule.addDeserializer(org.springframework.cache.interceptor.SimpleKey.class, new SimpleKeyDeserializer());
+
         ObjectMapper redisMapper = ((tools.jackson.databind.cfg.MapperBuilder<?, ?>) objectMapper.rebuild())
             .activateDefaultTyping(ptv, tools.jackson.databind.DefaultTyping.NON_FINAL, com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY)
+            .addModule(simpleKeyModule) // [FIX] Jackson 3 SimpleKey 대응 (Deserializer 사용)
             .build();
 
         // [REFAC] JsonJacksonCodec 대신 Jackson 3를 지원하는 JsonJackson3Codec 사용
@@ -247,6 +251,26 @@ public class CacheConfiguration {
                 .setAddress(jHipsterProperties.getCache().getRedis().getServer()[0]);
         }
         return config;
+    }
+
+    /**
+     * [FIX] Jackson 3 SimpleKey 대응을 위한 커스텀 역직렬화기
+     * SimpleKey는 기본 생성자가 없고, params가 null일 경우 IllegalArgumentException을 던지므로
+     * 이를 안전하게 처리하기 위한 Deserializer를 구현합니다.
+     */
+    public static class SimpleKeyDeserializer extends tools.jackson.databind.ValueDeserializer<org.springframework.cache.interceptor.SimpleKey> {
+        @Override
+        public org.springframework.cache.interceptor.SimpleKey deserialize(tools.jackson.core.JsonParser p, tools.jackson.databind.DeserializationContext ctxt) throws tools.jackson.core.JacksonException {
+            tools.jackson.databind.JsonNode node = ctxt.readTree(p);
+            tools.jackson.databind.JsonNode paramsNode = node.get("params");
+            if (paramsNode == null || paramsNode.isNull() || !paramsNode.isArray()) {
+                return new org.springframework.cache.interceptor.SimpleKey();
+            }
+            
+            // paramsNode를 Object[]로 역직렬화
+            Object[] params = ctxt.readTreeAsValue(paramsNode, Object[].class);
+            return new org.springframework.cache.interceptor.SimpleKey(params);
+        }
     }
 
 }
