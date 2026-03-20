@@ -24,7 +24,13 @@ import '../content/scss/vendor.scss';
 
 const pinia = createPinia();
 
+import BoardService from '@/entities/board/board.service';
+import CommonCodeService from '@/entities/common-code/common-code.service';
+import SettingsService from '@/entities/settings/settings.service';
+import TagService from '@/entities/tag/tag.service';
+
 // jhipster-needle-add-entity-service-to-main-import - JHipster will import entities services here
+
 
 const i18n = initI18N();
 
@@ -119,7 +125,13 @@ const app = createApp({
 
     provide('translationService', translationService);
     provide('accountService', accountService);
-    // jhipster-needle-add-entity-service-to-main - JHipster will import entities services here
+    provide('boardService', new BoardService());
+    provide('commonCodeService', new CommonCodeService());
+    provide('tagService', new TagService());
+    provide('settingsService', new SettingsService());
+    // jhipster-needle-add-entity-service-to-main - JHipster will add entities services here
+
+
 
     provide('trackerService', useTrackerService({ authenticated }));
   },
