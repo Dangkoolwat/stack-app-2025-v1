@@ -11,12 +11,117 @@
 Bootstrap tweaks
 ===============================================================*/
 
-body,
+body {
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #212529;
+}
+
 h1,
 h2,
 h3,
-h4 {
-  font-weight: 300;
+h4,
+h5,
+h6 {
+  font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+.form-control,
+.form-select {
+  min-height: 44px;
+  font-size: 0.95rem;
+  border-radius: 10px;
+}
+
+.btn {
+  border-radius: 10px;
+}
+
+.footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.125);
+  font-size: 0.78rem;
+  color: #6c757d;
+  padding: 0.75rem 0;
+  margin-top: 2rem;
+}
+
+.footer p {
+  margin: 0;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.login-form-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.login-card .form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+}
+
+.login-card .form-control {
+  min-height: 46px;
+  padding: 0.7rem 0.9rem;
+}
+
+.login-card__options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.login-links__item {
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  border: 1px solid #eef1f4;
+  background-color: #f8f9fa;
+}
+
+.login-links__item:last-child {
+  margin-bottom: 0;
+}
+
+.login-modal .modal-content {
+  border-radius: 18px;
+}
+
+.login-modal .modal-header {
+  padding: 1.25rem 1.25rem 0.25rem;
+}
+
+.login-modal .modal-title,
+.login-modal #login-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-modal .modal-body {
+  padding: 0.75rem 1.25rem 1.25rem;
 }
 
 a:hover {
@@ -105,6 +210,13 @@ Generic styles
 
 .footer {
   border-top: 1px solid rgba(0, 0, 0, 0.125);
+  font-size: 0.8rem;
+  color: #6c757d;
+  padding: 0.75rem 0;
+}
+.footer p {
+  margin-bottom: 0;
+  text-align: center;
 }
 
 .hand,
