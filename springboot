@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# 1. 새로운 JWT Secret 생성 (무작위 64바이트 base64 인코딩)
+NEW_JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
+
+# 2. .env 파일의 JWT_SECRET 값 교체
+# macOS와 Linux(Ubuntu 등)에서 모두 작동하도록 구성했습니다.
+sed -i.bak "s|^JWT_SECRET=.*|JWT_SECRET=${NEW_JWT_SECRET}|" .env
+
+# 3. 변경된 내용 콘솔에 출력
+echo "----------------------------------------------------------"
+echo "New JWT_SECRET generated and updated in .env"
+echo "JWT_SECRET=${NEW_JWT_SECRET}"
+echo "----------------------------------------------------------"
+
+# 4. 레디스 데이터 초기화 명령어 출력 및 실행
+echo "Running: docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL"
+docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL
+
+# 5. 환경 변수 로드 및 스프링 부트 실행 명령어 출력 및 실행
+echo "Running: export \$(cat .env | xargs) && ./mvnw spring-boot:run"
+export $(cat .env | xargs) && ./mvnw spring-boot:run
