@@ -7,6 +7,7 @@ import com.daangcool.stack.repository.board.UploadRepository;
 import com.daangcool.stack.service.storage.StorageService;
 import com.daangcool.stack.common.util.UploadFileUtils;
 import com.daangcool.stack.common.exception.FileStorageException;
+import com.daangcool.stack.service.dto.UploadDTO;
 import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
 import org.apache.commons.io.FilenameUtils;
@@ -217,40 +218,48 @@ public class UploadService {
         });
     }
 
-    /** 단건 조회 (캐시 포함) */
+    /**
+     * 단건 조회 (캐시 포함)
+     * Redis 에는 UploadDTO(단순 타입) 저장 → Hibernate Proxy @class 문제 원천 차단.
+     * 캐시 히트 시 DTO → Upload 경량 복원 객체 반환 (DB 재조회 없음).
+     * 캐시 미스 시 DB 조회 후 DTO 저장.
+     */
     @Transactional(readOnly = true)
     public Optional<Upload> findById(Long id) {
         Cache cache = cacheManager.getCache(CACHE_UPLOAD_BY_ID);
         if (cache != null) {
-            Upload cached = cache.get(id, Upload.class);
+            UploadDTO cached = cache.get(id, UploadDTO.class);
             if (cached != null) {
                 log.debug("[UPLOAD CACHE] Cache hit for id={}", id);
-                return Optional.of(cached);
+                return Optional.of(toUploadEntity(cached));
             }
         }
-
         Optional<Upload> upload = uploadRepository.findById(id);
         upload.ifPresent(u -> {
-            if (cache != null) cache.put(id, u);
+            if (cache != null) cache.put(id, new UploadDTO(u));
         });
         return upload;
     }
 
-    /** 게시글별 업로드 목록 (캐시 포함) */
+    /**
+     * 게시글별 업로드 목록 (캐시 포함)
+     * Redis 에는 List<UploadDTO> 저장 → LazyLoad / Proxy 문제 없음.
+     */
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Upload> findAllByBoard(Long boardId) {
         Cache cache = cacheManager.getCache(CACHE_UPLOAD_BY_BOARD);
         if (cache != null) {
-            List<Upload> cached = (List<Upload>) cache.get(boardId, List.class);
+            List<UploadDTO> cached = (List<UploadDTO>) cache.get(boardId, List.class);
             if (cached != null) {
                 log.debug("[UPLOAD CACHE] Cache hit for boardId={}", boardId);
-                return cached;
+                return cached.stream().map(this::toUploadEntity).toList();
             }
         }
-
         List<Upload> uploads = uploadRepository.findAllByBoard_IdOrderByIdAsc(boardId);
-        if (cache != null && !uploads.isEmpty()) cache.put(boardId, uploads);
+        if (cache != null && !uploads.isEmpty()) {
+            cache.put(boardId, uploads.stream().map(UploadDTO::new).toList());
+        }
         return uploads;
     }
 
@@ -272,6 +281,27 @@ public class UploadService {
     @Deprecated
     public Upload moveFileVisibility(Long id, boolean targetIsPublic) {
         return changeVisibility(id, targetIsPublic);
+    }
+
+    // ---------------------------------------------------
+    // 캐시 DTO → 엔티티 복원 헬퍼 (호출부 인터페이스 유지용)
+    // board 연관 관계는 null — 파일 메타데이터 조회 전용으로 충분합니다.
+    // board 정보가 필요한 로직에서는 DB 를 직접 조회하세요.
+    // ---------------------------------------------------
+    private Upload toUploadEntity(UploadDTO dto) {
+        Upload u = new Upload();
+        u.setId(dto.getId());
+        u.setStorageKey(dto.getStorageKey());
+        u.setSourceFilename(dto.getSourceFilename());
+        u.setStorageFilename(dto.getStorageFilename());
+        u.setFilePath(dto.getFilePath());
+        u.setFileSize(dto.getFileSize());
+        u.setFileExtension(dto.getFileExtension());
+        u.setMimeType(dto.getMimeType());
+        u.setDownloadCount(dto.getDownloadCount());
+        u.setPublic(dto.isPublic());
+        u.setDeleted(dto.isDeleted());
+        return u;
     }
 
     // ---------------------------------------------------

@@ -5,10 +5,11 @@ import com.daangcool.stack.domain.common.CommonCodeGroup;
 import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
 import com.daangcool.stack.common.exception.BadRequestAlertException;
+import com.daangcool.stack.service.dto.CommonCodeCacheDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,17 +104,45 @@ public class CommonCodeService {
     }
 
     @Transactional(readOnly = true)
-    // 전체 그룹 리스트 조회 시 캐싱 적용 (키는 사용하지 않음 - 리스트 전체)
-    @Cacheable(value = COMMON_GROUP_LIST_CACHE, unless = "#result.isEmpty()")
+    @SuppressWarnings("unchecked")
     public List<CommonCodeGroup> findAllGroups() {
-        return groupRepository.findAllByDeletedIsFalseOrderByDisplayOrderAsc();
+        Cache cache = cacheManager.getCache(COMMON_GROUP_LIST_CACHE);
+        if (cache != null) {
+            // DTO 리스트로 저장 → Hibernate Proxy / LazyLoad 문제 없음
+            List<CommonCodeCacheDto.GroupDto> cached =
+                (List<CommonCodeCacheDto.GroupDto>) cache.get("all", List.class);
+            if (cached != null) {
+                LOG.debug("[COMMON CACHE] Hit findAllGroups");
+                // DTO → 엔티티 형태로 복원 (호출부 인터페이스 유지)
+                return cached.stream().map(this::toGroupEntity).toList();
+            }
+        }
+        List<CommonCodeGroup> groups =
+            groupRepository.findAllByDeletedIsFalseOrderByDisplayOrderAsc();
+        if (cache != null && !groups.isEmpty()) {
+            // 엔티티 대신 DTO 저장 (LazyLoad 세션 안에서 변환)
+            cache.put("all", CommonCodeCacheDto.GroupDto.fromList(groups));
+        }
+        return groups;
     }
 
     @Transactional(readOnly = true)
-    // 단일 그룹 코드 조회 시 캐싱 적용 (groupCode를 키로 사용)
-    @Cacheable(value = COMMON_GROUP_CACHE, key = "#groupCode", unless = "#result == null")
     public Optional<CommonCodeGroup> findGroup(String groupCode) {
-        return groupRepository.findOneByGroupCodeAndDeletedIsFalse(groupCode);
+        Cache cache = cacheManager.getCache(COMMON_GROUP_CACHE);
+        if (cache != null) {
+            CommonCodeCacheDto.GroupDto cached =
+                cache.get(groupCode, CommonCodeCacheDto.GroupDto.class);
+            if (cached != null) {
+                LOG.debug("[COMMON CACHE] Hit findGroup: {}", groupCode);
+                return Optional.of(toGroupEntity(cached));
+            }
+        }
+        Optional<CommonCodeGroup> result =
+            groupRepository.findOneByGroupCodeAndDeletedIsFalse(groupCode);
+        result.ifPresent(g -> {
+            if (cache != null) cache.put(groupCode, CommonCodeCacheDto.GroupDto.from(g));
+        });
+        return result;
     }
 
     public void softDeleteGroup(String groupCode) {
@@ -188,17 +217,42 @@ public class CommonCodeService {
     }
 
     @Transactional(readOnly = true)
-    // 단일 상세 코드 조회 시 캐싱 적용 (ID를 키로 사용)
-    @Cacheable(value = COMMON_DETAIL_CACHE, key = "#id", unless = "#result == null")
     public Optional<CommonCodeDetail> findDetail(Long id) {
-        return detailRepository.findById(id).filter(detail -> !detail.isDeleted());
+        Cache cache = cacheManager.getCache(COMMON_DETAIL_CACHE);
+        if (cache != null) {
+            CommonCodeCacheDto.DetailDto cached =
+                cache.get(id, CommonCodeCacheDto.DetailDto.class);
+            if (cached != null) {
+                LOG.debug("[COMMON CACHE] Hit findDetail: {}", id);
+                return Optional.of(toDetailEntity(cached));
+            }
+        }
+        Optional<CommonCodeDetail> result =
+            detailRepository.findById(id).filter(d -> !d.isDeleted());
+        result.ifPresent(d -> {
+            if (cache != null) cache.put(id, CommonCodeCacheDto.DetailDto.from(d));
+        });
+        return result;
     }
 
     @Transactional(readOnly = true)
-    // 그룹별 상세 코드 리스트 조회 시 캐싱 적용 (groupCode를 키로 사용)
-    @Cacheable(value = COMMON_DETAIL_LIST_BY_GROUP_CACHE, key = "#groupCode", unless = "#result.isEmpty()")
+    @SuppressWarnings("unchecked")
     public List<CommonCodeDetail> findAllDetailsByGroup(String groupCode) {
-        return detailRepository.findAllByGroupGroupCodeAndDeletedIsFalseOrderBySortOrderAsc(groupCode);
+        Cache cache = cacheManager.getCache(COMMON_DETAIL_LIST_BY_GROUP_CACHE);
+        if (cache != null) {
+            List<CommonCodeCacheDto.DetailDto> cached =
+                (List<CommonCodeCacheDto.DetailDto>) cache.get(groupCode, List.class);
+            if (cached != null) {
+                LOG.debug("[COMMON CACHE] Hit findAllDetailsByGroup: {}", groupCode);
+                return cached.stream().map(this::toDetailEntity).toList();
+            }
+        }
+        List<CommonCodeDetail> details =
+            detailRepository.findAllByGroupGroupCodeAndDeletedIsFalseOrderBySortOrderAsc(groupCode);
+        if (cache != null && !details.isEmpty()) {
+            cache.put(groupCode, CommonCodeCacheDto.DetailDto.fromList(details));
+        }
+        return details;
     }
 
     public void softDeleteDetail(Long id) {
@@ -215,5 +269,43 @@ public class CommonCodeService {
                     throw new BadRequestAlertException("CommonCodeDetail not found or already deleted", ENTITY_DETAIL, ERR_NOT_FOUND);
                 }
             );
+    }
+
+    // ------------------------------------------------------------------
+    // 캐시 DTO → 엔티티 복원 헬퍼 (호출부 인터페이스 유지용)
+    // 캐시 히트 시 DB 조회 없이 가볍게 엔티티 형태로 반환합니다.
+    // 연관 관계(group.details 등)는 null 로 채워지지만, 조회 전용 용도에서는 충분합니다.
+    // 연관 엔티티가 필요한 로직에서는 DB 를 직접 조회하세요.
+    // ------------------------------------------------------------------
+
+    private CommonCodeGroup toGroupEntity(CommonCodeCacheDto.GroupDto dto) {
+        CommonCodeGroup g = new CommonCodeGroup();
+        g.setGroupCode(dto.groupCode());
+        g.setGroupName(dto.groupName());
+        g.setDisplayOrder(dto.displayOrder());
+        g.setDeleted(dto.deleted());
+        g.setDescription(dto.description());
+        return g;
+    }
+
+    private CommonCodeDetail toDetailEntity(CommonCodeCacheDto.DetailDto dto) {
+        CommonCodeDetail d = new CommonCodeDetail();
+        d.setId(dto.id());
+        d.setCode(dto.code());
+        d.setName(dto.name());
+        d.setSortOrder(dto.sortOrder());
+        d.setDeleted(dto.deleted());
+        d.setAttribute1(dto.attribute1());
+        d.setAttribute2(dto.attribute2());
+        d.setAttribute3(dto.attribute3());
+        d.setAttribute4(dto.attribute4());
+        d.setAttribute5(dto.attribute5());
+        d.setDescription(dto.description());
+        if (dto.groupCode() != null) {
+            CommonCodeGroup g = new CommonCodeGroup();
+            g.setGroupCode(dto.groupCode());
+            d.setGroup(g);
+        }
+        return d;
     }
 }
