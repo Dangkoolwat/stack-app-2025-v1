@@ -9,7 +9,18 @@
       <div class="card jh-card">
         <router-view></router-view>
       </div>
-      <b-modal id="login-page" focus="username" v-model="loginModalOpen" :no-footer="true" lazy>
+      <b-modal
+        id="login-page"
+        focus="username"
+        v-model="loginModalOpen"
+        :no-footer="true"
+        lazy
+        centered
+        modal-class="login-modal"
+        content-class="border-0 shadow-sm rounded-4"
+        header-class="border-0 pb-0"
+        body-class="pt-2"
+      >
         <template #title>
           <span data-cy="loginTitle" id="login-title">{{ t$('login.title') }}</span>
         </template>
