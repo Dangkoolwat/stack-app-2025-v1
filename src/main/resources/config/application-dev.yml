@@ -134,6 +134,9 @@ spring:
 server:
   port: 8443
   forward-headers-strategy: native
+  tomcat:
+    remoteip:
+      trusted-proxies: 127.0.0.1,0:0:0:0:0:0:0:1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
 
 jhipster:
   cache:
