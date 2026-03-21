@@ -99,110 +99,114 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
      * 이메일 중복 (400 Bad Request)
      */
     @ExceptionHandler(EmailAlreadyUsedException.class)
-    public ResponseEntity<Object> handleEmailAlreadyUsed(EmailAlreadyUsedException ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
+    public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException ex, HttpServletRequest request) {
+        return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.EMAIL_ALREADY_USED_TYPE.toString(),
             "problem.emailUsed",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.badRequest()
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
      * 로그인 중복 (400 Bad Request)
      */
     @ExceptionHandler(LoginAlreadyUsedException.class)
-    public ResponseEntity<Object> handleLoginAlreadyUsed(LoginAlreadyUsedException ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
+    public ProblemDetail handleLoginAlreadyUsed(LoginAlreadyUsedException ex, HttpServletRequest request) {
+        return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.LOGIN_ALREADY_USED_TYPE.toString(),
             "problem.loginUsed",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.badRequest()
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
      * 잘못된 비밀번호 (400 Bad Request)
      */
     @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<Object> handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
+    public ProblemDetail handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest request) {
+        return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.INVALID_PASSWORD_TYPE.toString(),
             "problem.invalidPassword",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.badRequest()
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
      * 엔티티를 찾을 수 없음 (404 Not Found)
+     * Spring Boot 4 표준 ProblemDetail 반환
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
-            HttpStatus.NOT_FOUND,
-            ErrorConstants.ENTITY_NOT_FOUND_TYPE.toString(),
-            "problem.entityNotFound",
-            ex.getMessage(),
-            request
+    public ProblemDetail handleEntityNotFound(EntityNotFoundException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+            HttpStatus.NOT_FOUND, 
+            ex.getMessage() != null ? ex.getMessage() : "Entity Not Found"
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
+        pd.setTitle("Resource Not Found");
+        pd.setProperty("timestamp", java.time.Instant.now());
+        return pd;
+    }
+
+    /**
+     * JPA/Hibernate Validator 제약조건 위반 (400 Bad Request)
+     * Spring Boot 4 표준 ProblemDetail 반환
+     */
+    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
+    public ProblemDetail handleValidation(jakarta.validation.ConstraintViolationException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST, 
+            "Validation failed"
+        );
+        pd.setProperty("violations", ex.getConstraintViolations()
+            .stream()
+            .map(v -> java.util.Map.of(
+                "field", v.getPropertyPath().toString(),
+                "message", String.valueOf(v.getMessage())
+            ))
+            .toList()
+        );
+        return pd;
     }
 
     /**
      * 파일 저장/조회 관련 오류
      */
     @ExceptionHandler({ FileStorageException.class, UploadNotFoundException.class })
-    public ResponseEntity<Object> handleFileExceptions(RuntimeException ex, HttpServletRequest request) {
+    public ProblemDetail handleFileExceptions(RuntimeException ex, HttpServletRequest request) {
         URI type = ex instanceof UploadNotFoundException
             ? ErrorConstants.FILE_NOT_FOUND_TYPE
             : ErrorConstants.FILE_STORAGE_ERROR_TYPE;
 
-        var problem = ProblemUtils.build(
+        return ProblemUtils.build(
             HttpStatus.INTERNAL_SERVER_ERROR,
             type.toString(),
             "problem.fileError",
             ex.getMessage(),
             request
         );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
      * BadRequestAlertException (서비스/리소스 단위 유효성 실패)
      */
     @ExceptionHandler(BadRequestAlertException.class)
-    public ResponseEntity<Object> handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
+    public ProblemDetail handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
         var problem = ex.toProblemDetail(request.getRequestURI());
         problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         problem.setProperty("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
+        return problem;
     }
 
     /**
      * 요청 횟수 초과 (429 Too Many Requests)
      */
     @ExceptionHandler(TooManyRequestsException.class)
-    public ResponseEntity<Object> handleTooManyRequests(TooManyRequestsException ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleTooManyRequests(TooManyRequestsException ex, HttpServletRequest request) {
         var problem = ex.toProblemDetail(request.getRequestURI());
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
             .contentType(MediaType.APPLICATION_PROBLEM_JSON)
@@ -214,34 +218,28 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
      * 접근 권한 거부 (403 Forbidden)
      */
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-    public ResponseEntity<Object> handleAccessDenied(Exception ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
+    public ProblemDetail handleAccessDenied(Exception ex, HttpServletRequest request) {
+        return ProblemUtils.build(
             HttpStatus.FORBIDDEN,
             ErrorConstants.ACCESS_DENIED_TYPE.toString(),
             "problem.accessDenied",
             ex.getMessage(),
             request
         );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
      * 인증 실패 (401 Unauthorized)
      */
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
-    public ResponseEntity<Object> handleAuthentication(Exception ex, HttpServletRequest request) {
-        var problem = ProblemUtils.build(
+    public ProblemDetail handleAuthentication(Exception ex, HttpServletRequest request) {
+        return ProblemUtils.build(
             HttpStatus.UNAUTHORIZED,
             ErrorConstants.UNAUTHORIZED_TYPE.toString(),
             "problem.unauthorized",
             "Authentication failed",
             request
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 
     /**
@@ -249,7 +247,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
      * - 내부 스택트레이스 메시지는 감춤
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleAll(Exception ex, HttpServletRequest request) {
+    public ProblemDetail handleAll(Exception ex, HttpServletRequest request) {
         log.error("Unexpected error", ex);
 
         String safeDetail = ex.getMessage();
@@ -257,16 +255,12 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
             safeDetail = "problem.internalServerError";
         }
 
-        var problem = ProblemUtils.build(
+        return ProblemUtils.build(
             HttpStatus.INTERNAL_SERVER_ERROR,
             ErrorConstants.DEFAULT_TYPE.toString(),
             "problem.internalError",
             safeDetail,
             request
         );
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
-            .body(problem);
     }
 }
