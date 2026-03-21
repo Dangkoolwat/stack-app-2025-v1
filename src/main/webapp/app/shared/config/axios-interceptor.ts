@@ -17,12 +17,16 @@ const onRequestSuccess = (config: InternalAxiosRequestConfig): InternalAxiosRequ
   const token = localStorage.getItem('jhi-authenticationToken') ?? sessionStorage.getItem('jhi-authenticationToken');
   if (token) {
     if (!config.headers) {
-      config.headers = new axios.AxiosHeaders();
+      (config.headers as any) = {};
     }
-    config.headers.set('Authorization', `Bearer ${token}`);
+    (config.headers as any).Authorization = `Bearer ${token}`;
   }
   config.timeout = TIMEOUT;
-  config.url = `${SERVER_API_URL}${config.url}`;
+
+  const serverUrl = SERVER_API_URL.endsWith('/') ? SERVER_API_URL : `${SERVER_API_URL}/`;
+  const requestUrl = config.url?.startsWith('/') ? config.url.substring(1) : config.url;
+  config.url = `${serverUrl}${requestUrl ?? ''}`;
+
   return config;
 };
 
@@ -32,8 +36,9 @@ const setupAxiosInterceptors = (onUnauthenticated: (error: AxiosError) => void, 
 
     if (status === 401) {
       const url = error.config?.url ?? '';
-      if (!url.includes('/api/authenticate') && !url.includes('/api/account')) {
-        console.warn('Unauthorized access detected');
+      // url might be 'api/authenticate' or '/api/authenticate'
+      if (!url.includes('api/authenticate') && !url.includes('api/account')) {
+        console.warn('Unauthorized access detected for URL:', url);
         return onUnauthenticated(error);
       }
     } else if (status === 403) {
