@@ -1,6 +1,7 @@
 package com.daangcool.stack.config;
 
 import com.daangcool.stack.security.AuthoritiesConstants;
+import com.daangcool.stack.security.CspNonceFilter;
 import com.daangcool.stack.security.RateLimitingRegistry;
 import com.daangcool.stack.security.handler.CustomAccessDeniedHandler;
 import com.daangcool.stack.security.handler.CustomAuthenticationEntryPoint;
@@ -63,9 +64,9 @@ public class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .addFilterBefore(new RateLimitingFilter(objectMapper, applicationProperties, rateLimitingRegistry), BasicAuthenticationFilter.class)
             .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
+            .addFilterAfter(new CspNonceFilter(), SpaWebFilter.class)
             .headers(headers ->
                 headers
-                    .contentSecurityPolicy(csp -> csp.policyDirectives(jHipsterProperties.getSecurity().getContentSecurityPolicy()))
                     .frameOptions(FrameOptionsConfig::sameOrigin)
                     .referrerPolicy(referrer -> referrer.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                     .permissionsPolicyHeader(permissions ->

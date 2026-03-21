@@ -36,6 +36,7 @@ let config = defineConfig({
   cacheDir: fileURLToPath(new URL('./target/.vite-cache', import.meta.url)),
   build: {
     emptyOutDir: true,
+    cssCodeSplit: false,
     outDir: fileURLToPath(new URL('./target/classes/static/', import.meta.url)),
     rollupOptions: {
       input: {
