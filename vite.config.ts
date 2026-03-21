@@ -2,11 +2,16 @@ import { URL, fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 
 import vue from '@vitejs/plugin-vue';
-import { defineConfig, normalizePath } from 'vite';
+import { defineConfig, normalizePath, loadEnv } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 const { getAbsoluteFSPath } = await import('swagger-ui-dist');
 const swaggerUiPath = getAbsoluteFSPath();
+
+// .env 및 OS 환경 변수에서 서버 포트/URL을 동적으로 불러옵니다.
+const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), '');
+const backendPort = env.BACKEND_PORT || process.env.BACKEND_PORT || '8443';
+const backendUrl = env.BACKEND_URL || process.env.BACKEND_URL || `https://localhost:${backendPort}`;
 
 // eslint-disable-next-line prefer-const
 let config = defineConfig({
@@ -61,7 +66,7 @@ let config = defineConfig({
       ['/api', '/management', '/v3/api-docs', '/websocket'].map(res => [
         res,
         {
-          target: 'https://localhost:8443',
+          target: backendUrl,
           changeOrigin: true,
           secure: false,
           ws: res === '/websocket',
