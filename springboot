@@ -19,5 +19,5 @@ echo "Running: docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL"
 docker exec edenhtwebapp-redis-1 redis-cli FLUSHALL || echo "Redis flush failed (check container name)"
 
 # 5. 환경 변수 로드 및 스프링 부트 실행 (프로필 추가)
-echo "Running: export \$(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls"
-export $(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls
+echo "Running: export \$(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls,api-docs"
+export $(cat .env | grep -v '^#' | xargs) && ./mvnw spring-boot:run -Pdev,local-tls,api-docs
