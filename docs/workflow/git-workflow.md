@@ -1,7 +1,16 @@
 # Git Workflow
 
 ## Purpose
+
 Define a safe Git-based workflow so that agent work can be reviewed efficiently and rolled back when necessary.
+
+---
+
+## Rule Interpretation
+
+- MUST = mandatory
+- SHOULD = recommended default
+- MAY = optional
 
 ---
 
@@ -11,6 +20,21 @@ Define a safe Git-based workflow so that agent work can be reviewed efficiently 
 - All work SHOULD be performed on a dedicated branch
 - Code changes, `agent-log`, required documentation updates, and test results SHOULD move together
 - Review SHOULD proceed from summary to risk to detail, not by reading every changed line first
+
+---
+
+## Non-Trivial Change Definition
+
+A change is treated as non-trivial when at least one of the following is true:
+
+- it modifies business logic
+- it changes configuration or environment-variable behavior
+- it changes API contracts or OpenAPI-relevant behavior
+- it impacts database, cache, security, or authentication behavior
+- it adds, removes, or upgrades dependencies
+- it changes deployment, CI, or runtime operational behavior
+
+If none of the above is true, teams MAY treat the work as trivial according to `AGENTS.md`.
 
 ---
 
@@ -40,7 +64,7 @@ agent/security-auth-header-hardening
 
 ## Required Deliverables
 
-A completed change SHOULD include:
+A completed non-trivial change SHOULD include:
 
 - code changes
 - `agent-log`
@@ -77,7 +101,7 @@ Required files:
 
 Confirm at least the following:
 
-- `agent-log` is complete
+- `agent-log` is complete when required
 - test results are recorded
 - required code comments are updated
 - OpenAPI impact is checked
@@ -127,47 +151,11 @@ High-risk areas include:
 
 ---
 
-## Change Levels
-
-### Level 1: Minor change
-
-Examples:
-
-- wording updates
-- style-only fixes
-- obvious typo fixes
-- simple UI adjustments
-
-### Level 2: General feature change
-
-Examples:
-
-- service logic updates
-- internal API handling improvements
-- new screen behavior
-- query optimization
-
-### Level 3: High-risk change
-
-Examples:
-
-- configuration changes
-- dependency upgrades
-- auth or security changes
-- cache policy changes
-- DB schema changes
-- API contract changes
-
-High-risk changes SHOULD include Global Impact Review, rollback planning, required comments, and synchronized documentation.
-
----
-
 ## Rejection Conditions
 
 A change MAY be rejected when:
 
-- `agent-log` is missing
-- required files are missing
+- required `agent-log` files are missing
 - `final-report.md` is weak or incomplete
 - required self-check content is missing
 - configuration or dependency changes lack impact analysis

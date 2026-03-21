@@ -1,7 +1,16 @@
 # CI Automation Rules
 
 ## Purpose
+
 Define the checks that CI and automation SHOULD perform so that reviewers do not spend time on repetitive validation.
+
+---
+
+## Rule Interpretation
+
+- MUST = required for enforced critical checks
+- SHOULD = recommended default
+- MAY = optional or phased
 
 ---
 
@@ -16,6 +25,23 @@ Examples:
 - OpenAPI presence or update checks
 - impact-document checks for configuration or dependency changes
 - pull request template completeness checks
+
+---
+
+## Enforcement Policy
+
+### CI MUST fail for critical omissions
+
+- missing required `agent-log` files for a non-trivial change
+- hardcoded secrets or committed `.env`
+- missing required OpenAPI update when an API contract changed
+- missing required impact analysis for config, dependency, cache, or security-sensitive changes
+
+### CI SHOULD warn for non-critical omissions
+
+- missing required comments in high-risk classes
+- incomplete pull request template sections
+- missing supporting documentation that does not block safe review
 
 ---
 
@@ -53,34 +79,6 @@ CI SHOULD check whether changes to files such as `application.yml`, `.env.sample
 
 ---
 
-## Recommended Phase 2 Checks
-
-### Code comment guidance check
-
-For high-risk areas such as configuration, security, cache, and infrastructure code, CI MAY start with warnings for missing required documentation comments.
-
-### Pull request body check
-
-CI MAY check whether required pull request sections are filled in, such as:
-
-- Problem
-- Impact Scope
-- Test
-- Rollback Plan
-
----
-
-## Example Failure Conditions
-
-CI MAY fail when:
-
-- required `agent-log` files are missing
-- API changes are missing required OpenAPI updates
-- configuration changes are missing required impact documentation
-- the pull request template is missing critical sections
-
----
-
 ## Gradual Adoption Rule
 
 Do not start by failing every rule immediately.
@@ -90,25 +88,6 @@ Recommended order:
 1. warnings first
 2. fail only on critical omissions
 3. expand after the team stabilizes the workflow
-
----
-
-## Recommended Rollout Order
-
-### Phase 1
-
-- `agent-log` existence check
-- required file count check
-
-### Phase 2
-
-- OpenAPI update check
-- configuration and dependency impact checks
-
-### Phase 3
-
-- pull request body validation
-- warnings for missing comments or missing supporting documentation in high-risk areas
 
 ---
 

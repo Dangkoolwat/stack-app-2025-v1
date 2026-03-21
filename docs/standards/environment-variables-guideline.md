@@ -1,9 +1,18 @@
 # Environment Variables Guideline
 
 ## Purpose
+
 Define mandatory agent actions for adding, changing, validating, and operating environment variables safely.
 
 This document defines action rules. When a trigger condition occurs, agents MUST perform the required steps.
+
+---
+
+## Rule Interpretation
+
+- MUST = mandatory
+- SHOULD = recommended default
+- MAY = optional
 
 ---
 
@@ -13,6 +22,7 @@ This document defines action rules. When a trigger condition occurs, agents MUST
 - MUST NOT hardcode secrets in source code or checked-in configuration files.
 - MUST NOT expose sensitive values through frontend `VITE_` variables.
 - MUST use OS environment variables or a secret manager in production.
+- MUST treat all `VITE_` variables as public-by-design values.
 
 ---
 
@@ -39,7 +49,7 @@ Agents MUST:
 2. Request or document the required `.env` update for local execution
 3. Replace direct values in code with environment variable references
 4. Check related scripts and runbooks
-5. Perform a Global Impact Review when the variable affects configuration, security, cache, dependency behavior, or API behavior
+5. Perform a Global Impact Review when the variable matches any trigger defined below
 
 ---
 
@@ -51,6 +61,18 @@ Agents MUST:
 2. Verify rollout and rollback feasibility
 3. Confirm production environment updates are accounted for
 4. Record the reason and impact in `agent-log`
+
+---
+
+## Global Impact Review Trigger
+
+Agents MUST perform Global Impact Review when a variable:
+
+- is used in authentication, authorization, security, token handling, or secret management
+- changes runtime behavior such as timeout, retry, pool size, TTL, concurrency, or rate limit
+- changes endpoint URL, external integration target, or network routing behavior
+- affects cache, database, serialization, or dependency behavior
+- changes API-visible behavior between environments
 
 ---
 

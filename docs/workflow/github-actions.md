@@ -1,6 +1,7 @@
 # GitHub Actions Guide
 
 ## Purpose
+
 Describe how GitHub Actions can enforce the workflow and documentation rules defined in `AGENTS.md` and the workflow documents.
 
 ---
@@ -13,6 +14,8 @@ Store workflow files under:
 .github/workflows/agent-guard.yml
 .github/workflows/pr-body-check.yml
 ```
+
+These names are examples. Repositories MAY use different workflow file names if the responsibilities remain clear.
 
 ---
 
@@ -30,6 +33,18 @@ This workflow SHOULD check:
 ### `pr-body-check.yml`
 
 This workflow SHOULD check whether required pull request sections are present.
+
+---
+
+## Enforcement Alignment
+
+Workflow failure and warning behavior SHOULD match `docs/workflow/ci-automation-rules.md`.
+
+Recommended mapping:
+
+- fail on critical omissions
+- warn on non-critical omissions
+- do not enforce repository-specific assumptions that are not documented elsewhere
 
 ---
 

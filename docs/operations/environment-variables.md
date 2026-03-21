@@ -1,6 +1,7 @@
 # Environment Variables Operations Guide
 
 ## Purpose
+
 Provide a practical HOW TO guide for local environment-variable setup and operational usage.
 
 This document intentionally avoids repository-specific start commands when they are not yet standardized. Use the repository's actual backend and frontend run commands together with this guide.
@@ -20,6 +21,17 @@ Example:
 ```bash
 cp .env.sample .env
 ```
+
+---
+
+## Fallback Rule for Missing Run Commands
+
+If repository-specific run commands are not clearly documented, agents MUST:
+
+1. check `README.md`
+2. check package scripts, Gradle tasks, Maven commands, or other repository run definitions
+3. avoid inventing undocumented commands
+4. ask the user before execution when command ambiguity remains
 
 ---
 

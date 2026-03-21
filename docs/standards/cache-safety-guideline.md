@@ -1,7 +1,16 @@
 # Cache Safety Guideline
 
 ## Purpose
+
 Define safe and predictable caching rules to prevent data inconsistency, security issues, and hidden state bugs.
+
+---
+
+## Rule Interpretation
+
+- MUST = mandatory
+- SHOULD = recommended default
+- MAY = optional
 
 ---
 
@@ -20,6 +29,14 @@ Define safe and predictable caching rules to prevent data inconsistency, securit
 - Cached DTOs MUST NOT contain lazy-loaded references or entity proxies
 - Redis MAY be used for OTP, rate limiting, locking, and similarly bounded operational use cases
 
+### DTO Immutability Clarification
+
+For this guideline, a DTO is treated as immutable when all of the following are true:
+
+- it does not expose business-state setter methods after creation
+- it does not hold lazy-loaded references or entity proxies
+- it is safe to serialize and read without mutating shared state
+
 ---
 
 ## Expiration Rules
@@ -35,6 +52,15 @@ Define safe and predictable caching rules to prevent data inconsistency, securit
 - Cache MUST be evicted when the underlying state changes
 - Write operations MUST trigger eviction for affected keys or ranges
 - Bulk updates MUST consider broader invalidation impact
+
+### State Change Examples
+
+State changes include:
+
+- create, update, delete operations
+- permission or status changes
+- configuration changes that alter cached output
+- batch jobs that rewrite cached source data
 
 ---
 
@@ -64,5 +90,5 @@ product:{productId}:v1
 
 "Do not cache authentication data" means:
 
-- No entity caching for auth-related objects
-- No session-like authentication state caching unless a dedicated and approved design document defines it
+- no entity caching for auth-related objects
+- no session-like authentication state caching unless a dedicated and approved design document defines it
