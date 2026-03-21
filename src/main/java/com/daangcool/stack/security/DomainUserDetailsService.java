@@ -111,7 +111,7 @@ public class DomainUserDetailsService implements UserDetailsService {
         List<SimpleGrantedAuthority> authorities = dto.authorities().stream()
             .map(SimpleGrantedAuthority::new)
             .toList();
-        return new UserWithId(dto.login(), "", authorities, dto.id());
+        return new UserWithId(dto.login(), dto.password(), authorities, dto.id());
     }
 
     /** DB 조회 결과 User → Spring Security UserDetails 변환 (기존 로직 유지) */

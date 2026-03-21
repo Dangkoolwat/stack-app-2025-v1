@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
  * - Jackson 3의 NON_FINAL 타이핑 호환성을 위해 record 가 아닌 일반 class 로 유지
  *
  * 주의사항:
- * - 민감한 정보(password 등)를 절대 포함하지 말 것
  * - 직렬화 호환성을 위해 필드 순서나 타입 변경 시 신중해야 함
  *
  * 변경 이력:
@@ -39,6 +38,7 @@ public class UserAuthCacheDto implements Serializable {
 
     private Long id;
     private String login;
+    private String password;
     private String email;
     private boolean activated;
     private boolean enabled;
@@ -48,6 +48,7 @@ public class UserAuthCacheDto implements Serializable {
     public UserAuthCacheDto(
         Long id,
         String login,
+        String password,
         String email,
         boolean activated,
         boolean enabled,
@@ -56,6 +57,7 @@ public class UserAuthCacheDto implements Serializable {
     ) {
         this.id = id;
         this.login = login;
+        this.password = password;
         this.email = email;
         this.activated = activated;
         this.enabled = enabled;
@@ -66,6 +68,7 @@ public class UserAuthCacheDto implements Serializable {
     // record 스타일의 getter 메서드 유지 (기존 코드와 호환성)
     public Long id() { return id; }
     public String login() { return login; }
+    public String password() { return password; }
     public String email() { return email; }
     public boolean activated() { return activated; }
     public boolean enabled() { return enabled; }
@@ -86,6 +89,7 @@ public class UserAuthCacheDto implements Serializable {
         return new UserAuthCacheDto(
             user.getId(),
             user.getLogin(),
+            user.getPassword(),
             user.getEmail(),
             user.isActivated(),
             user.isEnabled(),

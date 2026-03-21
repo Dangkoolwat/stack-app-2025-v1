@@ -44,7 +44,7 @@ class UserAuthCacheServiceTest {
         userAuthCacheService = new UserAuthCacheService(redissonJsonClient, props);
 
         sampleDto = new UserAuthCacheDto(
-            1L, "testuser", "test@example.com",
+            1L, "testuser", "encodedpwd", "test@example.com",
             true, true, true,
             Set.of("ROLE_USER")
         );
