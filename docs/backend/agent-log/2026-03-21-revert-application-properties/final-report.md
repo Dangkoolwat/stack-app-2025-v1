@@ -12,8 +12,10 @@
 ## 향후 영향
 - 추후 새로운 설정 항목 추가 시 `ApplicationProperties` 내부에 중첩 클래스를 추가하는 관례를 따름으로써 일관성 유지 가능.
 - 테스트 시 `application.yml`의 환경별 설정을 통해 런타임 수치 조정이 용이함.
+- **HikariCP 풀 사이즈 튜닝 지원**: 코어 수 기반의 동적 풀 사이즈 할당 및 고정 풀 설정(`minimum-idle = -1`)이 안정적으로 동작함을 확인.
 
 ## 최종 결과물
-- **수정**: `ApplicationProperties.java`, `RateLimitingFilter.java`, `ShareFileStorageService.java`, 각 Storage Test 파일 등.
+- **수정**: `ApplicationProperties.java`, `RateLimitingFilter.java`, `ShareFileStorageService.java`, 각 Storage Test 파일, `DatabaseConfiguration.java`, `application-dev.yml`, `application-prod.yml`
+- **신규 생성**: `DatabaseConfigurationTest.java` (HikariCP 동적 설정 로직 검증 완비)
 - **삭제**: `RedisProperties.java`, `FileProperties.java` 등 8개 파일.
 - **문서**: 본 `agent-log` 디렉토리 내 6개 문서.
