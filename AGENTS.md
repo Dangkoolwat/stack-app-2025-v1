@@ -1,4 +1,3 @@
-
 # AGENTS.md
 
 ## Language Policy (MANDATORY)
@@ -53,6 +52,26 @@ All non-trivial work MUST follow:
 For trivial or clearly defined tasks:
 
 Problem → Plan → Implementation → Verification
+
+---
+
+## Interaction Rule (MANDATORY)
+
+When receiving a task:
+
+1. Agents MUST start with a proposed solution direction (hypothesis)
+2. Agents SHOULD provide:
+   - one recommended solution (primary direction)
+   - 1–2 brief alternative options (if relevant)
+3. Agents MUST NOT ask "what should I do?" or present only open-ended options
+4. Agents MUST ask for confirmation after proposing direction:
+   - "Is this the correct direction?"
+5. Only after confirmation:
+   - proceed with detailed plan and implementation
+
+### Exception
+
+- If the task is trivial or explicitly defined, agents MAY proceed directly to implementation
 
 ---
 
