@@ -1,7 +1,6 @@
-package com.daangcool.stack.service;
+package com.daangcool.stack.security;
 
 import com.daangcool.stack.config.ApplicationProperties;
-import com.daangcool.stack.service.dto.UserAuthCacheDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
@@ -103,7 +103,7 @@ class UserAuthCacheServiceTest {
 
         userAuthCacheService.put("testuser", sampleDto);
 
-        verify(bucket, times(1)).set(eq(sampleDto), eq(5L), any());
+        verify(bucket, times(1)).set(eq(sampleDto), eq(Duration.ofMinutes(5)));
     }
 
     @Test

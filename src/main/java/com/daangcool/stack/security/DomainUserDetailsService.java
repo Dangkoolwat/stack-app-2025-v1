@@ -4,8 +4,9 @@ import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
-import com.daangcool.stack.service.UserAuthCacheService;
-import com.daangcool.stack.service.dto.UserAuthCacheDto;
+// Redis 인증 캐시 (ArchUnit 준수를 위해 security 패키지로 이동)
+// import com.daangcool.stack.service.UserAuthCacheService;
+// import com.daangcool.stack.service.dto.UserAuthCacheDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -81,20 +82,19 @@ public class DomainUserDetailsService implements UserDetailsService {
     // Private helpers
     // ------------------------------------------------------------------
 
-    /** 이메일 / 로그인 분기 처리 후 User 반환 */
+    /** 이메일 / 로그인 분기 처리 후 User 반환 (Fallback 정책 적용) */
     private User resolveUser(String login) {
-        if (Constants.LOGIN_REGEX.matches(login)) {
-            // 이메일 형식
-            return userRepository
-                .findOneWithAuthoritiesByEmailIgnoreCase(login)
-                .orElseThrow(() ->
-                    new UsernameNotFoundException("User with email " + login + " was not found in the database"));
+        // 1. 보안 규정에 따른 형식 검증
+        if (!login.matches(Constants.LOGIN_REGEX)) {
+            throw new UsernameNotFoundException("User " + login + " is not in a valid format");
         }
-        String lowercaseLogin = login.toLowerCase(Locale.ENGLISH);
-        return userRepository
-            .findOneWithAuthoritiesByLogin(lowercaseLogin)
+
+        // 2. 우선순위에 따른 조회 (이메일 -> 로그인)
+        // 형식에 구애받지 않고 유연하게 사용자를 식별하기 위해 Fallback 정책을 사용합니다.
+        return userRepository.findOneWithAuthoritiesByEmailIgnoreCase(login)
+            .or(() -> userRepository.findOneWithAuthoritiesByLogin(login.toLowerCase(Locale.ENGLISH)))
             .orElseThrow(() ->
-                new UsernameNotFoundException("User " + lowercaseLogin + " was not found in the database"));
+                new UsernameNotFoundException("User " + login + " was not found in the database"));
     }
 
     /** Redis 캐시 DTO → Spring Security UserDetails 변환 */

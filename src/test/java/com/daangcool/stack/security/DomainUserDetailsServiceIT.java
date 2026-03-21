@@ -4,11 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import com.daangcool.stack.IntegrationTest;
+import com.daangcool.stack.domain.Authority;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.repository.UserRepository;
-import com.daangcool.stack.service.UserAuthCacheService;
 import com.daangcool.stack.service.UserService;
-import com.daangcool.stack.service.dto.UserAuthCacheDto;
+
+import java.util.Collections;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,6 +71,9 @@ class DomainUserDetailsServiceIT {
         userOne.setFirstName("userOne");
         userOne.setLastName("doe");
         userOne.setLangKey("en");
+        Authority authority = new Authority();
+        authority.setName("ROLE_USER");
+        userOne.setAuthorities(Collections.singleton(authority));
         return userOne;
     }
 
@@ -82,6 +86,9 @@ class DomainUserDetailsServiceIT {
         userTwo.setFirstName("userTwo");
         userTwo.setLastName("doe");
         userTwo.setLangKey("en");
+        Authority authority = new Authority();
+        authority.setName("ROLE_USER");
+        userTwo.setAuthorities(Collections.singleton(authority));
         return userTwo;
     }
 
@@ -94,6 +101,9 @@ class DomainUserDetailsServiceIT {
         userThree.setFirstName("userThree");
         userThree.setLastName("doe");
         userThree.setLangKey("en");
+        Authority authority = new Authority();
+        authority.setName("ROLE_USER");
+        userThree.setAuthorities(Collections.singleton(authority));
         return userThree;
     }
 

@@ -1,7 +1,6 @@
-package com.daangcool.stack.service;
+package com.daangcool.stack.security;
 
 import com.daangcool.stack.config.ApplicationProperties;
-import com.daangcool.stack.service.dto.UserAuthCacheDto;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
@@ -9,27 +8,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
- * 인증용 사용자 정보 Redis 2차 캐시 서비스
- * ------------------------------------------------------------------
- * - 대상 클라이언트: redissonJsonClient (Jackson 3 / JsonJackson3Codec)
- *   → CacheConfiguration 에 이미 등록된 빈을 재사용 (추가 인프라 불필요)
- * - 키 패턴: "auth:user:{login}"
- *   → 기존 JCache 영역("board:", "otp:", "rl:") 과 prefix 가 달라 충돌 없음
- * - TTL: application.auth-cache.ttl-minutes (기본 5분)
- *   → Access Token 유효기간보다 짧게 유지
- * - Fallback: Redis 장애 시 예외를 삼키고 Optional.empty() 반환
- *   → DB 조회로 자동 폴백, 서비스 중단 없음
+ * [UserAuthCacheService] 인증용 사용자 정보 Redis 2차 캐시 서비스
  *
- * 무효화(evict) 호출 지점:
- *   UserService.changePassword()
- *   UserService.updateUser()       (관리자 권한 수정 포함)
- *   UserService.activateRegistration()
- *   UserService.deleteUser()
- * ------------------------------------------------------------------
+ * 역할:
+ * - 인증된 사용자 권한 정보를 Redis 에 캐시하여 DB 부하 감소
+ * - UserService 의 상태 변경 시 해당 캐시 무효화(evict) 수행
+ *
+ * 에이전트 작업 가이드:
+ * - 캐시 대상 데이터 구조 변경 시 UserAuthCacheDto 와 함께 수정
+ * - Redisson 클라이언트(@Qualifier("redissonJsonClient")) 설정 확인 필요
+ *
+ * 주의사항:
+ * - Redis 장애 시 DB로 자동 폴백(Fallback)되도록 로직이 설계됨
+ * - TTL은 Access Token 보다 짧게 유지하는 것이 보안상 권장됨
+ *
+ * 변경 이력:
+ * - 2026-03-21: [Move] service 패키지에서 security 패키지로 이동 (ArchUnit 대응)
+ * - 2026-03-21: [Refactor] Deprecated 된 TimeUnit 대신 Duration API 적용
  */
 @Service
 public class UserAuthCacheService {
@@ -93,7 +92,7 @@ public class UserAuthCacheService {
     public void put(String login, UserAuthCacheDto dto) {
         try {
             RBucket<UserAuthCacheDto> bucket = redissonJsonClient.getBucket(KEY_PREFIX + login);
-            bucket.set(dto, ttlMinutes, TimeUnit.MINUTES);
+            bucket.set(dto, Duration.ofMinutes(ttlMinutes));
             log.debug("[AuthCache] STORE: {} (TTL {}분)", login, ttlMinutes);
         } catch (Exception e) {
             log.warn("[AuthCache] Redis 저장 실패 (무시하고 계속): {}", e.getMessage());
