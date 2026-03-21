@@ -43,7 +43,7 @@ class ShareFileStorageServiceT {
         when(applicationProperties.getFile()).thenReturn(fileProperties);
         when(fileProperties.getSharePath()).thenReturn("/mnt/share");
         when(fileProperties.getUploadDir()).thenReturn("/uploads");
-        when(fileProperties.getUploadResourceDir()).thenReturn("/uploads");
+        lenient().when(fileProperties.getUploadResourceDir()).thenReturn("/uploads");
 
         // 예상되는 루트 경로를 계산합니다.
         expectedRootLocation = Paths.get("/mnt/share", "/uploads").toString();
@@ -61,7 +61,7 @@ class ShareFileStorageServiceT {
      */
     @Test
     void store_ShouldUseSharePathAsRoot() throws IOException {
-        String expectedStoragePath = "/public/test/2025/10/dummy.txt";
+        String expectedStoragePath = "/uploads/public/test/2025/10/dummy.txt";
 
         try (MockedStatic<UploadFileUtils> mockedUtils = mockStatic(UploadFileUtils.class)) {
             mockedUtils.when(() -> UploadFileUtils.fileSave(anyString(), anyString(), any(), anyBoolean()))
@@ -75,7 +75,7 @@ class ShareFileStorageServiceT {
             mockedUtils.verify(() -> UploadFileUtils.fileSave(eq(expectedRootLocation), eq("test"), eq(multipartFile), eq(true)));
 
             // 2. 서비스가 반환한 최종 웹 경로가 올바른지 검증합니다.
-            assertThat(resultPath).isEqualTo("/uploads" + expectedStoragePath);
+            assertThat(resultPath).isEqualTo(expectedStoragePath);
         }
     }
 

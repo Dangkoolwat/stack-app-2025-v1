@@ -88,20 +88,47 @@ jhipster:
 
 # application:
 application:
-  file:
-    allowed-mime-types:
-      - text/plain
-      - image/jpeg
-      - image/png
-      - image/gif
-      - application/pdf
-    allowed-extensions:
-      - txt
-      - jpg
-      - jpeg
-      - png
-      - gif
-      - pdf
+    file:
+        allowed-mime-types:
+            - text/plain
+            - image/jpeg
+            - image/png
+            - image/gif
+            - application/pdf
+        allowed-extensions:
+            - txt
+            - jpg
+            - jpeg
+            - png
+            - gif
+            - pdf
+    security:
+        public-paths:
+            static-resources:
+                - /css/**
+                - /js/**
+                - /images/**
+                - /webjars/**
+                - /favicon.ico
+            i18n:
+                - /content/**
+                - /i18n/*
+            swagger:
+                - /swagger-ui.html
+                - /swagger-ui/**
+                - /v3/api-docs/**
+                - /api-docs/**
+            websocket:
+                - /websocket/**
+            management:
+                - /management/health
+                - /management/health/**
+                - /management/info
+    cache:
+        ttl:
+            default-seconds: 3600
+            long-seconds: 86400
+            auth-seconds: 300
 
 management:
   health:

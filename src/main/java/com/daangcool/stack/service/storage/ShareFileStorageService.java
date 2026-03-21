@@ -55,7 +55,7 @@ public class ShareFileStorageService implements StorageService {
     public String store(MultipartFile file, String subFolder, boolean isPublic) {
         try {
             String storagePath = UploadFileUtils.fileSave(this.rootLocation, subFolder, file, isPublic);
-            String webPath = properties.getFile().getUploadResourceDir() + storagePath;
+            String webPath = storagePath;
             log.info("[STORAGE-SHARE] Stored file (public={}): {}", isPublic, webPath);
             return webPath;
         } catch (IOException e) {

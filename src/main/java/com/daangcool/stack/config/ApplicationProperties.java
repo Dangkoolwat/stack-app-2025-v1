@@ -5,118 +5,174 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Properties specific to Stack.
+ * Properties specific to Stack App.
  * <p>
  * Properties are configured in the {@code application.yml} file.
  * See {@link tech.jhipster.config.JHipsterProperties} for a good example.
+ *
+ * 🤖 에이전트 가이드:
+ * - Redis 설정: application.redis.*
+ * - 파일 업로드: application.file.*
+ * - 인증 캐시: application.auth-cache.*
+ * - Rate Limit: application.rate-limit.*
+ * - 보안 경로: application.security.*
+ * - 캐시 TTL: application.cache.*
  */
-
 @Getter
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    /** Redis 설정 (application.redis.*) */
     private final Redis redis = new Redis();
 
-    //Liquibase
-    private final Liquibase liquibase = new Liquibase();
-
-    @Setter
-    @Getter
-    public static class Liquibase {
-
-        private Boolean asyncStart = true;
-
-    }
-
-
-    //Logging
-    private final Logging logging = new Logging();
-
-    @Getter
-    @Setter
-    public static class Logging {
-        private String filePath;
-        private String maxFileSize;
-        private int maxHistory;
-        private String totalSizeCap;
-
-    }
-
+    /** 파일 업로드 및 저장소 설정 (application.file.*) */
     private final File file = new File();
 
+    /** 인증 관련 캐시 설정 (application.auth-cache.*) */
+    private final AuthCache authCache = new AuthCache();
 
-    @Getter
-    @Setter
-    public static class File {
-        private FileStorageType storageType = FileStorageType.LOCAL;    // 기본값: LOCAL
-        private String uploadDir = "/uploads";              // 웹 접근 경로 및 로컬 저장소 접미사 (기본값: /uploads)
-        private String sharePath = "/share";                 // 공유 폴더 경로 또는 클라우드 버킷 이름 (기본값: /share)
-        private String publicPath = "/uploads/public";       //  공개 리소스 경로 (정적 매핑 대상)
-        private String privatePath = "/uploads/private";     //  비공개 리소스 경로 (Controller 접근 대상)
-        private String[] allowedMimeTypes = { "image/jpeg", "image/png", "image/gif", "application/pdf" };
-        private String[] allowedExtensions = { "jpg", "jpeg", "png", "gif", "pdf" };
+    /** 요청 횟수 제한 설정 (application.rate-limit.*) */
+    private final RateLimit rateLimit = new RateLimit();
 
-        public String getUploadResourceDir() { return uploadDir; }
-    }
+    /** 보안 및 공개 경로 설정 (application.security.*) */
+    private final Security security = new Security();
 
-    /**
-     * 애플리케이션 공용 Redis 설정 (SSOT).
-     * <p>
-     * - server: 단일 서버는 1개 URL, 클러스터는 콤마로 여러 개 URL 지정 가능
-     * - cluster: true 인 경우 Redisson 클러스터 모드로 동작
-     */
+    /** 캐시 TTL 설정 (application.cache.*) */
+    private final Cache cache = new Cache();
+
+    /** Liquibase 비동기 실행 설정 (application.liquibase.*) */
+    private final Liquibase liquibase = new Liquibase();
+
+    /** 로깅 및 Logstash 설정 (application.logging.*) */
+    private final Logging logging = new Logging();
+
+    /** Redis 연결 설정 클래스 */
     @Getter
     @Setter
     public static class Redis {
-        private String[] server;
-        private boolean cluster = false;
+        private String host = "localhost";
+        private int port = 6379;
+        private String password;
     }
 
-    private final AuthCache authCache = new AuthCache();
+    /** 파일 업로드 및 저장소 정책 클래스 */
+    @Getter
+    @Setter
+    public static class File {
+        private String uploadDir = "/uploads";          // 서버 로컬 저장 경로
+        private String uploadResourceDir = "/uploads";   // 웹 접근용 리소스 경로 접두사
+        private String publicPath = "/public";           // 공개 파일 경로
+        private String privatePath = "/private";         // 비공개 파일 경로
+        private FileStorageType storageType = FileStorageType.LOCAL; // 저장소 타입 (LOCAL, S3, SHARE)
+        private String sharePath;                        // 공유 폴더 경로 (SHARE 타입인 경우)
+        private String[] allowedExtensions = {"jpg", "jpeg", "png", "gif"}; // 허용 확장자
+        private String[] allowedMimeTypes = {"image/jpeg", "image/png", "image/gif"}; // 허용 MIME 타입
+    }
 
-    /**
-     * 인증 2차 캐시 설정
-     * Redis 에 UserAuthCacheDto 를 저장하는 TTL 을 외부화합니다.
-     * Access Token 유효기간보다 짧게 유지하는 것을 권장합니다 (기본: 5분).
-     */
+    /** 인증 캐시 만료 설정 클래스 */
     @Getter
     @Setter
     public static class AuthCache {
-        /** 캐시 TTL (분). 기본값 5분. */
-        private long ttlMinutes = 5;
+        private long ttlMinutes = 60; // 인증 토큰/데이터 캐시 유지 시간 (분)
     }
 
-    private final RateLimit rateLimit = new RateLimit();
-
-    /**
-     * Rate Limiting 설정을 위한 프로퍼티 그룹 (W-1)
-     */
+    /** Rate Limit (요청 제한) 정책 클래스 */
     @Getter
     @Setter
     public static class RateLimit {
+        private boolean enabled = true; // 활성화 여부
 
-        private Policy authenticate = new Policy(10, 5);
-        private Policy register = new Policy(5, 30);
-        private Policy resetPasswordInit = new Policy(3, 15);
-        private Policy otpRequest = new Policy(5, 10);
-        private Policy otpVerify = new Policy(10, 10);
+        // 엔드포인트별 독립 정책 설정
+        private final Policy authenticate = new Policy(10, 5);      // 로그인 시도 (10회/5분)
+        private final Policy register = new Policy(5, 60);          // 회원가입 (5회/60분)
+        private final Policy resetPasswordInit = new Policy(5, 60); // 비번 초기화 (5회/60분)
+        private final Policy otpRequest = new Policy(5, 10);        // OTP 발송 (5회/10분)
+        private final Policy otpVerify = new Policy(10, 10);        // OTP 검증 (10회/10분)
+        
+        private Map<String, Policy> policies = new HashMap<>(); // 기타 커스텀 정책
 
-        /**
-         * 엔드포인트별 세부 정책
-         */
         @Getter
         @Setter
         public static class Policy {
-            private long tokens;
-            private long durationMinutes;
+            private long tokens;            // 허용 토큰 수 (요청 횟수)
+            private long durationMinutes;   // 제한 주기 (분)
 
-            public Policy() {}
+            public Policy() {
+                // Spring Boot 바인딩을 위한 기본 생성자
+                this.tokens = 10;
+                this.durationMinutes = 1;
+            }
 
             public Policy(long tokens, long durationMinutes) {
                 this.tokens = tokens;
                 this.durationMinutes = durationMinutes;
             }
+        }
+    }
+
+    /** 보안 관련 설정 클래스 (공개 경로 등) */
+    @Getter
+    @Setter
+    public static class Security {
+        private final PublicPaths publicPaths = new PublicPaths();
+
+        /** 인증 없이 접근 가능한 공개 경로 정의 */
+        @Getter
+        @Setter
+        public static class PublicPaths {
+            private String[] staticResources = {"/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico"};
+            private String[] i18n = {"/i18n/**"};
+            private String[] swagger = {"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"};
+            private String[] websocket = {"/websocket/**"};
+            private String[] management = {"/management/**"};
+        }
+    }
+
+    /** 서비스별 캐시 TTL 설정 클래스 */
+    @Getter
+    @Setter
+    public static class Cache {
+        private final Ttl ttl = new Ttl();
+
+        @Getter
+        @Setter
+        public static class Ttl {
+            private int defaultSeconds = 3600; // 기본 캐시 만료 시간 (1시간)
+            private int longSeconds = 86400;   // 장기 캐시 만료 시간 (1일)
+            private int authSeconds = 300;     // 인증 캐시 만료 시간 (5분)
+        }
+    }
+
+    /** Liquibase 실행 정책 클래스 */
+    @Getter
+    @Setter
+    public static class Liquibase {
+        private boolean async = true;      // 비동기 실행 여부
+        private boolean asyncStart = true; // 시작 시 비동기 체크 여부
+
+        public boolean getAsyncStart() {
+            return asyncStart;
+        }
+    }
+
+    /** 로깅 설정 클래스 (JSON, Logstash 등) */
+    @Getter
+    @Setter
+    public static class Logging {
+        private boolean useJsonFormat = false; // JSON 형식 로그 사용 여부
+        private final Logstash logstash = new Logstash();
+
+        @Getter
+        @Setter
+        public static class Logstash {
+            private boolean enabled = false;   // Logstash 전송 활성화
+            private String host = "localhost"; // Logstash 호스트
+            private int port = 5000;           // Logstash 포트
+            private int queueSize = 512;       // 로그 전송 큐 크기
         }
     }
 }

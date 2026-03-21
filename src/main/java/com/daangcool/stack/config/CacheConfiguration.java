@@ -65,6 +65,12 @@ import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_
 @EnableCaching
 public class CacheConfiguration {
 
+    private final ApplicationProperties applicationProperties;
+
+    public CacheConfiguration(ApplicationProperties applicationProperties) {
+        this.applicationProperties = applicationProperties;
+    }
+
     @Bean(destroyMethod = "shutdown")
     @org.springframework.context.annotation.Primary
     public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
@@ -118,12 +124,12 @@ public class CacheConfiguration {
         RedissonClient redissonClient,
         JHipsterProperties props
     ) {
-        return buildTTLConfig(redissonClient, props.getCache().getRedis().getExpiration(), TimeUnit.SECONDS);
+        return buildTTLConfig(redissonClient, applicationProperties.getCache().getTtl().getDefaultSeconds(), TimeUnit.SECONDS);
     }
 
     @Bean
     public javax.cache.configuration.Configuration<Object, Object> longTtlCacheConfiguration(RedissonClient redissonClient) {
-        return buildTTLConfig(redissonClient, 24, TimeUnit.HOURS);
+        return buildTTLConfig(redissonClient, applicationProperties.getCache().getTtl().getLongSeconds(), TimeUnit.SECONDS);
     }
 
     @Bean
@@ -137,21 +143,29 @@ public class CacheConfiguration {
         RedissonClient redissonClient, // Primary (Binary)
         JHipsterProperties jHipsterProperties
     ) {
-        // Spring Caches: Use JSON client (Default TTL 1h / Long TTL 24h)
+        // Spring Caches: Use JSON client (Default TTL / Long TTL)
         javax.cache.configuration.Configuration<Object, Object> applicationDefaultConfig = buildTTLConfig(
             redissonJsonClient,
-            jHipsterProperties.getCache().getRedis().getExpiration(),
+            applicationProperties.getCache().getTtl().getDefaultSeconds(),
             TimeUnit.SECONDS
         );
-        javax.cache.configuration.Configuration<Object, Object> applicationLongConfig = buildTTLConfig(redissonJsonClient, 86400, TimeUnit.SECONDS);
+        javax.cache.configuration.Configuration<Object, Object> applicationLongConfig = buildTTLConfig(
+            redissonJsonClient,
+            applicationProperties.getCache().getTtl().getLongSeconds(),
+            TimeUnit.SECONDS
+        );
 
-        // Hibernate L2 Cache regions: Use Binary client (Default TTL 1h / Long TTL 24h)
+        // Hibernate L2 Cache regions: Use Binary client (Default TTL / Long TTL)
         javax.cache.configuration.Configuration<Object, Object> hibernateDefaultConfig = buildTTLConfig(
             redissonClient,
-            jHipsterProperties.getCache().getRedis().getExpiration(),
+            applicationProperties.getCache().getTtl().getDefaultSeconds(),
             TimeUnit.SECONDS
         );
-        javax.cache.configuration.Configuration<Object, Object> hibernateLongConfig = buildTTLConfig(redissonClient, 86400, TimeUnit.SECONDS);
+        javax.cache.configuration.Configuration<Object, Object> hibernateLongConfig = buildTTLConfig(
+            redissonClient,
+            applicationProperties.getCache().getTtl().getLongSeconds(),
+            TimeUnit.SECONDS
+        );
 
         return cm -> {
             // A. 전역 설정 및 공통 코드 (Long TTL)

@@ -40,7 +40,7 @@ class LocalDefaultFileStorageServiceT {
         // ApplicationProperties 및 내부 File 클래스의 Mock 객체가 특정 값을 반환하도록 설정합니다.
         when(applicationProperties.getFile()).thenReturn(fileProperties);
         when(fileProperties.getUploadDir()).thenReturn("/uploads");
-        when(fileProperties.getUploadResourceDir()).thenReturn("/uploads");
+        lenient().when(fileProperties.getUploadResourceDir()).thenReturn("/uploads");
 
         // 테스트 대상 서비스를 초기화합니다.
         storageService = new LocalDefaultFileStorageService(applicationProperties);
@@ -49,14 +49,9 @@ class LocalDefaultFileStorageServiceT {
         multipartFile = new MockMultipartFile("file", "test.txt", "text/plain", "content".getBytes());
     }
 
-    /**
-     * 파일 저장 테스트
-     * - UploadFileUtils.fileSave가 올바른 인자와 함께 호출되는지 검증합니다.
-     * - 반환된 웹 경로가 올바르게 조합되었는지 확인합니다.
-     */
     @Test
     void store_ShouldCallFileUtilsAndReturnWebPath() throws IOException {
-        String expectedStoragePath = "/public/test/2025/10/dummy.txt";
+        String expectedStoragePath = "/uploads/public/test/2025/10/dummy.txt";
 
         // Mockito.mockStatic을 사용하여 정적 메소드를 Mocking합니다.
         try (MockedStatic<UploadFileUtils> mockedUtils = mockStatic(UploadFileUtils.class)) {
@@ -72,7 +67,7 @@ class LocalDefaultFileStorageServiceT {
             mockedUtils.verify(() -> UploadFileUtils.fileSave(anyString(), eq("test"), eq(multipartFile), eq(true)));
 
             // 2. 서비스가 반환한 최종 웹 경로가 올바른지 검증합니다.
-            assertThat(resultPath).isEqualTo("/uploads" + expectedStoragePath);
+            assertThat(resultPath).isEqualTo(expectedStoragePath);
         }
     }
 

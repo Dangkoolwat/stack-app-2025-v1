@@ -77,29 +77,22 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(authz ->
                 // prettier-ignore
                 authz
-                    // Spring Boot 기본 정적 리소스
-                    .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**", "/favicon.ico").permitAll()
+                    // Spring Boot 기본 정적 리소스 (ApplicationProperties 외부화)
+                    .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getStaticResources()).permitAll()
 
                     // JHipster가 추가로 서빙하는 정적 리소스
-                    .requestMatchers("/content/**", "/i18n/*").permitAll()
+                    .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getI18n()).permitAll()
 
                     // Swagger/OpenAPI 허용 경로
-                    .requestMatchers(
-                        "/swagger-ui.html",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**",
-                        "/api-docs/**"
-                    ).permitAll()
+                    .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getSwagger()).permitAll()
 
                     // 1. 공개 파일 경로: 인증 없이 접근 허용 (Static Resource Handler가 서빙)
-                    // 예: /uploads/public/**
                     .requestMatchers(applicationProperties.getFile().getPublicPath() + "/**").permitAll()
 
-                    // 2.  비공개 파일 폴더 접근 완전 차단
+                    // 2. 비공개 파일 폴더 접근 완전 차단
                     .requestMatchers(applicationProperties.getFile().getPrivatePath() + "/**").denyAll()
 
                     // 나머지 API / 관리 / 인증 규칙
-
                     .requestMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/authenticate").permitAll()
                     .requestMatchers("/api/register").permitAll()
@@ -107,9 +100,8 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/account/reset-password/init").permitAll()
                     .requestMatchers("/api/account/reset-password/finish").permitAll()
 
-
-                    //  파일 업로드/다운로드 API 보호
-                    .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll() // Changed from authenticated() to permitAll()
+                    // 파일 업로드/다운로드 API 보호
+                    .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/uploads/**").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").hasAuthority(AuthoritiesConstants.ADMIN)
 
@@ -124,8 +116,8 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
 
                     .requestMatchers("/api/**").authenticated()
-                    .requestMatchers("/websocket/**").permitAll()
-                    .requestMatchers("/management/health", "/management/health/**", "/management/info").permitAll()
+                    .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getWebsocket()).permitAll()
+                    .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getManagement()).permitAll()
                     .requestMatchers("/management/prometheus").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
 

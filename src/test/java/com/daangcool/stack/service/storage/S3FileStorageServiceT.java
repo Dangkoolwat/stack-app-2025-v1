@@ -19,6 +19,8 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.core.ResponseInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -142,9 +144,11 @@ class S3FileStorageServiceT {
         String fileUrl = String.format("https://test-bucket.s3.amazonaws.com/%s", objectKey);
         byte[] fileContent = "S3 content".getBytes();
 
-        // getObject 호출 시 ByteArrayInputStream 반환 (ResponseInputStream을 직접 생성하지 않고 thenAnswer 사용)
+        // getObject 호출 시 ResponseInputStream 반환을 모의합니다.
+        ResponseInputStream<GetObjectResponse> mockResponseStream = mock(ResponseInputStream.class);
+        when(mockResponseStream.readAllBytes()).thenReturn(fileContent);
         when(s3Client.getObject(any(GetObjectRequest.class)))
-            .thenAnswer(inv -> new ByteArrayInputStream(fileContent));
+            .thenReturn(mockResponseStream);
 
         // when — interface default loadAsResource → loadAsStream 호출
         byte[] result = storageService.loadAsResource(fileUrl);
