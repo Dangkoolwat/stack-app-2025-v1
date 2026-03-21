@@ -26,6 +26,9 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    /** 데이터베이스 설정 (application.database.*) */
+    private final Database database = new Database();
+
     /** Redis 설정 (application.redis.*) */
     private final Redis redis = new Redis();
 
@@ -175,4 +178,22 @@ public class ApplicationProperties {
             private int queueSize = 512;       // 로그 전송 큐 크기
         }
     }
+
+    @Getter
+    @Setter
+    public static class Database {
+        /** 최대 풀 사이즈. 0이면 자동 계산 */
+        private int maxPoolSize = 0;
+        /** 최소 idle 연결 수. 0 미만이면 maxPoolSize와 동일하게 맞춤 (고정 풀) */
+        private int minimumIdle = 2;
+        /** 커넥션 타임아웃(ms) */
+        private long connectionTimeout = 30000L;
+        /** idle 타임아웃(ms) */
+        private long idleTimeout = 600000L;
+        /** max lifetime(ms) */
+        private long maxLifetime = 1800000L;
+        /** keepalive time(ms) */
+        private long keepaliveTime = 120000L;
+    }
 }
+
