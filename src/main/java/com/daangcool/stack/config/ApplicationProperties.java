@@ -60,6 +60,8 @@ public class ApplicationProperties {
         private String host = "localhost";
         private int port = 6379;
         private String password;
+        private String server = "redis://localhost:6379";
+        private boolean cluster = false;
     }
 
     /** 파일 업로드 및 저장소 정책 클래스 */
@@ -167,6 +169,10 @@ public class ApplicationProperties {
     @Setter
     public static class Logging {
         private boolean useJsonFormat = false; // JSON 형식 로그 사용 여부
+        private String filePath = "./logs/app";
+        private String maxFileSize = "10MB";
+        private int maxHistory = 30;
+        private String totalSizeCap = "1GB";
         private final Logstash logstash = new Logstash();
 
         @Getter
