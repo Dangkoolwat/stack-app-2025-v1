@@ -64,7 +64,6 @@ export default defineComponent({
       }
     };
 
-
     return {
       board,
       boardTypes,

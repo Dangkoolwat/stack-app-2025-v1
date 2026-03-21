@@ -1,7 +1,7 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-8">
-      <form name="editForm" role="form" novalidate v-on:submit.prevent="save()">
+      <form name="editForm" role="form" novalidate @submit.prevent="save()">
         <h2
           id="common-code-detail-heading"
           data-cy="CommonCodeDetailCreateUpdateHeading"
@@ -30,27 +30,11 @@
           </div>
           <div class="form-group">
             <label class="form-control-label" v-text="t$('entities.commonCodeDetail.form.code')" for="detail-code"></label>
-            <input
-              type="text"
-              class="form-control"
-              name="code"
-              id="detail-code"
-              data-cy="code"
-              v-model="commonCodeDetail.code"
-              required
-            />
+            <input type="text" class="form-control" name="code" id="detail-code" data-cy="code" v-model="commonCodeDetail.code" required />
           </div>
           <div class="form-group">
             <label class="form-control-label" v-text="t$('entities.commonCodeDetail.form.name')" for="detail-name"></label>
-            <input
-              type="text"
-              class="form-control"
-              name="name"
-              id="detail-name"
-              data-cy="name"
-              v-model="commonCodeDetail.name"
-              required
-            />
+            <input type="text" class="form-control" name="name" id="detail-name" data-cy="name" v-model="commonCodeDetail.name" required />
           </div>
           <div class="form-group">
             <label class="form-control-label" v-text="t$('entities.commonCodeDetail.form.sortOrder')" for="sort-order"></label>
@@ -77,16 +61,16 @@
           </div>
         </div>
         <div class="mt-3">
-          <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary btn-sm me-2" v-on:click="previousState()">
+          <button
+            type="button"
+            id="cancel-save"
+            data-cy="entityCreateCancelButton"
+            class="btn btn-secondary btn-sm me-2"
+            @click="previousState()"
+          >
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entities.commonCodeDetail.actions.cancel')"></span>
           </button>
-          <button
-            type="submit"
-            id="save-entity"
-            data-cy="entityCreateSaveButton"
-            :disabled="isSaving"
-            class="btn btn-primary btn-sm"
-          >
+          <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" :disabled="isSaving" class="btn btn-primary btn-sm">
             <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span v-text="t$('entities.commonCodeDetail.actions.save')"></span>
           </button>
         </div>

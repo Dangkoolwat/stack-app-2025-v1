@@ -1,8 +1,12 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-8">
-      <form name="editForm" novalidate v-on:submit.prevent="save()">
-        <h2 id="stackApp.settings.home.createOrEditLabel" data-cy="SettingsCreateUpdateHeading" v-text="t$('stackApp.settings.home.createOrEditLabel')"></h2>
+      <form name="editForm" novalidate @submit.prevent="save()">
+        <h2
+          id="stackApp.settings.home.createOrEditLabel"
+          data-cy="SettingsCreateUpdateHeading"
+          v-text="t$('stackApp.settings.home.createOrEditLabel')"
+        ></h2>
         <div>
           <div class="form-group" v-if="settings.id">
             <label for="id" v-text="t$('global.field.id')"></label>
@@ -10,7 +14,11 @@
           </div>
 
           <div class="form-group mb-3">
-            <label class="form-control-label" v-text="t$('stackApp.settings.tokenValiditySeconds')" for="settings-tokenValiditySeconds"></label>
+            <label
+              class="form-control-label"
+              v-text="t$('stackApp.settings.tokenValiditySeconds')"
+              for="settings-tokenValiditySeconds"
+            ></label>
             <input
               type="number"
               class="form-control"
@@ -23,7 +31,11 @@
           </div>
 
           <div class="form-group mb-3">
-            <label class="form-control-label" v-text="t$('stackApp.settings.tokenValiditySecondsForRememberMe')" for="settings-tokenValiditySecondsForRememberMe"></label>
+            <label
+              class="form-control-label"
+              v-text="t$('stackApp.settings.tokenValiditySecondsForRememberMe')"
+              for="settings-tokenValiditySecondsForRememberMe"
+            ></label>
             <input
               type="number"
               class="form-control"
@@ -36,7 +48,11 @@
           </div>
 
           <div class="form-group mb-3">
-            <label class="form-control-label" v-text="t$('stackApp.settings.loginMaxFailureAttempts')" for="settings-loginMaxFailureAttempts"></label>
+            <label
+              class="form-control-label"
+              v-text="t$('stackApp.settings.loginMaxFailureAttempts')"
+              for="settings-loginMaxFailureAttempts"
+            ></label>
             <input
               type="number"
               class="form-control"
@@ -61,13 +77,7 @@
           </div>
         </div>
         <div>
-          <button
-            type="submit"
-            id="save-entity"
-            data-cy="entityCreateSaveButton"
-            :disabled="isSaving"
-            class="btn btn-primary btn-sm"
-          >
+          <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" :disabled="isSaving" class="btn btn-primary btn-sm">
             <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span v-text="t$('entity.action.save')"></span>
           </button>
         </div>

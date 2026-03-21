@@ -13,7 +13,6 @@ export function encodeCsrfToken(rawToken: string | undefined): string {
   // 2. Compute XOR(R, T)
   const xored = new Uint8Array(tokenSize);
   for (let i = 0; i < tokenSize; i++) {
-    // eslint-disable-next-line no-bitwise
     xored[i] = randomBytes[i] ^ tokenBytes[i];
   }
 

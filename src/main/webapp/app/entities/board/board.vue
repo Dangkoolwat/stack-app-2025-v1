@@ -96,7 +96,12 @@
       </div>
       <template #footer>
         <div>
-          <button type="button" class="btn btn-secondary btn-sm" v-text="t$('entities.board.actions.cancel')" @click="removeBoard()"></button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            v-text="t$('entities.board.actions.cancel')"
+            @click="removeBoard()"
+          ></button>
           <button
             type="button"
             class="btn btn-primary btn-sm"
@@ -113,13 +118,7 @@
         <jhi-item-count :page="page" :total="totalItems" :items-per-page="itemsPerPage"></jhi-item-count>
       </div>
       <div class="row justify-content-center">
-        <b-pagination
-          size="sm"
-          :total-rows="totalItems"
-          v-model="page"
-          :per-page="itemsPerPage"
-          :change="loadPage(page)"
-        ></b-pagination>
+        <b-pagination size="sm" :total-rows="totalItems" v-model="page" :per-page="itemsPerPage" :change="loadPage(page)"></b-pagination>
       </div>
     </div>
   </div>

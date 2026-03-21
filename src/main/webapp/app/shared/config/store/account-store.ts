@@ -1,8 +1,15 @@
 import { defineStore } from 'pinia';
 
+export interface Account {
+  id: number;
+  login: string;
+  langKey: string;
+  authorities: string[];
+}
+
 export interface AccountStateStorable {
   logon: boolean | null;
-  userIdentity: any;
+  userIdentity: Account | null;
   authenticated: boolean;
   profilesLoaded: boolean;
   ribbonOnProfiles: string;
@@ -21,15 +28,15 @@ export const defaultAccountState: AccountStateStorable = {
 export const useAccountStore = defineStore('main', {
   state: (): AccountStateStorable => ({ ...defaultAccountState }),
   getters: {
-    account: state => state.userIdentity,
+    account: (state): Account | null => state.userIdentity,
   },
   actions: {
-    authenticate(promise) {
+    authenticate(promise: boolean | null) {
       this.logon = promise;
     },
-    setAuthentication(identity) {
+    setAuthentication(identity: Account | null) {
       this.userIdentity = identity;
-      this.authenticated = true;
+      this.authenticated = !!identity;
       this.logon = null;
     },
     logout() {
@@ -40,10 +47,10 @@ export const useAccountStore = defineStore('main', {
     setProfilesLoaded() {
       this.profilesLoaded = true;
     },
-    setActiveProfiles(profile) {
+    setActiveProfiles(profile: string) {
       this.activeProfiles = profile;
     },
-    setRibbonOnProfiles(ribbon) {
+    setRibbonOnProfiles(ribbon: string) {
       this.ribbonOnProfiles = ribbon;
     },
   },

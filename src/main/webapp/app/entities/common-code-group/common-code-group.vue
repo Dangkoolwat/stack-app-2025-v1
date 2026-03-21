@@ -8,7 +8,12 @@
           <span v-text="t$('userManagement.home.refreshListLabel')"></span>
         </button>
         <router-link :to="{ name: 'CommonCodeGroupCreate' }" custom v-slot="{ navigate }">
-          <button @click="navigate" class="btn btn-primary btn-sm jh-create-entity" id="jh-create-entity" data-cy="commonCodeGroupCreateButton">
+          <button
+            @click="navigate"
+            class="btn btn-primary btn-sm jh-create-entity"
+            id="jh-create-entity"
+            data-cy="commonCodeGroupCreateButton"
+          >
             <font-awesome-icon icon="plus"></font-awesome-icon>
             <span v-text="t$('entities.commonCodeGroup.actions.create')"></span>
           </button>
@@ -84,7 +89,12 @@
       </div>
       <template #footer>
         <div>
-          <button type="button" class="btn btn-secondary btn-sm" v-text="t$('entities.commonCodeGroup.actions.cancel')" @click="removeGroup()"></button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            v-text="t$('entities.commonCodeGroup.actions.cancel')"
+            @click="removeGroup()"
+          ></button>
           <button
             type="button"
             class="btn btn-primary btn-sm"

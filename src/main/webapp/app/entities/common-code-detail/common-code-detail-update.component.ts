@@ -38,14 +38,12 @@ export default defineComponent({
       }
     };
 
-
     onMounted(async () => {
       await retrieveGroups();
       if (route.params?.id) {
         await retrieveDetail(Number(route.params.id));
         isEditing.value = true;
       } else if (route.query?.groupCode) {
-
         commonCodeDetail.value.group.groupCode = route.query.groupCode;
       }
     });

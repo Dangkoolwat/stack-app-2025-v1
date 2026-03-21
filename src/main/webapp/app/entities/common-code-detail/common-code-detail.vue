@@ -5,11 +5,7 @@
       <div class="d-flex justify-content-end">
         <select class="form-control me-2" style="width: 200px" v-model="selectedGroupCode">
           <option :value="null">-- Select Group --</option>
-          <option
-            v-for="group in commonCodeGroups"
-            :key="group.groupCode"
-            :value="group.groupCode"
-          >
+          <option v-for="group in commonCodeGroups" :key="group.groupCode" :value="group.groupCode">
             {{ group.groupName }} ({{ group.groupCode }})
           </option>
         </select>
@@ -23,7 +19,12 @@
           custom
           v-slot="{ navigate }"
         >
-          <button @click="navigate" class="btn btn-primary btn-sm jh-create-entity" id="jh-create-entity" data-cy="commonCodeDetailCreateButton">
+          <button
+            @click="navigate"
+            class="btn btn-primary btn-sm jh-create-entity"
+            id="jh-create-entity"
+            data-cy="commonCodeDetailCreateButton"
+          >
             <font-awesome-icon icon="plus"></font-awesome-icon>
             <span v-text="t$('entities.commonCodeDetail.actions.create')"></span>
           </button>
@@ -53,11 +54,7 @@
             <td>{{ detail.sortOrder }}</td>
             <td class="text-end">
               <div class="btn-group">
-                <router-link
-                  :to="{ name: 'CommonCodeDetailEdit', params: { id: detail.id } }"
-                  custom
-                  v-slot="{ navigate }"
-                >
+                <router-link :to="{ name: 'CommonCodeDetailEdit', params: { id: detail.id } }" custom v-slot="{ navigate }">
                   <button @click="navigate" class="btn btn-primary btn-sm edit" data-cy="entityEditButton">
                     <font-awesome-icon icon="pencil-alt"></font-awesome-icon>
                     <span class="d-none d-md-inline" v-text="t$('entities.commonCodeDetail.actions.edit')"></span>
@@ -85,7 +82,12 @@
       </div>
       <template #footer>
         <div>
-          <button type="button" class="btn btn-secondary btn-sm me-2" v-text="t$('entities.commonCodeDetail.actions.cancel')" @click="removeDetail()"></button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm me-2"
+            v-text="t$('entities.commonCodeDetail.actions.cancel')"
+            @click="removeDetail()"
+          ></button>
           <button
             type="button"
             class="btn btn-primary btn-sm"

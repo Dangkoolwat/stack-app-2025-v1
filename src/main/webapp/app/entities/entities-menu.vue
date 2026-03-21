@@ -3,7 +3,6 @@
     <b-dropdown-item to="/settings">
       <font-awesome-icon icon="cogs" />
       <span class="ms-1" v-text="t$('stackApp.settings.menu')"></span>
-
     </b-dropdown-item>
     <b-dropdown-item to="/common-code-group">
       <font-awesome-icon icon="layer-group" />
@@ -23,10 +22,6 @@
     </b-dropdown-item>
 
     <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
-
-
-
-
   </div>
 </template>
 

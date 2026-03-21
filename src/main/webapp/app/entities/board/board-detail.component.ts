@@ -17,9 +17,7 @@ export default defineComponent({
     const boardService = inject('boardService', () => new BoardService(), true);
     const alertService = inject('alertService', () => useAlertService(), true);
 
-
     const board: Ref<IBoard> = ref({});
-
 
     const retrieveBoard = async (boardId: number) => {
       try {

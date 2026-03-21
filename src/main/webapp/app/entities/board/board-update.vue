@@ -1,7 +1,7 @@
 <template>
   <div class="row justify-content-center">
     <div class="col-8">
-      <form name="editForm" role="form" novalidate v-on:submit.prevent="save()">
+      <form name="editForm" role="form" novalidate @submit.prevent="save()">
         <h2 id="board-heading" data-cy="BoardCreateUpdateHeading" v-text="t$('entities.board.actions.create')"></h2>
         <div>
           <div class="form-group" v-if="board.id">
@@ -36,12 +36,8 @@
           <div class="form-group">
             <label class="form-control-label" v-text="t$('entities.board.form.boardTypeCode')" for="board-type"></label>
             <select class="form-control" id="board-type" data-cy="boardType" name="boardType" v-model="board.boardTypeCode" required>
-              <option v-if="!board.boardTypeCode" v-bind:value="null"></option>
-              <option
-                v-bind:value="boardTypeOption.code"
-                v-for="boardTypeOption in boardTypes"
-                :key="boardTypeOption.id"
-              >
+              <option v-if="!board.boardTypeCode" :value="null"></option>
+              <option :value="boardTypeOption.code" v-for="boardTypeOption in boardTypes" :key="boardTypeOption.id">
                 {{ boardTypeOption.name }}
               </option>
             </select>
@@ -60,16 +56,16 @@
           </div>
         </div>
         <div class="mt-3">
-          <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary btn-sm me-2" v-on:click="previousState()">
+          <button
+            type="button"
+            id="cancel-save"
+            data-cy="entityCreateCancelButton"
+            class="btn btn-secondary btn-sm me-2"
+            @click="previousState()"
+          >
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span v-text="t$('entities.board.actions.cancel')"></span>
           </button>
-          <button
-            type="submit"
-            id="save-entity"
-            data-cy="entityCreateSaveButton"
-            :disabled="isSaving"
-            class="btn btn-primary btn-sm"
-          >
+          <button type="submit" id="save-entity" data-cy="entityCreateSaveButton" :disabled="isSaving" class="btn btn-primary btn-sm">
             <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span v-text="t$('entities.board.actions.save')"></span>
           </button>
         </div>

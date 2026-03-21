@@ -21,7 +21,6 @@ export default defineComponent({
       try {
         const res = await commonCodeService.retrieveGroups();
         commonCodeGroup.value = res.data.find((g: any) => g.groupCode === groupCode);
-
       } catch (error: any) {
         alertService.showHttpError(error.response);
       }

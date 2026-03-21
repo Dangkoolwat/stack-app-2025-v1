@@ -3,9 +3,7 @@
     <!-- Public / Logged-out View -->
     <div v-if="!authenticated" class="public-intro">
       <div class="hero-section text-center mb-5 p-5 bg-light rounded-3 shadow-sm">
-        <h1 class="display-4 fw-bold text-primary mb-3">
-          <font-awesome-icon icon="rocket" class="me-2" />{{ t$('home.title') }}
-        </h1>
+        <h1 class="display-4 fw-bold text-primary mb-3"><font-awesome-icon icon="rocket" class="me-2" />{{ t$('home.title') }}</h1>
         <p class="lead fs-4 text-secondary mb-4">{{ t$('home.subtitle') }}</p>
         <p class="mx-auto col-md-8 text-muted">{{ t$('home.intro') }}</p>
         <div class="mt-4">
@@ -26,7 +24,10 @@
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm p-3">
               <div class="card-body">
-                <div class="feature-icon bg-primary bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <div
+                  class="feature-icon bg-primary bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
                   <font-awesome-icon icon="code" size="lg" />
                 </div>
                 <h5 class="card-title fw-bold">{{ t$('home.goals.consistency.title') }}</h5>
@@ -37,7 +38,10 @@
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm p-3">
               <div class="card-body">
-                <div class="feature-icon bg-success bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <div
+                  class="feature-icon bg-success bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
                   <font-awesome-icon icon="shield-alt" size="lg" />
                 </div>
                 <h5 class="card-title fw-bold">{{ t$('home.goals.security.title') }}</h5>
@@ -48,7 +52,10 @@
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm p-3">
               <div class="card-body">
-                <div class="feature-icon bg-warning bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <div
+                  class="feature-icon bg-warning bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
                   <font-awesome-icon icon="bolt" size="lg" />
                 </div>
                 <h5 class="card-title fw-bold">{{ t$('home.goals.performance.title') }}</h5>
@@ -59,7 +66,10 @@
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm p-3">
               <div class="card-body">
-                <div class="feature-icon bg-info bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <div
+                  class="feature-icon bg-info bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
                   <font-awesome-icon icon="expand-arrows-alt" size="lg" />
                 </div>
                 <h5 class="card-title fw-bold">{{ t$('home.goals.scalability.title') }}</h5>
@@ -70,7 +80,10 @@
           <div class="col-md-4">
             <div class="card h-100 border-0 shadow-sm p-3">
               <div class="card-body">
-                <div class="feature-icon bg-dark bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                <div
+                  class="feature-icon bg-dark bg-gradient text-white mb-3 mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 60px; height: 60px"
+                >
                   <font-awesome-icon icon="book" size="lg" />
                 </div>
                 <h5 class="card-title fw-bold">{{ t$('home.goals.docs.title') }}</h5>
@@ -94,9 +107,15 @@
               <div class="card-body">
                 <p class="card-text text-secondary">{{ t$('home.tech.backend.stack') }}</p>
                 <div class="list-group list-group-flush list-group-sm">
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.arch') }}</div>
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.db') }}</div>
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.cloud') }}</div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.arch') }}
+                  </div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.db') }}
+                  </div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.cloud') }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -109,9 +128,15 @@
               <div class="card-body">
                 <p class="card-text text-secondary">{{ t$('home.tech.frontend.stack') }}</p>
                 <div class="list-group list-group-flush list-group-sm">
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />Vue 3 (Composition API)</div>
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.vue') }}</div>
-                  <div class="list-group-item px-0 border-0 small text-muted"><font-awesome-icon icon="check" class="text-success me-2" />Standardized UI Components</div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />Vue 3 (Composition API)
+                  </div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />{{ t$('home.features.vue') }}
+                  </div>
+                  <div class="list-group-item px-0 border-0 small text-muted">
+                    <font-awesome-icon icon="check" class="text-success me-2" />Standardized UI Components
+                  </div>
                 </div>
               </div>
             </div>
@@ -140,7 +165,7 @@
               <table class="table table-borderless mb-0">
                 <tbody>
                   <tr>
-                    <td class="text-muted ps-0 py-1" style="width: 150px;">Login ID</td>
+                    <td class="text-muted ps-0 py-1" style="width: 150px">Login ID</td>
                     <td class="fw-semibold py-1">{{ username }}</td>
                   </tr>
                   <tr>
@@ -159,7 +184,6 @@
       </div>
     </div>
   </div>
-
 </template>
 
 <script lang="ts" src="./home.component.ts"></script>

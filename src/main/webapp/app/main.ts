@@ -31,7 +31,6 @@ import TagService from '@/entities/tag/tag.service';
 
 // jhipster-needle-add-entity-service-to-main-import - JHipster will import entities services here
 
-
 const i18n = initI18N();
 
 const app = createApp({
@@ -130,8 +129,6 @@ const app = createApp({
     provide('tagService', new TagService());
     provide('settingsService', new SettingsService());
     // jhipster-needle-add-entity-service-to-main - JHipster will add entities services here
-
-
 
     provide('trackerService', useTrackerService({ authenticated }));
   },

@@ -31,7 +31,6 @@ export default defineComponent({
         alertService.showInfo(t$('stackApp.settings.updated', { param: settings.value.id }));
         // [FIX] 페이지 이동 대신 데이터 재조회로 현재 페이지 유지
         await retrieveSettings();
-
       } catch (error: any) {
         alertService.showHttpError(error.response);
       } finally {

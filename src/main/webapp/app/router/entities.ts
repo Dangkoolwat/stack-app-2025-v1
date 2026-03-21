@@ -73,9 +73,5 @@ export default {
     },
 
     // jhipster-needle-add-entity-to-router - JHipster will add entities to the router here
-
-
-
-
   ],
 };

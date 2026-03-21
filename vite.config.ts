@@ -52,8 +52,8 @@ let config = defineConfig({
   },
   define: {
     I18N_HASH: '"generated_hash"',
-    SERVER_API_URL: '"/"',
-    APP_VERSION: `"${process.env.APP_VERSION ? process.env.APP_VERSION : 'DEV'}"`,
+    SERVER_API_URL: JSON.stringify(env.VITE_API_URL || process.env.VITE_API_URL || '/'),
+    APP_VERSION: JSON.stringify(env.VITE_APP_VERSION || process.env.VITE_APP_VERSION || 'DEV'),
   },
   server: {
     host: true,

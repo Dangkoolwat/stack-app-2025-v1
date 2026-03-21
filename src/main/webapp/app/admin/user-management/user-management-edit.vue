@@ -131,7 +131,12 @@
           <button type="button" class="btn btn-secondary btn-sm me-2" @click="previousState()" data-cy="entityCreateCancelButton">
             <font-awesome-icon icon="ban"></font-awesome-icon>&nbsp;<span>{{ t$('entity.action.cancel') }}</span>
           </button>
-          <button type="submit" :disabled="v$.userAccount.$invalid || isSaving" class="btn btn-primary btn-sm" data-cy="entityCreateSaveButton">
+          <button
+            type="submit"
+            :disabled="v$.userAccount.$invalid || isSaving"
+            class="btn btn-primary btn-sm"
+            data-cy="entityCreateSaveButton"
+          >
             <font-awesome-icon icon="save"></font-awesome-icon>&nbsp;<span>{{ t$('entity.action.save') }}</span>
           </button>
         </div>

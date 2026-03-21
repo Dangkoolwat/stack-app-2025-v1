@@ -26,7 +26,7 @@ export class Board implements IBoard {
     public createdBy?: string,
     public lastModifiedDate?: Date,
     public lastModifiedBy?: string,
-    public deleted?: boolean
+    public deleted?: boolean,
   ) {
     this.notice = this.notice ?? false;
     this.viewCount = this.viewCount ?? 0;

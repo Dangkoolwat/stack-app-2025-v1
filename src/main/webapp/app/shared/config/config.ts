@@ -13,7 +13,6 @@ import { faBullseye } from '@fortawesome/free-solid-svg-icons/faBullseye';
 import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
 import { faCloud } from '@fortawesome/free-solid-svg-icons/faCloud';
 
-
 import { faCode } from '@fortawesome/free-solid-svg-icons/faCode';
 import { faCogs } from '@fortawesome/free-solid-svg-icons/faCogs';
 import { faDatabase } from '@fortawesome/free-solid-svg-icons/faDatabase';

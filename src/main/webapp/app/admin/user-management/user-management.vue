@@ -17,7 +17,6 @@
     </h2>
     <div class="table-responsive" v-if="users">
       <table class="table table-striped table-sm" aria-describedby="Users">
-
         <thead>
           <tr>
             <th scope="col" @click="changeOrder('id')">
@@ -74,7 +73,6 @@
               >
                 {{ t$('userManagement.activated') }}
               </button>
-
             </td>
             <td>{{ user.langKey }}</td>
             <td>
@@ -104,7 +102,6 @@
                   variant="danger"
                   size="sm"
                   class="delete"
-
                   :disabled="username === user.login"
                   data-cy="entityDeleteButton"
                 >

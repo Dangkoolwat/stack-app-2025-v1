@@ -85,7 +85,6 @@
             <font-awesome-icon icon="tasks" />
             <span>{{ t$('global.menu.admin.logs') }}</span>
           </b-dropdown-item>
-
         </b-nav-item-dropdown>
         <b-nav-item-dropdown id="languagesnavBarDropdown" end v-if="languages && Object.keys(languages).length > 1">
           <template #button-content>
