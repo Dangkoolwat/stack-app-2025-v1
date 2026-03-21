@@ -1,3 +1,4 @@
+
 # AGENTS.md
 
 ## Language Policy (MANDATORY)
@@ -10,9 +11,9 @@
 
 ## Documentation Structure Policy (MANDATORY)
 
-All project documentation under `docs/` MUST be organized by **purpose**, not by temporary topic.
+All project documentation under `docs/` MUST be organized by purpose.
 
-### Recommended top-level structure
+### Structure
 
 docs/
   backend/
@@ -21,9 +22,13 @@ docs/
   workflow/
   operations/
 
----
+### Folder Roles
 
-## Priority Order
+- standards: mandatory engineering rules (MUST / MUST NOT)
+- workflow: collaboration, review, CI, delivery rules
+- operations: execution HOW TO (run, deploy, troubleshoot)
+
+### Priority Order
 
 1. AGENTS.md
 2. docs/standards/
@@ -32,27 +37,26 @@ docs/
 
 ---
 
-## Core Execution Flow (MANDATORY)
+## Core Execution Flow
 
 All non-trivial work MUST follow:
 
 1. Problem Analysis
 2. Proposal
-3. Self-Check Gate
-4. Implementation Plan
+3. Self-Check
+4. Plan
 5. Implementation
-6. Verification & Documentation
+6. Verification
 
-### Exception (IMPORTANT)
+### Exception
 
-If the task is trivial or explicitly defined,
-agents MAY skip Proposal and use a simplified flow:
+For trivial or clearly defined tasks:
 
 Problem → Plan → Implementation → Verification
 
 ---
 
-## Self-Check Gate (MANDATORY)
+## Self-Check (MANDATORY)
 
 - [ ] Architecture compliance
 - [ ] No hidden breaking changes
@@ -60,16 +64,16 @@ Problem → Plan → Implementation → Verification
 - [ ] Test strategy defined
 - [ ] Security impact reviewed
 - [ ] Config / dependency impact checked
-- [ ] Cache safety checked (if caching involved)
-- [ ] OpenAPI impact checked (if API contract changed)
+- [ ] Cache safety checked (if used)
+- [ ] OpenAPI impact checked (if API changed)
 
 ---
 
-## Agent Log File Structure (MANDATORY)
+## Agent Log (MANDATORY)
 
 docs/{backend|frontend}/agent-log/YYYY-MM-DD-task-name/
 
-Required files:
+Files:
 
 - problem-analysis.md
 - proposal.md
@@ -78,31 +82,79 @@ Required files:
 - walkthrough.md
 - final-report.md
 
-All contents MUST be written in Korean.
+### Content Guide
+
+problem-analysis.md:
+- 문제 현상 / 재현 / 원인 / 영향
+
+proposal.md:
+- 최소 2개 방안 / 선택 이유 / 리스크
+
+self-check.md:
+- 아키텍처 / 보안 / 영향 / 테스트
+
+implementation-plan.md:
+- 단계 / 변경 파일 / 테스트
+
+walkthrough.md:
+- 구현 흐름 / 핵심 포인트
+
+final-report.md:
+- 요약 / 이유 / 영향 / 결과
 
 ---
 
-## Required Cross-Cutting Documents
+## Cross-Cutting Rules
+
+### Configuration & Env
+- MUST follow environment-variables-guideline
+- MUST NOT hardcode secrets
+
+### Cache
+- MUST follow cache-safety-guideline
+
+### Code Comments
+- MUST follow java-class-comment-guideline
+
+---
+
+## Required Documents
 
 ### Standards
 - docs/standards/environment-variables-guideline.md
 - docs/standards/configuration-externalization-guideline.md
 - docs/standards/java-class-comment-guideline.md
-- docs/standards/properties-template.java.md
-- docs/standards/configuration-template.java.md
 - docs/standards/cache-safety-guideline.md
 
 ### Workflow
 - docs/workflow/git-workflow.md
 - docs/workflow/pr-review-checklist.md
 - docs/workflow/ci-automation-rules.md
-- docs/workflow/github-actions.md
 
 ### Operations
 - docs/operations/environment-variables.md
 
 ---
 
+## Global Impact Review
+
+Required when changing:
+
+- config
+- cache
+- security
+- dependencies
+- API contracts
+
+Must check:
+
+- affected systems
+- rollback
+- performance
+- security
+
+---
+
 ## Golden Rule
 
-"Make it correct, safe, and understandable first. Then optimize."
+"Make it correct, safe, and understandable first."
