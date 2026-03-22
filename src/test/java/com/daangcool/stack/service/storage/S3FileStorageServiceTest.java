@@ -13,16 +13,15 @@ import org.springframework.mock.web.MockMultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,12 +29,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * 단위 테스트: S3FileStorageService
- * - S3Client의 생성을 가로채고(intercept) Mock 객체로 대체하여 실제 AWS API 호출 없이 로직을 검증합니다.
- */
 @ExtendWith(MockitoExtension.class)
-class S3FileStorageServiceT {
+@SuppressWarnings("unchecked")
+class S3FileStorageServiceTest {
 
     @Mock
     private ApplicationProperties applicationProperties;
@@ -99,7 +95,7 @@ class S3FileStorageServiceT {
      * S3 파일 업로드 테스트
      */
     @Test
-    void store_ShouldCallS3PutObjectWithCorrectParameters() throws IOException {
+    void store_ShouldCallS3PutObjectWithCorrectParameters() {
         // given
         ArgumentCaptor<PutObjectRequest> putRequestCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
 
