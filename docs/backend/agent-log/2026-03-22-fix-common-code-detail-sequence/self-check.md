@@ -1,0 +1,8 @@
+- [x] Architecture compliance (기존 JPA `@SequenceGenerator` 사용 패러다임 유지)
+- [x] No hidden breaking changes (테이블 컬럼 등 손상 없음, 삭제 데이터 무관)
+- [x] Rollback possible (버전 롤백 가능하지만 `ALTER SEQUENCE` 구문은 수동 조치 필요할 수 있음)
+- [x] Test strategy defined
+- [x] Security impact reviewed (권한 관련 문제 없음)
+- [x] Config / dependency impact checked (의존성 추가 없음)
+- [x] Cache safety checked (if used) (해당사항 없음)
+- [x] OpenAPI impact checked (if API changed) (API 변경 사항 없음)
