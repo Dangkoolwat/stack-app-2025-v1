@@ -18,14 +18,23 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 
 /**
- * REST controller for administrative management of uploaded files.
+ * 관리자 전용 업로드 파일 메타데이터 및 물리적 저장소 관리를 담당하는 REST 컨트롤러입니다.
  *
- * <p>
- * Admin-only operations:
- * - Toggle visibility (public/private)
- * - Soft delete / Hard delete
- * - Metadata inspection
- * </p>
+ * 역할:
+ * - 업로드/다운로드 파일의 공개 여부(visibility) 변경
+ * - 악성 또는 불필요한 파일의 하드/소프트 삭제
+ * - 파일 메타데이터 조회
+ * - 가비지 컬렉터(소프트 삭제 파일 일괄 purge) 호출
+ *
+ * 에이전트 작업 가이드:
+ * - 관리자 전용 일괄 관리 API가 필요할 때 이 클래스에 추가하세요.
+ *
+ * 주의사항:
+ * - 보안: 모든 API에 @PreAuthorize(ADMIN)이 설정되어 있어야 합니다.
+ * - 영향: 삭제/수정 작업은 실제 스토리지 및 무결성에 영향을 미칩니다.
+ *
+ * 변경 이력:
+ * - 2026-03-22: 소프트 삭제 목록 일괄 물리 삭제(Purge) API 추가
  */
 @RestController
 @RequestMapping("/api/admin/uploads")
@@ -92,6 +101,20 @@ public class UploadAdminResource {
         }
 
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * {@code DELETE  /admin/uploads/purge} : Hard delete all soft-deleted files.
+     *
+     * @return {@link ResponseEntity} with the count of deleted files
+     */
+    @Operation(summary = "Purge soft-deleted files", description = "Permanently deletes all files that are marked as deleted.")
+    @ApiResponse(responseCode = "200", description = "Files purged successfully")
+    @DeleteMapping("/purge")
+    public ResponseEntity<String> purgeDeletedFiles() {
+        log.info("Admin request to purge all soft-deleted Uploads");
+        int count = uploadService.purgeSoftDeleted();
+        return ResponseEntity.ok("Purged " + count + " soft-deleted files.");
     }
 
     /**

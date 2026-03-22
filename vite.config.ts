@@ -54,6 +54,7 @@ let config = defineConfig({
   define: {
     I18N_HASH: '"generated_hash"',
     SERVER_API_URL: JSON.stringify(env.VITE_API_URL || process.env.VITE_API_URL || '/'),
+    SERVER_WS_URL: JSON.stringify(env.VITE_WS_URL || process.env.VITE_WS_URL || '/websocket'),
     APP_VERSION: JSON.stringify(env.VITE_APP_VERSION || process.env.VITE_APP_VERSION || 'DEV'),
   },
   server: {

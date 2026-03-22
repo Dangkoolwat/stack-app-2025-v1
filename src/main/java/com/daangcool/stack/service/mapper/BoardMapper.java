@@ -26,8 +26,26 @@ public class BoardMapper {
         dto.setViewCount(entity.getViewCount());
         dto.setNotice(entity.isNotice());
         dto.setDeleted(entity.isDeleted());
+        dto.setCreatedDate(entity.getCreatedDate());
+        dto.setCreatedBy(entity.getCreatedBy());
+        dto.setLastModifiedDate(entity.getLastModifiedDate());
+        dto.setLastModifiedBy(entity.getLastModifiedBy());
         if (entity.getUser() != null) dto.setUserId(entity.getUser().getId());
         if (entity.getBoardType() != null) dto.setBoardTypeCode(entity.getBoardType().getCode());
+
+        if (entity.getAttachments() != null) {
+            dto.setUploads(entity.getAttachments().stream()
+                .filter(u -> !u.isDeleted())
+                .map(com.daangcool.stack.service.dto.UploadDTO::new)
+                .collect(java.util.stream.Collectors.toList()));
+        }
+
+        if (entity.getBoardTags() != null) {
+            dto.setTags(entity.getBoardTags().stream()
+                .map(boardTag -> boardTag.getTag().getName())
+                .collect(java.util.stream.Collectors.toList()));
+        }
+
         return dto;
     }
 

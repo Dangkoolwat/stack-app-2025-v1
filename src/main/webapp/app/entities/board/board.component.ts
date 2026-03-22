@@ -15,6 +15,7 @@ export default defineComponent({
     const boards: Ref<IBoard[]> = ref([]);
     const isFetching = ref(false);
     const removeId = ref<number | null>(null);
+    const removeEntity = ref<any>(null);
 
     const itemsPerPage = ref(20);
     const queryCount: Ref<number> = ref(null);
@@ -51,12 +52,19 @@ export default defineComponent({
       removeId.value = instance.id;
     };
 
+    const closeDialog = () => {
+      if (removeEntity.value) {
+        removeEntity.value.hide();
+      }
+    };
+
     const removeBoard = async () => {
       try {
         await boardService.delete(removeId.value as number);
         const message = t$('entities.board.messages.deleted', { param: removeId.value });
         alertService.showInfo(message);
         removeId.value = null;
+        closeDialog();
         retrieveAllBoards();
       } catch (err: any) {
         alertService.showHttpError(err.response);
@@ -94,8 +102,10 @@ export default defineComponent({
       retrieveAllBoards,
       handleSyncList,
       removeId,
+      removeEntity,
       prepareRemove,
       removeBoard,
+      closeDialog,
       page,
       previousPage,
       itemsPerPage,

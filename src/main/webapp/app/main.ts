@@ -1,6 +1,6 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.common with an alias.
-import { computed, createApp, onMounted, provide, watch } from 'vue';
+import { computed, createApp, onMounted, provide, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { createPinia, storeToRefs } from 'pinia';
@@ -44,8 +44,10 @@ const app = createApp({
     const translationService = new TranslationService(i18n);
 
     const changeLanguage = async (newLanguage: string) => {
-      if (i18n.locale.value !== newLanguage) {
+      const messages = i18n.getLocaleMessage(newLanguage) as any;
+      if (i18n.locale.value !== newLanguage || !messages || Object.keys(messages).length === 0) {
         await translationService.refreshTranslation(newLanguage);
+        translationService.setLocale(newLanguage);
         translationStore.setCurrentLanguage(newLanguage);
       }
     };
@@ -53,10 +55,13 @@ const app = createApp({
     provide('currentLanguage', i18n.locale);
     provide('changeLanguage', changeLanguage);
 
+    const isInitialized = ref(false);
+    provide('isInitialized', isInitialized);
+
     watch(
       () => store.account,
       async value => {
-        if (!translationService.getLocalStoreLanguage()) {
+        if (value && !translationService.getLocalStoreLanguage()) {
           await changeLanguage(value.langKey);
         }
       },
@@ -69,12 +74,22 @@ const app = createApp({
       },
     );
 
-    onMounted(async () => {
-      const lang = [translationService.getLocalStoreLanguage(), store.account?.langKey, navigator.language, 'ko'].find(
-        lang => lang && translationService.isLanguageSupported(lang),
-      );
-      await changeLanguage(lang);
-    });
+    const init = async () => {
+      try {
+        const lang = [translationService.getLocalStoreLanguage(), store.account?.langKey, navigator.language, 'ko'].find(
+          lng => lng && translationService.isLanguageSupported(lng),
+        );
+        if (lang) {
+          await changeLanguage(lang);
+        }
+      } catch (e) {
+        console.error('Initialization error:', e);
+      } finally {
+        isInitialized.value = true;
+      }
+    };
+
+    init();
 
     router.beforeResolve(async (to, from, next) => {
       // Make sure login modal is closed
@@ -116,7 +131,7 @@ const app = createApp({
     );
 
     const { authenticated } = storeToRefs(store);
-    provide('authenticated', authenticated);
+    provide('authenticated', authenticated as any);
     provide(
       'currentUsername',
       computed(() => store.account?.login),
@@ -124,13 +139,14 @@ const app = createApp({
 
     provide('translationService', translationService);
     provide('accountService', accountService);
+    provide('store', store);
     provide('boardService', new BoardService());
     provide('commonCodeService', new CommonCodeService());
     provide('tagService', new TagService());
     provide('settingsService', new SettingsService());
     // jhipster-needle-add-entity-service-to-main - JHipster will add entities services here
 
-    provide('trackerService', useTrackerService({ authenticated }));
+    provide('trackerService', useTrackerService({ authenticated: authenticated as any }));
   },
   template: '<App/>',
 });

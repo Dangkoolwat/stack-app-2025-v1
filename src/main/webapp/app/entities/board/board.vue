@@ -52,10 +52,12 @@
         </thead>
         <tbody>
           <tr v-for="board in boards" :key="board.id" data-cy="entityTable">
+            <td>{{ board.id }}</td>
             <td>
-              <router-link :to="{ name: 'BoardView', params: { id: board.id } }">{{ board.id }}</router-link>
+              <router-link :to="{ name: 'BoardView', params: { id: board.id } }" class="text-decoration-none fw-bold text-primary">
+                {{ board.title }}
+              </router-link>
             </td>
-            <td>{{ board.title }}</td>
             <td>{{ board.viewCount }}</td>
             <td>{{ board.notice }}</td>
             <td>{{ board.boardTypeCode }}</td>
@@ -90,7 +92,7 @@
         </tbody>
       </table>
     </div>
-    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')" @ok="removeBoard()">
+    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')">
       <div class="modal-body">
         <p id="jhi-delete-board-heading" v-text="t$('entities.board.messages.deleteConfirm', { id: removeId })"></p>
       </div>
@@ -100,7 +102,7 @@
             type="button"
             class="btn btn-secondary btn-sm"
             v-text="t$('entities.board.actions.cancel')"
-            @click="removeBoard()"
+            @click="closeDialog()"
           ></button>
           <button
             type="button"

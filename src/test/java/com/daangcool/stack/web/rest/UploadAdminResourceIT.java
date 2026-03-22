@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @AutoConfigureMockMvc
 @IntegrationTest
+@WithMockUser(username = "admin", authorities = {"ROLE_ADMIN", "ROLE_USER"})
 class UploadAdminResourceIT {
 
     @Autowired
@@ -137,5 +138,22 @@ class UploadAdminResourceIT {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(testUpload.getId().intValue()))
             .andExpect(jsonPath("$.sourceFilename").value("admin-test.txt"));
+    }
+    /**
+     * 소프트 삭제 일괄 물리 삭제(Purge) 기능 테스트 
+     */
+    @Test
+    @Transactional
+    @WithMockUser(authorities = "ROLE_ADMIN")
+    void purgeDeletedFiles_AsAdmin_ShouldClearDeletedUploads() throws Exception {
+        // 우선 기존 파일을 소프트 삭제 처리합니다.
+        uploadService.softDelete(testUpload.getId(), "For Purge Test");
+
+        restMockMvc.perform(delete("/api/admin/uploads/purge"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Purged 1 soft-deleted files.")));
+
+        // Purge 후에는 DB에서도 완전히 사라져야 함
+        assertThat(uploadRepository.findById(testUpload.getId())).isEmpty();
     }
 }

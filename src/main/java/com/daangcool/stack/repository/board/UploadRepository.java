@@ -114,4 +114,15 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
         ORDER BY COUNT(u) DESC
     """)
     List<Object[]> countFilesByExtension();
+
+    // -----------------------------------------------------
+    // 🔹 관리자 전용 일괄 물리 삭제를 위한 조회
+    // -----------------------------------------------------
+
+    /**
+     * 소프트 삭제된 파일 일괄 조회
+     * (nativeQuery 활성화로 Hibernate @SQLRestriction 무시)
+     */
+    @Query(value = "SELECT * FROM stack_upload_file WHERE is_deleted = 1 OR is_deleted = true", nativeQuery = true)
+    List<Upload> findAllDeletedFiles();
 }

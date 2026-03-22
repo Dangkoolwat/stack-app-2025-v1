@@ -47,6 +47,14 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     Optional<Board> findById(Long id);
 
     /**
+     * 상세 조회 - 첨부파일 및 태그 포함 (Eager Fetch)
+     * update() → toDto() 시 LazyInitializationException 방지용
+     */
+    @EntityGraph(attributePaths = {"user", "boardType", "attachments", "boardTags", "boardTags.tag"})
+    @Query("SELECT b FROM Board b WHERE b.id = :id")
+    Optional<Board> findByIdWithDetails(@Param("id") Long id);
+
+    /**
      * 작성자별 게시글 조회 (삭제 조건 제거됨)
      */
     @EntityGraph(attributePaths = {"boardType"})

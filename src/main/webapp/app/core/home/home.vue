@@ -1,5 +1,10 @@
 <template>
-  <div class="home container-fluid px-4 py-5">
+  <div v-if="!isInitialized" class="text-center p-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  <div class="home container-fluid px-4 py-5" v-if="isInitialized">
     <!-- Public / Logged-out View -->
     <div v-if="!authenticated" class="public-intro">
       <div class="hero-section text-center mb-5 p-5 bg-light rounded-3 shadow-sm">
@@ -170,7 +175,10 @@
                   </tr>
                   <tr>
                     <td class="text-muted ps-0 py-1">Role</td>
-                    <td class="py-1"><span class="badge bg-secondary">ROLE_ADMIN</span></td>
+                    <td class="py-1">
+                      <span v-if="hasAnyAuthority('ROLE_ADMIN')" class="badge bg-danger">ROLE_ADMIN</span>
+                      <span v-else class="badge bg-secondary">ROLE_USER</span>
+                    </td>
                   </tr>
                   <tr>
                     <td class="text-muted ps-0 py-1">Environment</td>

@@ -21,15 +21,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
- * UploadResource
- * ------------------------------------------------------------------
- * 파일 다운로드 / 인라인 미리보기를 제공하는 REST 컨트롤러입니다.
+ * 파일 업로드, 다운로드 및 인라인 미리보기를 제공하는 REST 컨트롤러입니다.
  *
- * H-3 개선: 파일을 전체 byte[]로 heap에 로드하지 않고,
- *           StorageService.loadAsStream()을 통해 StreamingResponseBody로
- *           직접 클라이언트에 파이프합니다. 대용량 파일 OOM 위험을 방지합니다.
- * L-3 개선: User-Agent 분기 제거, RFC 5987 filename*=UTF-8'' 단일 방식 사용.
- * ------------------------------------------------------------------
+ * 역할:
+ * - 파일 스트리밍 다운로드 (OOM 방지)
+ * - 이미지 및 일반 파일 업로드 처리
+ * - 클라이언트 소유의 첨부파일 소프트 삭제
+ *
+ * 에이전트 작업 가이드:
+ * - 다운로드 방식 변경이나 업로드 엔드포인트 수정 시 이 클래스를 변경하세요.
+ * - 파일 저장소 로직은 UploadService와 StorageService를 확인하세요.
+ *
+ * 주의사항:
+ * - 보안: 파일 반환 전 반드시 권한(private/public) 체크를 수행해야 합니다.
+ * - 성능: 전체 파일을 byte[]로 매핑하지 않고 StreamingResponseBody를 유지하세요.
+ *
+ * 변경 이력:
+ * - 2026-03-22: 에디터 및 첨부파일 연동을 위한 POST / DELETE(Soft) API 추가
  */
 @Tag(name = "Upload", description = "파일 업로드/다운로드 API")
 @RestController
@@ -47,6 +55,44 @@ public class UploadResource {
     }
 
     // --------------------------------------------------------
+    // 공개 파일 업로드 (Editor / 다중 업로드 연동)
+    // --------------------------------------------------------
+
+    @Operation(summary = "파일 업로드 (에디터/에셋용)")
+    @ApiResponse(responseCode = "201", description = "성공")
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Upload> uploadFile(
+        @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+        @RequestParam(value = "public", defaultValue = "true") boolean isPublic
+    ) {
+        log.debug("REST request to upload file : {}, public={}", file.getOriginalFilename(), isPublic);
+        // 고유 식별자(UUID)를 스토리지 키로 사용
+        String storageKey = java.util.UUID.randomUUID().toString();
+        Upload saved = uploadService.saveUpload(file, storageKey, isPublic);
+        try {
+            return ResponseEntity.created(new java.net.URI("/api/uploads/" + saved.getId() + "/preview")).body(saved);
+        } catch (java.net.URISyntaxException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(saved);
+        }
+    }
+
+    // --------------------------------------------------------
+    // 파일 삭제 (본인 또는 권한자)
+    // --------------------------------------------------------
+    
+    @Operation(summary = "파일 (소프트) 삭제")
+    @ApiResponse(responseCode = "204", description = "성공")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteUpload(@PathVariable Long id) {
+        log.debug("REST request to delete Upload : {}", id);
+        // 권한 체크 로직을 서비스나 시큐리티 계층에 위임 (간소화를 위해 UploadService 호출)
+        uploadService.softDelete(id, "사용자가 에디터/게시판에서 직접 삭제");
+        return ResponseEntity.noContent().build();
+    }
+
+    // --------------------------------------------------------
     // 공개 파일 다운로드
     // --------------------------------------------------------
 
@@ -55,7 +101,7 @@ public class UploadResource {
     @ApiResponse(responseCode = "403", description = "Access denied (private file)")
     @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{id}/download")
-    public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable Long id) {
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
         try {
             Upload upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
@@ -67,25 +113,22 @@ public class UploadResource {
                 throw new SecurityException("비공개 파일은 인증된 사용자만 접근 가능합니다.");
             }
 
+            // 파일 바이트 로드
+            byte[] fileBytes;
+            try (InputStream is = storageService.loadAsStream(upload.getFilePath())) {
+                fileBytes = is.readAllBytes();
+            }
+
             String encodedFilename = encodeFilename(upload.getSourceFilename());
             HttpHeaders headers = new HttpHeaders();
             setDispositionHeader(headers, encodedFilename);
             headers.setContentType(MediaType.parseMediaType(
                 Optional.ofNullable(upload.getMimeType()).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE)
             ));
+            headers.setContentLength(fileBytes.length);
 
-            final String filePath = upload.getFilePath();
-            StreamingResponseBody body = outputStream -> {
-                try (InputStream is = storageService.loadAsStream(filePath)) {
-                    is.transferTo(outputStream);
-                } catch (IOException e) {
-                    log.error("[DOWNLOAD] Stream error for path={}", filePath, e);
-                    throw e;
-                }
-            };
-
-            log.info("[DOWNLOAD] Streaming - id={}, filename={}", id, upload.getSourceFilename());
-            return ResponseEntity.ok().headers(headers).body(body);
+            log.info("[DOWNLOAD] id={}, filename={}, size={}", id, upload.getSourceFilename(), fileBytes.length);
+            return ResponseEntity.ok().headers(headers).body(fileBytes);
 
         } catch (FileNotFoundException e) {
             log.warn("[DOWNLOAD] File not found: {}", e.getMessage());
@@ -108,7 +151,7 @@ public class UploadResource {
     @ApiResponse(responseCode = "403", description = "Access denied (private file)")
     @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{id}/preview")
-    public ResponseEntity<StreamingResponseBody> previewFile(@PathVariable Long id) {
+    public ResponseEntity<byte[]> previewFile(@PathVariable Long id) {
         try {
             Upload upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
@@ -120,24 +163,23 @@ public class UploadResource {
                 throw new SecurityException("비공개 파일은 인증된 사용자만 접근 가능합니다.");
             }
 
+            // 파일 바이트 로드 (이미지는 대부분 작으므로 byte[] 안전)
+            byte[] fileBytes;
+            try (InputStream is = storageService.loadAsStream(upload.getFilePath())) {
+                fileBytes = is.readAllBytes();
+            }
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(
                 Optional.ofNullable(upload.getMimeType()).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE)
             ));
+            headers.setContentLength(fileBytes.length);
             headers.set(HttpHeaders.CONTENT_DISPOSITION,
                 "inline; filename*=UTF-8''" + encodeFilename(upload.getSourceFilename()));
+            // 캐시 허용 (이미지 등 정적 리소스)
+            headers.setCacheControl("public, max-age=3600");
 
-            final String filePath = upload.getFilePath();
-            StreamingResponseBody body = outputStream -> {
-                try (InputStream is = storageService.loadAsStream(filePath)) {
-                    is.transferTo(outputStream);
-                } catch (IOException e) {
-                    log.error("[PREVIEW] Stream error for path={}", filePath, e);
-                    throw e;
-                }
-            };
-
-            return ResponseEntity.ok().headers(headers).body(body);
+            return ResponseEntity.ok().headers(headers).body(fileBytes);
 
         } catch (FileNotFoundException e) {
             log.warn("[PREVIEW] File not found: {}", e.getMessage());

@@ -24,16 +24,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 /**
- * 파일 업로드, 삭제, 공개/비공개 전환(물리 이동), 메타데이터 관리를 담당하는 서비스.
+ * 파일 업로드, 삭제, 공개/비공개 전환(물리 이동), 메타데이터 관리를 담당하는 서비스 클래스입니다.
  *
- * 설계 원칙:
- *  - 파일 시스템과 DB의 정합성을 유지한다.
- *  - 공개 여부(isPublic)에 따라 저장 경로를 분리한다.
- *  - 공개/비공개 전환 시 실제 파일을 이동시키고 DB 경로도 함께 갱신한다.
- *  - 클라우드 스토리지(CLOUD_*)는 SDK 기반 복사/삭제가 필요하므로 별도 분기한다.
+ * 역할:
+ * - 파일 시스템과 DB의 정합성 유지
+ * - 공개/비공개 전환에 따른 실제 파일 물리적 이동
+ * - 보안 검증(Apache Tika MIME 분석) 및 캐시 갱신
+ * - 삭제(Soft, Hard, Purge) 처리
+ *
+ * 에이전트 작업 가이드:
+ * - 파일 처리 로직 변경 시 StorageService와 정합성을 맞추세요.
+ * - application.file.* 프로퍼티와 긴밀하게 연동됩니다.
+ *
+ * 주의사항:
+ * - 캐시: 업로드 메타데이터 캐싱 로직이 있으므로 업데이트 시 반드시 evict 처리를 유지하세요.
+ * - 클라우드 스토리지(CLOUD_*) 연동 시 파일 이동 로직이 각 SDK별로 분기되어야 합니다.
+ *
+ * 변경 이력:
+ * - 2026-03-22: purgeSoftDeleted (소프트 삭제 일괄 물리 삭제) 로직 추가
  */
 @Service
 @Transactional
@@ -122,6 +134,42 @@ public class UploadService {
         } catch (Exception e) {
             throw new FileStorageException("파일 물리 삭제 처리 중 오류가 발생했습니다. id=" + id, e);
         }
+    }
+
+    /**
+     * 소프트 삭제된 파일 목록 조회 (D-19).
+     * 
+     * 리소스 관리(휴지통) 화면에서 삭제된 파일들을 미리보기 위해 사용합니다.
+     * @return 삭제된 파일의 메타데이터 목록 (UploadDTO 리스트)
+     */
+    @Transactional(readOnly = true)
+    public List<UploadDTO> purgeSoftDeletedPreview() {
+        return uploadRepository.findAllDeletedFiles().stream()
+            .map(UploadDTO::new)
+            .collect(Collectors.toList());
+    }
+
+    /** 
+     * 전체 소프트 삭제 파일 일괄 하드 삭제 (가비지 컬렉팅).
+     * 
+     * 주의: 이 메서드는 DB 레코드를 지울 뿐만 아니라 실제 스토리지(로컬/클라우드)의 파일도 영구 제거합니다.
+     * @return 삭제된 파일의 총 개수
+     */
+    public int purgeSoftDeleted() {
+        List<Upload> deletedFiles = uploadRepository.findAllDeletedFiles();
+        int count = 0;
+        for (Upload file : deletedFiles) {
+            try {
+                storageService.delete(file.getFilePath());
+                uploadRepository.delete(file);
+                // 캐시는 이미 softDelete 단계에서 삭제되었으므로 추가 처리 불필요
+                log.info("[UPLOAD PURGE] hard-deleted orphaned/deleted file id={}", file.getId());
+                count++;
+            } catch (Exception e) {
+                log.error("[UPLOAD PURGE] Error deleting file id={}", file.getId(), e);
+            }
+        }
+        return count;
     }
 
     /**

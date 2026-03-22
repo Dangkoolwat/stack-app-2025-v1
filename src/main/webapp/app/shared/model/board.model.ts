@@ -11,6 +11,8 @@ export interface IBoard {
   lastModifiedDate?: Date;
   lastModifiedBy?: string;
   deleted?: boolean;
+  tags?: string[];
+  uploads?: any[];
 }
 
 export class Board implements IBoard {
@@ -27,9 +29,13 @@ export class Board implements IBoard {
     public lastModifiedDate?: Date,
     public lastModifiedBy?: string,
     public deleted?: boolean,
+    public tags?: string[],
+    public uploads?: any[]
   ) {
     this.notice = this.notice ?? false;
     this.viewCount = this.viewCount ?? 0;
     this.deleted = this.deleted ?? false;
+    this.tags = this.tags ?? [];
+    this.uploads = this.uploads ?? [];
   }
 }

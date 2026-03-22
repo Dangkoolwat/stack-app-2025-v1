@@ -104,7 +104,7 @@ public class SecurityConfiguration {
                     // 파일 업로드/다운로드 API 보호
                     .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/uploads/**").authenticated()
-                    .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers(HttpMethod.DELETE, "/api/uploads/**").authenticated()
 
                     // OTP 인증 전용 (항상 공개)
                     .requestMatchers("/api/auth/email/**").permitAll()

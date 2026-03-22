@@ -21,6 +21,7 @@ import {
   BPagination,
   BProgress,
   BProgressBar,
+  BFormTags,
   createBootstrap,
   vBModal,
 } from 'bootstrap-vue-next';
@@ -43,6 +44,7 @@ export function initBootstrapVue(vue: App) {
   vue.component('BForm', BForm);
   vue.component('BFormInput', BFormInput);
   vue.component('BFormGroup', BFormGroup);
+  vue.component('BFormTags', BFormTags);
   vue.component('BFormCheckbox', BFormCheckbox);
   vue.component('BCollapse', BCollapse);
   vue.component('BNavItem', BNavItem);

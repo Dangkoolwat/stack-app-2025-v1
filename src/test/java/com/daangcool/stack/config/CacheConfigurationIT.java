@@ -60,7 +60,7 @@ class CacheConfigurationIT {
         ));
         cacheManager.initializeCaches();
 
-        boardService = new BoardService(boardRepository, boardAdminRepository, userRepository, boardMapper, cacheManager);
+        boardService = new BoardService(boardRepository, boardAdminRepository, userRepository, boardMapper, cacheManager, mock(com.daangcool.stack.repository.board.UploadRepository.class), mock(com.daangcool.stack.repository.board.TagRepository.class), mock(com.daangcool.stack.repository.board.BoardTagRepository.class));
 
         board = new Board();
         board.setId(1L);

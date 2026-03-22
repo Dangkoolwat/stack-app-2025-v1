@@ -91,7 +91,8 @@ export default class TrackerService {
     // building absolute path so that websocket doesn't fail when deploying with a context path
     const loc = window.location;
     const baseHref = document.querySelector('base')?.getAttribute('href');
-    const url = `//${loc.host}${baseHref ?? '/'}websocket/tracker`;
+    const wsUrl = SERVER_WS_URL.startsWith('/') ? `${loc.protocol}//${loc.host}${baseHref ?? '/'}${SERVER_WS_URL.substring(1)}/tracker` : `${SERVER_WS_URL}/tracker`;
+    const url = wsUrl.replace(/\/+/g, '/').replace('http:/', 'http://').replace('https:/', 'https://');
     const authToken = this.getAuthToken();
     if (authToken) {
       return `${url}?access_token=${authToken}`;

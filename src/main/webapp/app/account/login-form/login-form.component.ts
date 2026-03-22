@@ -10,8 +10,8 @@ import type AccountService from '../account.service';
 export default defineComponent({
   setup() {
     const authenticationError: Ref<boolean> = ref(false);
-    const login: Ref<string> = ref(null);
-    const password: Ref<string> = ref(null);
+    const login: Ref<string> = ref('');
+    const password: Ref<string> = ref('');
     const rememberMe: Ref<boolean> = ref(false);
 
     const { hideLogin } = useLoginModal();
@@ -27,8 +27,14 @@ export default defineComponent({
       try {
         const result = await axios.post('api/authenticate', data);
         const bearerToken = result.headers.authorization;
+        let jwt = null;
         if (bearerToken?.startsWith('Bearer ')) {
-          const jwt = bearerToken.slice(7, bearerToken.length);
+          jwt = bearerToken.slice(7, bearerToken.length);
+        } else if (result.data?.id_token) {
+          jwt = result.data.id_token;
+        }
+
+        if (jwt) {
           if (rememberMe.value) {
             localStorage.setItem('jhi-authenticationToken', jwt);
             sessionStorage.removeItem('jhi-authenticationToken');
@@ -39,11 +45,13 @@ export default defineComponent({
         }
 
         authenticationError.value = false;
-        hideLogin();
-        await accountService.retrieveAccount();
-        if (route.path === '/forbidden') {
-          previousState();
+        if (accountService) {
+          await accountService.retrieveAccount();
         }
+        hideLogin();
+        
+        // 브라우저 새로고침 없이 최적의 경로로 이동 (SPA 방식)
+        router.push('/');
       } catch {
         authenticationError.value = true;
       }

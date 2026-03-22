@@ -9,8 +9,15 @@ const JhiHealthComponent = () => import('@/admin/health/health.vue');
 const JhiLogsComponent = () => import('@/admin/logs/logs.vue');
 const JhiMetricsComponent = () => import('@/admin/metrics/metrics.vue');
 const JhiTrackerComponent = () => import('@/admin/tracker/tracker.vue');
+const JhiResourceManagementComponent = () => import('@/admin/resource-management/resource-management.vue');
 
 export default [
+  {
+    path: '/admin/resource-management',
+    name: 'JhiResourceManagementComponent',
+    component: JhiResourceManagementComponent,
+    meta: { authorities: [Authority.ADMIN] },
+  },
   {
     path: '/admin/user-management',
     name: 'JhiUser',

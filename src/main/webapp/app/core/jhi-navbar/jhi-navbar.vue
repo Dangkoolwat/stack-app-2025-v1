@@ -20,12 +20,12 @@
       <b-navbar-nav class="ms-auto">
         <b-nav-item to="/" exact>
           <span>
-            <font-awesome-icon icon="fa-solid fa-home" />
+            <font-awesome-icon icon="home" />
             <span>{{ t$('global.menu.home') }}</span>
           </span>
         </b-nav-item>
         <b-nav-item-dropdown
-          no-size="true"
+          :no-size="true"
           end
           id="entity-menu"
           v-if="authenticated"

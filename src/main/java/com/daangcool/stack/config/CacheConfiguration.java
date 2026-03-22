@@ -287,4 +287,16 @@ public class CacheConfiguration {
         }
     }
 
+    /**
+     * [FIX] Jackson 3 PagedModel 대응을 위한 MixIn
+     * Spring Data의 PagedModel이 Jackson 2 애노테이션을 가지므로 Jackson 3가 이를 인식하지 못합니다.
+     * 따라서 Content와 PageMetadata를 받는 생성자를 Jackson 3 애노테이션으로 매핑해줍니다.
+     */
+    public abstract static class PagedModelMixIn<T> {
+        @com.fasterxml.jackson.annotation.JsonCreator(mode = com.fasterxml.jackson.annotation.JsonCreator.Mode.PROPERTIES)
+        public PagedModelMixIn(
+            @com.fasterxml.jackson.annotation.JsonProperty("content") java.util.List<T> content,
+            @com.fasterxml.jackson.annotation.JsonProperty("page") org.springframework.data.web.PagedModel.PageMetadata metadata) {}
+    }
+
 }

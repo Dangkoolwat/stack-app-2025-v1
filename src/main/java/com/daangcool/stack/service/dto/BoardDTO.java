@@ -44,6 +44,10 @@ public class BoardDTO implements Serializable {
     @NotNull // Board 엔티티의 boardType 필드가 NotNull이므로 DTO에도 추가
     private String boardTypeCode; // 게시판 유형 코드 (예: NOTICE, FREE)
 
+    private java.util.List<String> tags = new java.util.ArrayList<>();
+
+    private java.util.List<UploadDTO> uploads = new java.util.ArrayList<>();
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

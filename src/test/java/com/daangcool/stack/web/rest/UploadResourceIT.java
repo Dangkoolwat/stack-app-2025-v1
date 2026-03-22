@@ -13,12 +13,12 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import org.springframework.security.test.context.support.WithMockUser;
 
 /**
  * 통합 테스트: UploadResource (API 계층)
@@ -26,6 +26,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
  */
 @AutoConfigureMockMvc
 @IntegrationTest
+@WithMockUser(username = "user", roles = "USER")
 class UploadResourceIT {
 
     @Autowired
@@ -132,5 +133,36 @@ class UploadResourceIT {
             .andExpect(header().string("Content-Type", "text/plain"))
             .andExpect(header().string("Content-Disposition", containsString("inline; filename*=UTF-8''")))
             .andExpect(content().string("Hello, World!"));
+    }
+    /**
+     * 파일 업로드 테스트 (POST /api/uploads)
+     * - 인증된 사용자가 파일을 정상적으로 업로드하고 URL Location을 리턴받는지 확인합니다.
+     */
+    @Test
+    @Transactional
+    void uploadFile_WithAuth_ShouldSucceed() throws Exception {
+        restMockMvc.perform(multipart("/api/uploads")
+                .file(multipartFile)
+                .param("public", "true")
+                .with(user("user").roles("USER")))
+            .andExpect(status().isCreated())
+            .andExpect(header().exists("Location"))
+            .andExpect(jsonPath("$.id").exists())
+            .andExpect(jsonPath("$.sourceFilename").value("hello.txt"));
+    }
+
+    /**
+     * 파일 단건 소프트 삭제 테스트 (DELETE /api/uploads/{id})
+     * - 권한이 있는 사용자가 파일 아이디로 소프트 삭제를 수행할 수 있는지 확인합니다.
+     */
+    @Test
+    @Transactional
+    void deleteUpload_WithAuth_ShouldSoftDelete() throws Exception {
+        restMockMvc.perform(delete("/api/uploads/{id}", publicUpload.getId())
+                .with(user("user").roles("USER")))
+            .andExpect(status().isNoContent());
+
+        Upload deletedUpload = uploadRepository.findById(publicUpload.getId()).get();
+        org.junit.jupiter.api.Assertions.assertTrue(deletedUpload.isDeleted());
     }
 }
