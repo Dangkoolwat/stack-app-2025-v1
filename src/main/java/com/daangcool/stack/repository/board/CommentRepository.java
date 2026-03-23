@@ -12,13 +12,13 @@ import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the {@link Comment} entity.
- * @SQLRestriction("is_deleted = 0") 정책 덕분에 모든 조회에서 삭제된 댓글은 자동 제외됩니다.
+ * Hibernate @Filter(softDeleteFilter) 정책 덕분에 기본 조회에서 삭제된 댓글은 자동 제외됩니다.
  */
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpecificationExecutor<Comment> {
 
     // -----------------------------------------------------
-    //  기본 조회 (Query Method 및 @SQLRestriction에 의존)
+    //  기본 조회 (Query Method 및 softDeleteFilter에 의존)
     // -----------------------------------------------------
 
     /**
@@ -57,7 +57,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
 
     /**
      * 댓글 내용 검색 (대소문자 무시)
-     * @SQLRestriction이 적용되므로 c.deleted = false 조건은 제거했습니다.
+     * 기본 소프트 삭제 필터가 적용되므로 c.deleted = false 조건은 제거했습니다.
      */
     @EntityGraph(attributePaths = {"user", "board"})
     @Query("""
@@ -68,7 +68,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     Page<Comment> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
     // -----------------------------------------------------
 
-    //  통계 / 카운트 (@SQLRestriction에 의존)
+    //  통계 / 카운트 (softDeleteFilter에 의존)
     // -----------------------------------------------------
 
     /**
@@ -115,8 +115,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     void increaseStar(@Param("id") Long id);
 
     /**
-     * @SQLRestriction을 무시하고 모든 댓글을 조회합니다. (관리자용)
+     * 삭제 포함 전체 댓글을 조회합니다. (관리자용)
+     * {@link com.daangcool.stack.service.softdelete.IncludeDeleted} 스코프에서 호출해야 합니다.
      */
-    @Query(value = "SELECT * FROM STACK_COMMENT", nativeQuery = true)
+    @Query("SELECT c FROM Comment c ORDER BY c.id DESC")
     List<Comment> findAllWithDeleted();
 }

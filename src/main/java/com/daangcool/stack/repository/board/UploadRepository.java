@@ -16,7 +16,7 @@ import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the {@link Upload} entity (범용 파일 메타데이터).
- * @SQLRestriction("is_deleted = 0") 정책 덕분에 모든 조회에서 삭제된 파일은 자동 제외됩니다.
+ * Hibernate @Filter(softDeleteFilter) 정책 덕분에 기본 조회에서 삭제된 파일은 자동 제외됩니다.
  */
 @Repository
 public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecificationExecutor<Upload> {
@@ -56,7 +56,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
 
     /**
      * 파일명 또는 확장자 검색 (대소문자 무시)
-     * @SQLRestriction이 적용되므로 삭제 조건은 필요 없습니다.
+     * 기본 소프트 삭제 필터가 적용되므로 삭제 조건은 필요 없습니다.
      */
     @EntityGraph(attributePaths = {"board"})
     @Query("""
@@ -88,7 +88,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
 
 
     // -----------------------------------------------------
-    // 🔹 통계 / 파일 관리 (@SQLRestriction에 의존)
+    // 🔹 통계 / 파일 관리 (softDeleteFilter에 의존)
     // -----------------------------------------------------
 
     /**
@@ -105,7 +105,7 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
 
     /**
      * 확장자별 파일 개수 통계
-     * GROUP BY 쿼리에도 @SQLRestriction이 적용되어 삭제된 파일은 제외됩니다.
+     * GROUP BY 쿼리에도 softDeleteFilter가 적용되어 삭제된 파일은 제외됩니다.
      */
     @Query("""
         SELECT u.fileExtension, COUNT(u)
@@ -121,8 +121,8 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
 
     /**
      * 소프트 삭제된 파일 일괄 조회
-     * (nativeQuery 활성화로 Hibernate @SQLRestriction 무시)
+     * {@link com.daangcool.stack.service.softdelete.IncludeDeleted} 스코프에서 호출해야 합니다.
      */
-    @Query(value = "SELECT * FROM stack_upload_file WHERE is_deleted = 1 OR is_deleted = true", nativeQuery = true)
+    @Query("SELECT u FROM Upload u WHERE u.deleted = true ORDER BY u.id DESC")
     List<Upload> findAllDeletedFiles();
 }

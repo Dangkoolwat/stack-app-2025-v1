@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.Cache;
 import java.io.Serializable;
 
@@ -24,7 +24,7 @@ import java.io.Serializable;
     uniqueConstraints = @UniqueConstraint(columnNames = {"board_id", "tag_id"})
 )
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@SQLRestriction("is_deleted = 0") // 조회 시 논리적으로 삭제된 관계 자동 제외
+@Filter(name = "softDeleteFilter", condition = "is_deleted = 0") // 조회 시 논리적으로 삭제된 관계 자동 제외
 public class BoardTag extends AbstractAuditingEntity<Long> implements Serializable {
 
     private static final long serialVersionUID = 1L;

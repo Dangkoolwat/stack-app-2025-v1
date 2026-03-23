@@ -2,10 +2,10 @@ package com.daangcool.stack.service.board;
 
 import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.common.exception.EntityNotFoundException;
+import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.repository.UserRepository;
-import com.daangcool.stack.repository.board.BoardAdminRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.service.dto.BoardDTO;
 import com.daangcool.stack.service.mapper.BoardMapper;
@@ -59,7 +59,6 @@ public class BoardService {
     public static final String CACHE_BOARD_COUNT_BY_USER = "BOARD_COUNT_BY_USER";
 
     private final BoardRepository boardRepository;
-    private final BoardAdminRepository boardAdminRepository;
     private final UserRepository userRepository;
     private final BoardMapper boardMapper;
     private final CacheManager cacheManager;
@@ -68,7 +67,6 @@ public class BoardService {
     private final com.daangcool.stack.repository.board.BoardTagRepository boardTagRepository;
 
     public BoardService(BoardRepository boardRepository,
-                        BoardAdminRepository boardAdminRepository,
                         UserRepository userRepository,
                         BoardMapper boardMapper,
                         CacheManager cacheManager,
@@ -76,7 +74,6 @@ public class BoardService {
                         com.daangcool.stack.repository.board.TagRepository tagRepository,
                         com.daangcool.stack.repository.board.BoardTagRepository boardTagRepository) {
         this.boardRepository = boardRepository;
-        this.boardAdminRepository = boardAdminRepository;
         this.userRepository = userRepository;
         this.boardMapper = boardMapper;
         this.cacheManager = cacheManager;
@@ -375,6 +372,7 @@ public class BoardService {
      * 
      * @return 삭제된 게시글의 DTO 목록
      */
+    @IncludeDeleted
     @Transactional(readOnly = true)
     public List<BoardDTO> findAllDeleted() {
         return boardRepository.findAllDeletedBoards().stream()
@@ -387,6 +385,7 @@ public class BoardService {
      * 
      * @param id 복구할 게시글 ID
      */
+    @IncludeDeleted
     public void restore(Long id) {
         Board board = boardRepository.findByIdIncludingDeleted(id)
             .orElseThrow(() -> new EntityNotFoundException("복구할 게시글을 찾을 수 없습니다. ID=" + id));
@@ -404,6 +403,7 @@ public class BoardService {
      * 주의: 이 메서드는 데이터베이스에서 해당 레코드를 물리적으로 제거하며 복구가 불가능합니다.
      * @param id 영구 삭제할 게시글 ID
      */
+    @IncludeDeleted
     public void hardDelete(Long id) {
         Board board = boardRepository.findByIdIncludingDeleted(id)
             .orElseThrow(() -> new EntityNotFoundException("삭제할 게시글을 찾을 수 없습니다. ID=" + id));

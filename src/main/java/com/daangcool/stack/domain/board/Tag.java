@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Filter;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -21,7 +21,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "stack_tag")
-@SQLRestriction("is_deleted = 0")
+@Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
 @Getter
 @Setter
 @NoArgsConstructor

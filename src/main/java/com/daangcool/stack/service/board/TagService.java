@@ -1,6 +1,7 @@
 package com.daangcool.stack.service.board;
 
 import com.daangcool.stack.common.exception.BadRequestAlertException;
+import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.board.Tag;
 import com.daangcool.stack.repository.board.TagRepository;
 import com.daangcool.stack.service.dto.TagDTO;
@@ -164,6 +165,7 @@ public class TagService {
 
     // ------------------------------------------------------
     /** 태그 Soft Delete */
+    @IncludeDeleted
     public void delete(Long id) {
         log.debug("Request to soft delete Tag : {}", id);
         int updated = tagRepository.softDelete(id);
@@ -175,6 +177,7 @@ public class TagService {
 
     // ------------------------------------------------------
     /** 태그 복구 */
+    @IncludeDeleted
     public void undelete(Long id) {
         log.debug("Request to undelete Tag : {}", id);
         Tag tag = tagRepository.findById(id)

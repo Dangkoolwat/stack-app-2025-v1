@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Filter;
 
 import java.io.Serializable;
 
@@ -22,7 +22,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "stack_upload_file")
-@SQLRestriction("is_deleted = 0") // 조회 시 논리적으로 삭제된 파일 자동 제외
+@Filter(name = "softDeleteFilter", condition = "is_deleted = 0") // 조회 시 논리적으로 삭제된 파일 자동 제외
 @Getter
 @Setter
 @NoArgsConstructor

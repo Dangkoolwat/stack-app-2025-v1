@@ -16,14 +16,14 @@ import java.util.Optional;
  * Repository for the {@link BoardTag} mapping entity.
  *
  * Board ↔ Tag N:M 관계를 관리하는 중간 테이블
- * Soft Delete 자동 필터링 (@SQLRestriction)
+ * Soft Delete 자동 필터링 (Hibernate @Filter)
  * 게시글, 태그 기준 조회 및 삭제 제공
  */
 @Repository
 public interface BoardTagRepository extends JpaRepository<BoardTag, Long>, JpaSpecificationExecutor<BoardTag> {
 
     // -----------------------------------------------------
-    //  기본 조회 (@SQLRestriction 적용)
+    //  기본 조회 (softDeleteFilter 적용)
     // -----------------------------------------------------
 
     /**

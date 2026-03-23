@@ -1,6 +1,7 @@
 package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.IntegrationTest;
+import com.daangcool.stack.service.softdelete.SoftDeleteScope;
 import com.daangcool.stack.domain.board.Tag;
 import com.daangcool.stack.repository.board.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +63,10 @@ class TagAdminResourceIT {
             .andExpect(status().isNoContent());
 
         // 삭제된 태그의 isDeleted 플래그가 true인지 확인합니다.
-        Tag resultTag = tagRepository.findByIdEvenIfDeleted(activeTag.getId()).get(); // Changed to findByIdEvenIfDeleted
-        assertThat(resultTag.isDeleted()).isTrue();
+        try (SoftDeleteScope.ScopeToken ignored = SoftDeleteScope.openIncludeDeleted()) {
+            Tag resultTag = tagRepository.findByIdEvenIfDeleted(activeTag.getId()).get();
+            assertThat(resultTag.isDeleted()).isTrue();
+        }
     }
 
     /**

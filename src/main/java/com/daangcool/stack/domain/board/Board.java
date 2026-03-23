@@ -11,7 +11,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -19,7 +20,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "stack_board")
-@SQLRestriction("is_deleted = 0")
+@FilterDef(name = "softDeleteFilter")
+@Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
 @Getter
 @Setter
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)

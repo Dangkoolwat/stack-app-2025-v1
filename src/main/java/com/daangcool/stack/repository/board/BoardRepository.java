@@ -13,14 +13,14 @@ import java.util.Optional;
 
 /**
  * Spring Data JPA repository for the {@link Board} entity.
- * Board 엔티티에 적용된 @SQLRestriction("is_deleted = 0") 덕분에
- * 모든 조회(SELECT) 쿼리는 Soft Delete 조건이 자동으로 적용됩니다.
+ * Board 엔티티에 적용된 Hibernate @Filter(softDeleteFilter) 덕분에
+ * 기본 조회(SELECT) 쿼리는 Soft Delete 조건이 자동으로 적용됩니다.
  */
 @Repository
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
 
     // -----------------------------------------------------
-    //  기본 조회 (Soft Delete 조건은 @SQLRestriction이 자동 추가)
+    //  기본 조회 (Soft Delete 조건은 softDeleteFilter가 자동 추가)
     // -----------------------------------------------------
 
     /**
@@ -41,7 +41,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
 
     /**
      * 단건 상세 조회
-     * (삭제 조건 제거됨: @SQLRestriction이 findById에도 적용됨)
+     * (기본 소프트 삭제 필터가 findById에도 적용됨)
      */
     @EntityGraph(attributePaths = {"user", "boardType"})
     Optional<Board> findById(Long id);
@@ -71,7 +71,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
      */
     @Cacheable(com.daangcool.stack.service.board.BoardService.CACHE_BOARD_NOTICE_LIST)
     @EntityGraph(attributePaths = {"user"})
-    // @SQLRestriction이 있으므로 b.deleted = false 조건은 제거함.
+    // softDeleteFilter가 있으므로 b.deleted = false 조건은 제거함.
     @Query("SELECT b FROM Board b WHERE b.notice = true ORDER BY b.id DESC")
     List<Board> findAllNotices();
 
@@ -81,7 +81,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
 
     /**
      * 제목 + 내용 검색
-     * (삭제 조건은 @SQLRestriction이 자동 추가)
+     * (삭제 조건은 softDeleteFilter가 자동 추가)
      */
     @EntityGraph(attributePaths = {"user", "boardType"})
     @Query("SELECT b FROM Board b " +
@@ -92,14 +92,14 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
 
     /**
      * 게시판 총 개수 (Soft Delete 자동 적용)
-     * @SQLRestriction가 적용되므로 WHERE b.deleted = false 조건은 제거함.
+     * softDeleteFilter가 적용되므로 WHERE b.deleted = false 조건은 제거함.
      */
     @Query("SELECT COUNT(b) FROM Board b")
     long countActiveBoards();
 
     /**
      * 특정 사용자의 게시글 개수 (Soft Delete 자동 적용)
-     * @SQLRestriction가 적용되므로 AND b.deleted = false 조건은 제거함.
+     * softDeleteFilter가 적용되므로 AND b.deleted = false 조건은 제거함.
      */
     @Query("SELECT COUNT(b) FROM Board b WHERE b.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);
@@ -124,17 +124,15 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     void increaseViewCount(@Param("id") Long id);
 
     /**
-     * Soft delete(@Where) 필터를 무시하고 ID 기준으로 Board 엔티티를 조회합니다.
-     * 논리적으로 삭제된(isDeleted = true) 엔티티도 포함합니다.
-     * Hibernate의 @Where(clause = "is_deleted = 0") 은
-     * 엔티티 레벨 필터가 아니라 클래스 매핑 단계에서 적용됩니다.
-     * 따라서 JPQL 쿼리 (SELECT b FROM Board b ...) 에서도 자동으로 is_deleted = 0 조건이 계속 붙어요.
+     * 삭제 포함 ID 기준 Board 엔티티를 조회합니다.
+     * {@link com.daangcool.stack.service.softdelete.IncludeDeleted} 스코프에서 호출해야 합니다.
      */
     @Query("SELECT b FROM Board b WHERE b.id = :id")
     Optional<Board> findByIdIncludingDeleted(@Param("id") Long id);
 
     /**
-     * Soft delete(@Where) 필터를 무시하고 논리적으로 삭제된(isDeleted = true) 모든 Board 엔티티를 조회합니다.
+     * 삭제된(isDeleted = true) Board 엔티티를 조회합니다.
+     * {@link com.daangcool.stack.service.softdelete.IncludeDeleted} 스코프에서 호출해야 합니다.
      */
     @Query("SELECT b FROM Board b WHERE b.deleted = true ORDER BY b.id DESC")
     @EntityGraph(attributePaths = {"user", "boardType"})

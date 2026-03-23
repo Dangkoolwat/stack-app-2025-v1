@@ -1,5 +1,6 @@
 package com.daangcool.stack.service.board;
 
+import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.domain.board.Comment;
@@ -266,6 +267,7 @@ public class CommentService {
     // -----------------------------------------------------
     // 관리자 기능 (복구 / 완전 삭제)
     // -----------------------------------------------------
+    @IncludeDeleted
     public void restore(Long id) {
         log.debug("Admin request to restore Comment : {}", id);
         Comment comment = commentRepository.findById(id)
@@ -277,6 +279,7 @@ public class CommentService {
         clearCommentCaches(saved);
     }
 
+    @IncludeDeleted
     public void hardDelete(Long id) {
         log.debug("Admin request to hard delete Comment : {}", id);
         Comment before = commentRepository.findById(id)
@@ -289,6 +292,7 @@ public class CommentService {
     // -----------------------------------------------------
     // 삭제된 댓글 조회 (관리자)
     // -----------------------------------------------------
+    @IncludeDeleted
     @Transactional(readOnly = true)
     public List<CommentDTO> findAllDeleted() {
         log.debug("Admin request to get all deleted comments");

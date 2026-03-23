@@ -2,7 +2,6 @@ package com.daangcool.stack.config;
 
 import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.repository.UserRepository;
-import com.daangcool.stack.repository.board.BoardAdminRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.service.board.BoardService;
 import com.daangcool.stack.service.dto.BoardDTO;
@@ -42,7 +41,6 @@ class CacheConfigurationIT {
     @Mock private BoardRepository boardRepository;
     @Mock private BoardMapper boardMapper;
     @Mock private UserRepository userRepository;
-    @Mock private BoardAdminRepository boardAdminRepository;
 
     private SimpleCacheManager cacheManager;
 
@@ -60,7 +58,15 @@ class CacheConfigurationIT {
         ));
         cacheManager.initializeCaches();
 
-        boardService = new BoardService(boardRepository, boardAdminRepository, userRepository, boardMapper, cacheManager, mock(com.daangcool.stack.repository.board.UploadRepository.class), mock(com.daangcool.stack.repository.board.TagRepository.class), mock(com.daangcool.stack.repository.board.BoardTagRepository.class));
+        boardService = new BoardService(
+            boardRepository,
+            userRepository,
+            boardMapper,
+            cacheManager,
+            mock(com.daangcool.stack.repository.board.UploadRepository.class),
+            mock(com.daangcool.stack.repository.board.TagRepository.class),
+            mock(com.daangcool.stack.repository.board.BoardTagRepository.class)
+        );
 
         board = new Board();
         board.setId(1L);

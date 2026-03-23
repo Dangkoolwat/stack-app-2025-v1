@@ -1,6 +1,7 @@
 package com.daangcool.stack.service.board;
 
 import com.daangcool.stack.config.ApplicationProperties;
+import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.domain.enumeration.FileStorageType;
 import com.daangcool.stack.repository.board.UploadRepository;
@@ -129,6 +130,7 @@ public class UploadService {
     }
 
     /** 물리 삭제 (Hard Delete) */
+    @IncludeDeleted
     public void hardDelete(Long id) {
         Upload upload = uploadRepository.findById(id)
             .orElseThrow(() -> new UploadNotFoundException("업로드 메타데이터를 찾을 수 없습니다. id=" + id));
@@ -150,6 +152,7 @@ public class UploadService {
      * @return 삭제된 파일의 메타데이터 목록 (UploadDTO 리스트)
      */
     @Transactional(readOnly = true)
+    @IncludeDeleted
     public List<UploadDTO> purgeSoftDeletedPreview() {
         return uploadRepository.findAllDeletedFiles().stream()
             .map(UploadDTO::new)
@@ -162,6 +165,7 @@ public class UploadService {
      * 주의: 이 메서드는 DB 레코드를 지울 뿐만 아니라 실제 스토리지(로컬/클라우드)의 파일도 영구 제거합니다.
      * @return 삭제된 파일의 총 개수
      */
+    @IncludeDeleted
     public int purgeSoftDeleted() {
         List<Upload> deletedFiles = uploadRepository.findAllDeletedFiles();
         int count = 0;

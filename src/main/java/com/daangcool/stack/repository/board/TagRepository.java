@@ -16,7 +16,7 @@ import java.util.Optional;
 /**
  * Spring Data JPA repository for the {@link Tag} entity.
  *
- *  @SQLRestriction("is_deleted = 0") 적용으로 Soft Delete 자동 필터링
+ *  Hibernate @Filter(softDeleteFilter) 적용으로 Soft Delete 자동 필터링
  *  태그 이름 중복 방지 (unique 제약)
  *  자동완성 / 추천 / 사용 빈도 통계 기능 포함
  */
@@ -24,12 +24,12 @@ import java.util.Optional;
 public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificationExecutor<Tag> {
 
     // -----------------------------------------------------
-    // 🔹 기본 조회 (@SQLRestriction 적용)
+    // 🔹 기본 조회 (softDeleteFilter 적용)
     // -----------------------------------------------------
 
     /**
      * 전체 태그 목록 (이름 순 정렬)
-     * @SQLRestriction이 Soft Delete를 자동 필터링합니다.
+     * softDeleteFilter가 Soft Delete를 자동 필터링합니다.
      */
     @Override
     @Query("SELECT t FROM Tag t ORDER BY t.name ASC")
@@ -66,7 +66,7 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
 
 
     // -----------------------------------------------------
-    // 🔹 통계 / 카운트 (@SQLRestriction 적용)
+    // 🔹 통계 / 카운트 (softDeleteFilter 적용)
     // -----------------------------------------------------
 
     /**
@@ -113,6 +113,6 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
      * ID로 태그를 조회합니다. isDeleted 상태와 관계없이 조회합니다.
      * 테스트 또는 관리자 기능에서 논리적으로 삭제된 태그를 조회할 때 사용합니다.
      */
-    @Query(value = "SELECT * FROM STACK_TAG WHERE ID = :id", nativeQuery = true) // Changed to native query
+    @Query("SELECT t FROM Tag t WHERE t.id = :id")
     Optional<Tag> findByIdEvenIfDeleted(@Param("id") Long id);
 }
