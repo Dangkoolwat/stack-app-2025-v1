@@ -24,16 +24,84 @@ export default defineComponent({
     });
     const isSaving = ref(false);
     const showGuide = ref(false); // 가이드 팝업 상태
-    const fileTypeTemplates = [ // 기본 복원용 정적 데이터
-      { key: 'image-standard', label: '이미지(표준)', allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'], allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], maxFileSizeBytes: 10485760, description: '표준 이미지 허용 정책' },
-      { key: 'pdf-standard', label: 'PDF 문서', allowedExtensions: ['pdf'], allowedMimeTypes: ['application/pdf'], maxFileSizeBytes: 20971520, description: '공식 문서(PDF) 허용 정책' },
-      { key: 'office-modern', label: 'MS 오피스(신규)', allowedExtensions: ['docx', 'xlsx', 'pptx'], allowedMimeTypes: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'], maxFileSizeBytes: 20971520, description: '최신 MS 오피스 문서 정책' },
-      { key: 'office-legacy', label: 'MS 오피스(구형)', allowedExtensions: ['doc', 'xls', 'ppt'], allowedMimeTypes: ['application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint'], maxFileSizeBytes: 20971520, description: '구형 MS 오피스 문서 정책' },
-      { key: 'hwp-standard', label: '한글 문서(HWP/HWPX)', allowedExtensions: ['hwp', 'hwpx'], allowedMimeTypes: ['application/x-hwp', 'application/haansofthwpx'], maxFileSizeBytes: 20971520, description: '한글 문서(HWP) 정책' },
-      { key: 'video-standard', label: '비디오(MP4)', allowedExtensions: ['mp4', 'webm'], allowedMimeTypes: ['video/mp4', 'video/webm'], maxFileSizeBytes: 104857600, description: '고화질 비디오 업로드 정책' },
-      { key: 'audio-standard', label: '오디오(MP3/WAV)', allowedExtensions: ['mp3', 'wav'], allowedMimeTypes: ['audio/mpeg', 'audio/wav'], maxFileSizeBytes: 20971520, description: '오디오 배포용 정책' },
-      { key: 'data-standard', label: '데이터 파일(CSV/JSON)', allowedExtensions: ['csv', 'json', 'txt'], allowedMimeTypes: ['text/csv', 'application/json', 'text/plain'], maxFileSizeBytes: 10485760, description: '공공 데이터 추출용 정책' },
-      { key: 'archive-standard', label: '압축 파일(ZIP/7Z)', allowedExtensions: ['zip', '7z'], allowedMimeTypes: ['application/zip', 'application/x-7z-compressed'], maxFileSizeBytes: 52428800, description: '다중 파일 전송용 정책' }
+    const fileTypeTemplates = [
+      // 기본 복원용 정적 데이터
+      {
+        key: 'image-standard',
+        label: '이미지(표준)',
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        maxFileSizeBytes: 10485760,
+        description: '표준 이미지 허용 정책',
+      },
+      {
+        key: 'pdf-standard',
+        label: 'PDF 문서',
+        allowedExtensions: ['pdf'],
+        allowedMimeTypes: ['application/pdf'],
+        maxFileSizeBytes: 20971520,
+        description: '공식 문서(PDF) 허용 정책',
+      },
+      {
+        key: 'office-modern',
+        label: 'MS 오피스(신규)',
+        allowedExtensions: ['docx', 'xlsx', 'pptx'],
+        allowedMimeTypes: [
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        ],
+        maxFileSizeBytes: 20971520,
+        description: '최신 MS 오피스 문서 정책',
+      },
+      {
+        key: 'office-legacy',
+        label: 'MS 오피스(구형)',
+        allowedExtensions: ['doc', 'xls', 'ppt'],
+        allowedMimeTypes: ['application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint'],
+        maxFileSizeBytes: 20971520,
+        description: '구형 MS 오피스 문서 정책',
+      },
+      {
+        key: 'hwp-standard',
+        label: '한글 문서(HWP/HWPX)',
+        allowedExtensions: ['hwp', 'hwpx'],
+        allowedMimeTypes: ['application/x-hwp', 'application/haansofthwpx'],
+        maxFileSizeBytes: 20971520,
+        description: '한글 문서(HWP) 정책',
+      },
+      {
+        key: 'video-standard',
+        label: '비디오(MP4)',
+        allowedExtensions: ['mp4', 'webm'],
+        allowedMimeTypes: ['video/mp4', 'video/webm'],
+        maxFileSizeBytes: 104857600,
+        description: '고화질 비디오 업로드 정책',
+      },
+      {
+        key: 'audio-standard',
+        label: '오디오(MP3/WAV)',
+        allowedExtensions: ['mp3', 'wav'],
+        allowedMimeTypes: ['audio/mpeg', 'audio/wav'],
+        maxFileSizeBytes: 20971520,
+        description: '오디오 배포용 정책',
+      },
+      {
+        key: 'data-standard',
+        label: '데이터 파일(CSV/JSON)',
+        allowedExtensions: ['csv', 'json', 'txt'],
+        allowedMimeTypes: ['text/csv', 'application/json', 'text/plain'],
+        maxFileSizeBytes: 10485760,
+        description: '공공 데이터 추출용 정책',
+      },
+      {
+        key: 'archive-standard',
+        label: '압축 파일(ZIP/7Z)',
+        allowedExtensions: ['zip', '7z'],
+        allowedMimeTypes: ['application/zip', 'application/x-7z-compressed'],
+        maxFileSizeBytes: 52428800,
+        description: '다중 파일 전송용 정책',
+      },
     ];
 
     const retrieveSettings = async () => {
@@ -99,7 +167,10 @@ export default defineComponent({
     const updateCommaSeparated = (obj: any, field: string, event: Event) => {
       const input = event.target as HTMLTextAreaElement | HTMLInputElement;
       if (input) {
-        obj[field] = input.value.split(',').map(s => s.trim()).filter(s => s !== '');
+        obj[field] = input.value
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s !== '');
       }
     };
 

@@ -24,8 +24,8 @@ const onRequestSuccess = (config: InternalAxiosRequestConfig): InternalAxiosRequ
   config.timeout = TIMEOUT;
 
   // SERVER_API_URL이 설정되어 있으면 해당 주사용, 없으면 상대 경로('/') 사용
-  const serverUrl = (!SERVER_API_URL || SERVER_API_URL === '/') ? '/' : (SERVER_API_URL.endsWith('/') ? SERVER_API_URL : `${SERVER_API_URL}/`);
-  
+  const serverUrl = !SERVER_API_URL || SERVER_API_URL === '/' ? '/' : SERVER_API_URL.endsWith('/') ? SERVER_API_URL : `${SERVER_API_URL}/`;
+
   const requestUrl = config.url?.startsWith('/') ? config.url.substring(1) : config.url;
   config.url = `${serverUrl}${requestUrl ?? ''}`;
 

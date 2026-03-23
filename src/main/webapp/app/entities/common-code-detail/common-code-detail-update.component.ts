@@ -58,11 +58,19 @@ export default defineComponent({
           await commonCodeService.createDetail(commonCodeDetail.value);
           alertService.showInfo(t$('entities.commonCodeDetail.messages.created', { param: commonCodeDetail.value.code }));
         }
-        router.go(-1);
+        goBack();
       } catch (error: any) {
         alertService.showHttpError(error.response);
       } finally {
         isSaving.value = false;
+      }
+    };
+
+    const goBack = () => {
+      if (commonCodeDetail.value.group?.groupCode) {
+        router.push({ name: 'CommonCodeDetail', query: { groupCode: commonCodeDetail.value.group.groupCode } });
+      } else {
+        router.push({ name: 'CommonCodeDetail' });
       }
     };
 
@@ -73,7 +81,7 @@ export default defineComponent({
       isEditing,
       t$,
       save,
-      previousState: () => router.go(-1),
+      previousState: () => goBack(),
     };
   },
 });

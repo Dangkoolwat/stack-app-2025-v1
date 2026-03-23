@@ -30,7 +30,7 @@ export class Board implements IBoard {
     public lastModifiedBy?: string,
     public deleted?: boolean,
     public tags?: string[],
-    public uploads?: any[]
+    public uploads?: any[],
   ) {
     this.notice = this.notice ?? false;
     this.viewCount = this.viewCount ?? 0;

@@ -77,22 +77,25 @@ export default defineComponent({
             const formData = new FormData();
             formData.append('file', blob);
             formData.append('public', 'true');
-            axios.post('/api/uploads', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            }).then(response => {
-              const uploadId = response.data.id;
-              sessionUploadedImageIds.push(uploadId);
-              const imageUrl = `/api/uploads/${uploadId}/preview`;
-              const fileName = (blob as File).name || 'image';
-              callback(imageUrl, fileName);
-            }).catch((err: any) => {
-              console.error('Image upload failed', err);
-              alertService.showHttpError(err?.response);
-            });
+            axios
+              .post('/api/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              })
+              .then(response => {
+                const uploadId = response.data.id;
+                sessionUploadedImageIds.push(uploadId);
+                const imageUrl = `/api/uploads/${uploadId}/preview`;
+                const fileName = (blob as File).name || 'image';
+                callback(imageUrl, fileName);
+              })
+              .catch((err: any) => {
+                console.error('Image upload failed', err);
+                alertService.showHttpError(err?.response);
+              });
             // 기본 base64 삽입 방지 - callback으로만 삽입되도록 함
             return false;
-          }
-        }
+          },
+        },
       });
       editorInstance.on('change', () => {
         board.value.content = editorInstance?.getMarkdown() || '';
@@ -114,7 +117,7 @@ export default defineComponent({
           uploads.value = res.uploads.map((u: any) => ({
             id: u.id,
             name: u.sourceFilename || u.name || 'file',
-            size: u.fileSize || u.size || 0
+            size: u.fileSize || u.size || 0,
           }));
         }
         if (editorInstance) {
@@ -219,12 +222,12 @@ export default defineComponent({
         formData.append('public', 'true'); // 게시글 첨부는 통상 public입니다.
         try {
           const res = await axios.post('/api/uploads', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
+            headers: { 'Content-Type': 'multipart/form-data' },
           });
           uploads.value.push({
             id: res.data.id,
             name: file.name,
-            size: file.size
+            size: file.size,
           });
         } catch (err: any) {
           alertService.showHttpError(err?.response);
@@ -263,11 +266,11 @@ export default defineComponent({
       t$,
       save,
       previousState: () => router.go(-1),
-      
+
       // Editor & Tags
       editorRef,
       tags,
-      
+
       // Upload
       uploads,
       dragover,
@@ -276,7 +279,7 @@ export default defineComponent({
       handleFileSelect,
       handleDrop,
       removeUpload,
-      formatBytes
+      formatBytes,
     };
   },
 });

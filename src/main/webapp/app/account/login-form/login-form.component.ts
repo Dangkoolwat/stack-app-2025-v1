@@ -49,7 +49,7 @@ export default defineComponent({
           await accountService.retrieveAccount();
         }
         hideLogin();
-        
+
         // 브라우저 새로고침 없이 최적의 경로로 이동 (SPA 방식)
         router.push('/');
       } catch {

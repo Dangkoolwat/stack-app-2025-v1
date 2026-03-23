@@ -54,7 +54,7 @@ export default defineComponent({
     // 간단한 마크다운 → HTML 변환 (fallback용)
     const markdownToHtml = (md: string): string => {
       if (!md) return '';
-      let html = md
+      const html = md
         // 이미지: ![alt](url) → <img>
         .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;" />')
         // 링크: [text](url) → <a>

@@ -58,23 +58,17 @@
             첨부파일 ({{ board.uploads.length }})
           </h5>
           <ul class="list-group">
-            <li
-              v-for="file in board.uploads"
-              :key="file.id"
-              class="list-group-item d-flex justify-content-between align-items-center"
-            >
+            <li v-for="file in board.uploads" :key="file.id" class="list-group-item d-flex justify-content-between align-items-center">
               <div>
-                <font-awesome-icon :icon="getFileIcon(file.sourceFilename || file.name || '')" class="text-secondary me-2"></font-awesome-icon>
+                <font-awesome-icon
+                  :icon="getFileIcon(file.sourceFilename || file.name || '')"
+                  class="text-secondary me-2"
+                ></font-awesome-icon>
                 <span class="fw-semibold">{{ file.sourceFilename || file.name || 'file' }}</span>
                 <span class="badge bg-secondary ms-2">{{ getFileExtension(file.sourceFilename || file.name || '') }}</span>
                 <small class="text-muted ms-2">{{ formatBytes(file.fileSize || file.size || 0) }}</small>
               </div>
-              <a
-                :href="`/api/uploads/${file.id}/download`"
-                class="btn btn-outline-primary btn-sm"
-                target="_blank"
-                download
-              >
+              <a :href="`/api/uploads/${file.id}/download`" class="btn btn-outline-primary btn-sm" target="_blank" download>
                 <font-awesome-icon icon="download"></font-awesome-icon> 다운로드
               </a>
             </li>
@@ -83,13 +77,7 @@
 
         <!-- 태그 표시 -->
         <div v-if="board.tags && board.tags.length > 0" class="mb-4">
-          <span
-            v-for="tag in board.tags"
-            :key="tag"
-            class="badge bg-info text-dark me-1 mb-1"
-          >
-            #{{ tag }}
-          </span>
+          <span v-for="tag in board.tags" :key="tag" class="badge bg-info text-dark me-1 mb-1"> #{{ tag }} </span>
         </div>
 
         <button type="submit" @click.prevent="previousState()" class="btn btn-info btn-sm me-2" data-cy="entityDetailsBackButton">

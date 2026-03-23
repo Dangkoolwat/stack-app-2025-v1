@@ -20,12 +20,7 @@
           </div>
 
           <!-- 하드 삭제 버튼 -->
-          <b-button
-            variant="danger"
-            @click="confirmHardDelete"
-            :disabled="selectedIds.length === 0 || isHardDeleting"
-            class="px-4 fw-bold"
-          >
+          <b-button variant="danger" @click="confirmHardDelete" :disabled="selectedIds.length === 0 || isHardDeleting" class="px-4 fw-bold">
             <font-awesome-icon icon="exclamation-triangle" class="me-2" />
             선택 항목 영구 삭제 ({{ selectedIds.length }})
           </b-button>
@@ -37,7 +32,7 @@
             <thead class="bg-light bg-opacity-50">
               <tr>
                 <th style="width: 50px">
-                  <b-form-checkbox :modelValue="isAllSelected" @change="toggleSelectAll($event)"></b-form-checkbox>
+                  <b-form-checkbox :model-value="isAllSelected" @change="toggleSelectAll($event)"></b-form-checkbox>
                 </th>
                 <th style="width: 80px">ID</th>
                 <th v-if="activeTab === 'boards'">제목</th>
@@ -65,7 +60,7 @@
                   <b-form-checkbox v-model="selectedIds" :value="item.id"></b-form-checkbox>
                 </td>
                 <td>{{ item.id }}</td>
-                
+
                 <!-- Boards Column -->
                 <td v-if="activeTab === 'boards'">
                   <div class="fw-bold fs-6 text-dark">{{ item.title }}</div>
@@ -80,13 +75,14 @@
 
                 <td>
                   <span v-if="activeTab === 'boards'">{{ item.userId }}</span>
-                  <span v-else>Owner #{{ item.id }}</span> <!-- Upload의 경우 추가 정보 연동 필요 가능 -->
+                  <span v-else>Owner #{{ item.id }}</span>
+                  <!-- Upload의 경우 추가 정보 연동 필요 가능 -->
                 </td>
-                
+
                 <td>
                   <div class="small">{{ item.createdDate ? $d(item.createdDate, 'short') : '날짜 없음' }}</div>
                 </td>
-                
+
                 <td class="text-danger small">
                   {{ item.description || '사유 없음' }}
                 </td>

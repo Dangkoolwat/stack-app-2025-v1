@@ -32,7 +32,10 @@
       </div>
     </h2>
     <br />
-    <div class="alert alert-warning" v-if="!isFetching && commonCodeDetails && commonCodeDetails.length === 0">
+    <div class="alert alert-info" v-if="!selectedGroupCode">
+      <span v-text="t$('entities.commonCodeDetail.messages.selectGroup')"></span>
+    </div>
+    <div class="alert alert-warning" v-else-if="!isFetching && commonCodeDetails && commonCodeDetails.length === 0">
       <span v-text="t$('entities.commonCodeDetail.messages.notFound')"></span>
     </div>
     <div class="table-responsive" v-if="commonCodeDetails && commonCodeDetails.length > 0">
