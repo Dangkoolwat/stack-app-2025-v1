@@ -40,7 +40,32 @@
       "tokenValiditySecondsForRememberMe": "Token Validity for Remember Me (Seconds)",
       "loginMaxFailureAttempts": "Max Login Failure Attempts",
       "description": "Description",
-      "updated": "Server settings updated successfully."
+      "updated": "Server settings updated successfully.",
+      "fileUpload": {
+        "title": "File Upload Policy Management",
+        "defaults": {
+          "title": "Global Defaults",
+          "defaultMaxFileSizeBytes": "Default Max File Size (MB)",
+          "defaultMaxRequestSizeBytes": "Default Max Request Size (MB)",
+          "blockUnmatched": "Block Unmatched Files",
+          "blockUnmatchedHelp": "If enabled, files not matching any policy below will be blocked.",
+          "welcomeMessage": "Upload Welcome Message"
+        },
+        "policy": {
+          "title": "File Type Policies",
+          "add": "Add New Policy",
+          "template": "Select Template",
+          "key": "Key",
+          "label": "Label",
+          "enabled": "Enabled",
+          "allowedExtensions": "Allowed Extensions (comma separated)",
+          "allowedMimeTypes": "Allowed MIME Types (comma separated)",
+          "maxFileSizeBytes": "Max Size (MB)",
+          "displayOrder": "Order",
+          "description": "Description",
+          "actions": "Actions"
+        }
+      }
     }
   }
 }

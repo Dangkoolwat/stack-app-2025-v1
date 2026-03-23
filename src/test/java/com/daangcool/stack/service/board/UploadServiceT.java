@@ -8,6 +8,12 @@ import com.daangcool.stack.service.storage.StorageService;
 import com.daangcool.stack.common.util.UploadFileUtils;
 import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
+import com.daangcool.stack.service.GlobalSettingsService;
+import com.daangcool.stack.domain.vo.FileTypePolicy;
+import com.daangcool.stack.domain.vo.FileUploadDefaults;
+import com.daangcool.stack.service.dto.SettingsDTO;
+import java.util.List;
+import org.apache.tika.Tika;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +26,8 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,6 +58,12 @@ class UploadServiceT {
 
     @Mock
     private Cache cache;
+    
+    @Mock
+    private GlobalSettingsService globalSettingsService;
+
+    @Mock
+    private Tika tika;
 
     @InjectMocks
     private UploadService uploadService;
@@ -83,6 +97,28 @@ class UploadServiceT {
 
         // 캐시 관련 Mock 설정 (NullPointerException 방지)
         lenient().when(cacheManager.getCache(anyString())).thenReturn(cache);
+
+        // GlobalSettingsService Mock 기본 설정
+        SettingsDTO settingsDTO = new SettingsDTO();
+        FileUploadDefaults defaults = FileUploadDefaults.builder()
+            .defaultMaxFileSizeBytes(10485760L)
+            .defaultMaxRequestSizeBytes(20971520L)
+            .blockUnmatched(true)
+            .build();
+        
+        FileTypePolicy jpegPolicy = FileTypePolicy.builder()
+            .key("jpeg-test")
+            .label("JPEG Test")
+            .enabled(true)
+            .allowedExtensions(List.of("jpg", "jpeg"))
+            .allowedMimeTypes(List.of("image/jpeg"))
+            .maxFileSizeBytes(5242880L) // 5MB
+            .build();
+
+        settingsDTO.setFileUploadDefaults(defaults);
+        settingsDTO.setFileTypePolicies(List.of(jpegPolicy));
+
+        lenient().when(globalSettingsService.getSettings()).thenReturn(settingsDTO);
     }
 
     /**
@@ -96,6 +132,10 @@ class UploadServiceT {
         String dummyStoragePath = "/uploads/public/test/2025/10/dummy-file.jpg";
         when(storageService.store(any(MockMultipartFile.class), anyString(), anyBoolean())).thenReturn(dummyStoragePath);
         when(uploadRepository.save(any(Upload.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        try {
+            lenient().when(tika.detect(any(InputStream.class))).thenReturn("image/jpeg");
+        } catch (IOException e) {}
 
         // when
         Upload result = uploadService.saveUpload(multipartFile, "TEST_KEY", true);
@@ -121,10 +161,15 @@ class UploadServiceT {
             "fake content".getBytes()
         );
 
+        try {
+            lenient().when(tika.detect(any(InputStream.class))).thenReturn("image/jpeg");
+        } catch (IOException e) {}
+
         // when & then
         assertThatThrownBy(() -> uploadService.saveUpload(invalidFile, "TEST_KEY", true))
             .isInstanceOf(InvalidFileException.class)
-            .hasMessageContaining("허용되지 않는 파일 확장자");
+            .hasMessageContaining("허용되지 않는")
+            .hasMessageContaining("확장자");
     }
 
     /**
@@ -141,10 +186,70 @@ class UploadServiceT {
             "#!/bin/bash\necho hello".getBytes()
         );
 
+        try {
+            lenient().when(tika.detect(any(InputStream.class))).thenReturn("text/x-shellscript");
+        } catch (IOException e) {}
+
         // when & then
         assertThatThrownBy(() -> uploadService.saveUpload(maliciousFile, "TEST_KEY", true))
             .isInstanceOf(InvalidFileException.class)
-            .hasMessageContaining("허용되지 않는 파일 형식");
+            .hasMessageContaining("허용되지 않는")
+            .hasMessageContaining("형식");
+    }
+
+    /**
+     * 파일 업로드 테스트 (매칭되는 정책이 없고 blockUnmatched가 true인 경우)
+     */
+    @Test
+    void saveUpload_NoMatchingPolicy_ShouldThrowInvalidFileException() {
+        // given
+        MockMultipartFile unknownFile = new MockMultipartFile(
+            "file",
+            "test.xyz",
+            "application/octet-stream",
+            "some content".getBytes()
+        );
+
+        try {
+            lenient().when(tika.detect(any(InputStream.class))).thenReturn("application/octet-stream");
+        } catch (IOException e) {}
+
+        // when & then
+        assertThatThrownBy(() -> uploadService.saveUpload(unknownFile, "TEST_KEY", true))
+            .isInstanceOf(InvalidFileException.class)
+            .hasMessageContaining("허용되지 않는");
+    }
+
+    /**
+     * 파일 업로드 테스트 (정책 용량 초과)
+     */
+    @Test
+    void saveUpload_FileTooLargeForPolicy_ShouldThrowInvalidFileException() {
+        // given
+        // jpegPolicy는 5MB(5242880 bytes) 제한, 6MB 파일 생성
+        byte[] largeContent = new byte[6 * 1024 * 1024];
+        // JPEG header to pass Tika detection
+        largeContent[0] = (byte) 0xFF;
+        largeContent[1] = (byte) 0xD8;
+        largeContent[2] = (byte) 0xFF;
+        largeContent[3] = (byte) 0xE0;
+
+        MockMultipartFile largeFile = new MockMultipartFile(
+            "file",
+            "large.jpg",
+            "image/jpeg",
+            largeContent
+        );
+
+        try {
+            lenient().when(tika.detect(any(InputStream.class))).thenReturn("image/jpeg");
+        } catch (IOException e) {}
+
+        // when & then
+        assertThatThrownBy(() -> uploadService.saveUpload(largeFile, "TEST_KEY", true))
+            .isInstanceOf(InvalidFileException.class)
+            .hasMessageContaining("최대 허용 용량")
+            .hasMessageContaining("초과했습니다");
     }
 
     /**

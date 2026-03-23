@@ -5,6 +5,7 @@ import {
   BBadge,
   BButton,
   BCollapse,
+  BDropdown,
   BDropdownItem,
   BForm,
   BFormCheckbox,
@@ -30,6 +31,7 @@ export function initBootstrapVue(vue: App) {
   vue.use(createBootstrap());
 
   vue.component('BBadge', BBadge);
+  vue.component('BDropdown', BDropdown);
   vue.component('BDropdownItem', BDropdownItem);
   vue.component('BLink', BLink);
   vue.component('BAlert', BAlert);

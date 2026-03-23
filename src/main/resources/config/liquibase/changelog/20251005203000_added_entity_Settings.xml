@@ -11,7 +11,7 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="global_settings" type="varchar(2000)">
+            <column name="global_settings" type="clob">
                 <constraints nullable="true" />
             </column>
             <column name="description" type="varchar(255)">
@@ -29,7 +29,7 @@
     <changeSet id="20251005203000-2" author="jhipster">
         <insert tableName="stack_settings">
             <column name="id" value="1"/>
-            <column name="global_settings" value='{"tokenValiditySeconds": 86400, "tokenValiditySecondsForRememberMe": 2592000, "loginMaxFailureAttempts": 5}'/>
+            <column name="global_settings" value='{"tokenValiditySeconds": 86400, "tokenValiditySecondsForRememberMe": 2592000, "loginMaxFailureAttempts": 5, "fileUploadDefaults": {"defaultMaxFileSizeBytes": 10485760, "defaultMaxRequestSizeBytes": 20971520, "blockUnmatched": true, "welcomeMessage": "개별 정책이 없는 파일은 기본적으로 차단됩니다."}, "fileTypePolicies": [], "fileTypeTemplates": []}'/>
             <column name="description" value="Initial default settings"/>
             <column name="created_by" value="system"/>
         </insert>

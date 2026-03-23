@@ -10,6 +10,10 @@ import com.daangcool.stack.common.exception.FileStorageException;
 import com.daangcool.stack.service.dto.UploadDTO;
 import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
+import com.daangcool.stack.service.GlobalSettingsService;
+import com.daangcool.stack.domain.vo.FileTypePolicy;
+import com.daangcool.stack.domain.vo.FileUploadDefaults;
+import com.daangcool.stack.service.dto.SettingsDTO;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
@@ -61,6 +65,7 @@ public class UploadService {
     private final UploadRepository uploadRepository;
     private final StorageService storageService;
     private final ApplicationProperties fileStorageProperties;
+    private final GlobalSettingsService globalSettingsService;
     private final CacheManager cacheManager;
     private final Tika tika = new Tika();
 
@@ -68,11 +73,13 @@ public class UploadService {
         UploadRepository uploadRepository,
         StorageService storageService,
         ApplicationProperties fileStorageProperties,
+        GlobalSettingsService globalSettingsService,
         CacheManager cacheManager
     ) {
         this.uploadRepository = uploadRepository;
         this.storageService = storageService;
         this.fileStorageProperties = fileStorageProperties;
+        this.globalSettingsService = globalSettingsService;
         this.cacheManager = cacheManager;
     }
 
@@ -191,35 +198,62 @@ public class UploadService {
             throw new InvalidFileException("파일명을 확인할 수 없습니다.");
         }
 
-        // 1. 확장자 검증
+        // 1. 글로벌 설정 조회 (캐시 활용)
+        SettingsDTO settings = globalSettingsService.getSettings();
+        FileUploadDefaults defaults = settings.getFileUploadDefaults();
+        List<FileTypePolicy> policies = settings.getFileTypePolicies();
+
+        // 2. 파일 기본 정보 추출
         String extension = FilenameUtils.getExtension(originalFilename).toLowerCase();
-        List<String> allowedExtensions = List.of(fileStorageProperties.getFile().getAllowedExtensions());
-        if (!allowedExtensions.contains(extension)) {
-            log.warn("[SECURITY] Allowed extensions: {}, requested: {}", allowedExtensions, extension);
-            throw new InvalidFileException("허용되지 않는 파일 확장자입니다: " + extension);
-        }
+        long fileSize = file.getSize();
+        String detectedMimeType;
 
-        // 2. MIME 타입 검증 (Content-based detection)
+        // 3. MIME 타입 감지 (Content-based detection)
         try (InputStream is = file.getInputStream()) {
-            String detectedMimeType = tika.detect(is);
-            List<String> allowedMimeTypes = List.of(fileStorageProperties.getFile().getAllowedMimeTypes());
-
-            if (!allowedMimeTypes.contains(detectedMimeType)) {
-                log.warn("[SECURITY] Allowed MIME types: {}, detected: {}", allowedMimeTypes, detectedMimeType);
-                throw new InvalidFileException("허용되지 않는 파일 형식입니다: " + detectedMimeType);
-            }
-
-            // 3. 브라우저 제공 MIME 타입과 실제 감지된 타입 비교 (Mismatch check)
-            String providedMimeType = file.getContentType();
-            if (providedMimeType != null && !providedMimeType.equalsIgnoreCase(detectedMimeType)) {
-                log.warn("[SECURITY] MIME type mismatch. Provided: {}, Detected: {}", providedMimeType, detectedMimeType);
-            }
-
-            return detectedMimeType;
-
+            detectedMimeType = tika.detect(is);
         } catch (IOException e) {
             throw new InvalidFileException("파일 콘텐츠 분석 중 오류가 발생했습니다.");
         }
+
+        // 4. 정책 매칭 탐색 (확장자 + MIME 타입 동시 일치)
+        FileTypePolicy matchedPolicy = policies.stream()
+            .filter(p -> Boolean.TRUE.equals(p.getEnabled()))
+            .filter(p -> p.getAllowedExtensions().stream().anyMatch(extension::equalsIgnoreCase))
+            .filter(p -> p.getAllowedMimeTypes().stream().anyMatch(detectedMimeType::equalsIgnoreCase))
+            .findFirst()
+            .orElse(null);
+
+        // 5. 정책 기반 검증
+        if (matchedPolicy != null) {
+            log.debug("[UPLOAD POLICY] Matched policy: {}", matchedPolicy.getKey());
+            if (fileSize > matchedPolicy.getMaxFileSizeBytes()) {
+                throw new InvalidFileException(String.format("[%s] 타입의 최대 허용 용량(%d MB)을 초과했습니다. (현재: %.2f MB)",
+                    matchedPolicy.getLabel(),
+                    matchedPolicy.getMaxFileSizeBytes() / (1024 * 1024),
+                    (double) fileSize / (1024 * 1024)));
+            }
+        } else {
+            // 매칭되는 개별 정책이 없는 경우
+            if (defaults.isBlockUnmatched()) {
+                log.warn("[SECURITY] No matching policy found for extension: {} and MIME: {}. Blocked by default.", extension, detectedMimeType);
+                throw new InvalidFileException(String.format("허용되지 않는 파일 형식 또는 확장자입니다. (확장자: %s, 형식: %s)", extension, detectedMimeType));
+            }
+
+            // 전역 기본값 기반 검증
+            if (fileSize > defaults.getDefaultMaxFileSizeBytes()) {
+                throw new InvalidFileException(String.format("전역 최대 허용 용량(%d MB)을 초과했습니다. (현재: %.2f MB)",
+                    defaults.getDefaultMaxFileSizeBytes() / (1024 * 1024),
+                    (double) fileSize / (1024 * 1024)));
+            }
+        }
+
+        // 6. 브라우저 제공 MIME 타입과 실제 감지된 타입 비교 (Mismatch check - 로깅만 수행)
+        String providedMimeType = file.getContentType();
+        if (providedMimeType != null && !providedMimeType.equalsIgnoreCase(detectedMimeType)) {
+            log.warn("[SECURITY] MIME type mismatch. Provided: {}, Detected: {}", providedMimeType, detectedMimeType);
+        }
+
+        return detectedMimeType;
     }
 
     /** 공개/비공개 상태 전환 */

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import com.daangcool.stack.domain.vo.FileTypePolicy;
+import com.daangcool.stack.domain.vo.FileUploadDefaults;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -27,7 +29,8 @@ public class Settings extends AbstractAuditingEntity<Long> implements Serializab
     @Id
     private Long id;
 
-    @Column(name = "global_settings", length = 2000)
+    @Lob
+    @Column(name = "global_settings")
     private String globalSettings;
 
     @Column(name = "description")
@@ -46,6 +49,8 @@ public class Settings extends AbstractAuditingEntity<Long> implements Serializab
         try {
             return mapper.readValue(globalSettings, new TypeReference<Map<String, Object>>() {});
         } catch (Exception e) {
+            System.err.println("[SETTINGS ERROR] JSON Parse Failure: " + e.getMessage());
+            e.printStackTrace();
             return new HashMap<>();
         }
     }
@@ -93,6 +98,59 @@ public class Settings extends AbstractAuditingEntity<Long> implements Serializab
     public void setLoginMaxFailureAttempts(int value) {
         Map<String, Object> map = getSettingsMap();
         map.put("loginMaxFailureAttempts", value);
+        updateGlobalSettings(map);
+    }
+
+    /** 파일 업로드 전역 기본 설정 조회 */
+    public FileUploadDefaults getFileUploadDefaults() {
+        Object value = getSettingsMap().get("fileUploadDefaults");
+        if (value == null) {
+            return FileUploadDefaults.builder()
+                .defaultMaxFileSizeBytes(10485760L) // 10MB
+                .defaultMaxRequestSizeBytes(20971520L) // 20MB
+                .blockUnmatched(true)
+                .welcomeMessage("개별 정책이 없는 파일은 기본적으로 차단됩니다.")
+                .build();
+        }
+        return mapper.convertValue(value, FileUploadDefaults.class);
+    }
+
+    /** 파일 업로드 전역 기본 설정 저장 */
+    public void setFileUploadDefaults(FileUploadDefaults defaults) {
+        Map<String, Object> map = getSettingsMap();
+        map.put("fileUploadDefaults", defaults);
+        updateGlobalSettings(map);
+    }
+
+    /** 파일 타입별 상세 정책 목록 조회 */
+    public java.util.List<FileTypePolicy> getFileTypePolicies() {
+        Object value = getSettingsMap().get("fileTypePolicies");
+        if (value == null) {
+            return java.util.Collections.emptyList();
+        }
+        return mapper.convertValue(value, new TypeReference<java.util.List<FileTypePolicy>>() {});
+    }
+
+    /** 파일 타입별 상세 정책 목록 저장 */
+    public void setFileTypePolicies(java.util.List<FileTypePolicy> policies) {
+        Map<String, Object> map = getSettingsMap();
+        map.put("fileTypePolicies", policies);
+        updateGlobalSettings(map);
+    }
+
+    /** 파일 업로드 추천 템플릿 목록 조회 */
+    public java.util.List<FileTypePolicy> getFileTypeTemplates() {
+        Object value = getSettingsMap().get("fileTypeTemplates");
+        if (value == null) {
+            return java.util.Collections.emptyList();
+        }
+        return mapper.convertValue(value, new TypeReference<java.util.List<FileTypePolicy>>() {});
+    }
+
+    /** 파일 업로드 추천 템플릿 목록 저장 */
+    public void setFileTypeTemplates(java.util.List<FileTypePolicy> templates) {
+        Map<String, Object> map = getSettingsMap();
+        map.put("fileTypeTemplates", templates);
         updateGlobalSettings(map);
     }
 }

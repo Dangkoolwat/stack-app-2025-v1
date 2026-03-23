@@ -27,5 +27,5 @@
   <include file="config/liquibase/changelog/20251009100000_create_board_related_tables.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/202510151921000_create_stack_email_otp_log.xml" relativeToChangelogFile="false"/>
   <include file="config/liquibase/changelog/20260317100000_drop_user_otp_columns.xml" relativeToChangelogFile="false"/>
-
+  <include file="config/liquibase/changelog/20260323173000_increase_settings_size.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

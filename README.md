@@ -1,15 +1,16 @@
 # 🚀 Stack App 2025 v1
-Spring Boot 4.x 기반 REST API 서버 프레임워크  
-개인 개발자가 온프레미스(On-Prem) 또는 클라우드(OCI/Azure) 환경에서 빠르게 확장 가능한 백엔드 서비스를 구축하기 위한 Full-Stack Starter Project (Spring Boot 4 + Vue 3)입니다.
 
-현재 Oracle Cloud VM 환경에서 운영 중인 구조를 최신 트렌드에 맞게 개편하고 있으며,  
-실제 프로젝트 경험을 기반으로 생산성과 유지보수성을 극대화하도록 설계했습니다.
+Spring Boot 4.x 기반 REST API 서버 프레임워크입니다. 개발자가 온프레미스 (On-Prem) 나 클라우드 (OCI/Azure) 환경에서 빠르게 확장 가능한 백엔드 서비스를 구축할 수 있도록 설계한 Full-Stack Starter Project(Spring Boot 4 + Vue 3) 입니다.
+
+현재 Oracle Cloud VM 환경에서 운영 중인 구조를 최신 트렌드에 맞게 개편하고 있으며, 실제 프로젝트 경험을 기반으로 생산성과 유지보수성을 극대화하도록 설계했습니다.
 
 ---
 
 ## 📑 목차 (Table of Contents)
+
 - 프로젝트 목적
 - 주요 특징
+- 최근 업데이트 (Migration Highlights)
 - 기술 스택
 - 향후 계획
 - 설치 및 실행
@@ -20,89 +21,135 @@ Spring Boot 4.x 기반 REST API 서버 프레임워크
 ## 📖 프로젝트 목적 (Project Goals)
 
 ### 1) API 일관성
-- RFC 7807 기반 공통 에러 응답 구조
-- 모든 클라이언트(Web/Flutter/React/Native/macOS)에서 일관성 있는 예외 처리 가능
+
+- RFC 7807 기반 공통 에러 응답 구조를 제공하여 모든 클라이언트 (Web/Flutter/React/Native/macOS) 에서 일관성 있는 예외 처리를 지원합니다.
 
 ### 2) 보안 강화
+
 - Spring Security + JWT 기반 인증/인가 적용
-- Role 기반 접근 제어, 확장 가능한 사용자 모델
+- 역할 (Role) 기반 접근 제어 및 확장 가능한 사용자 모델
 
 ### 3) 성능 최적화
-- Hibernate 2nd Cache + Redis 캐시 적용
-- 반복 쿼리 감소 및 DB 부하 절감
-- 고성능 IoT·Real-time 서비스 환경 대응
+
+- Hibernate 2 차 캐시 + Redis 캐시 적용으로 반복 쿼리를 줄이고 DB 부하를 낮춰 고성능 IoT·실시간 서비스 환경에 대응합니다.
 
 ### 4) 확장성 고려
-- Redis / Kafka / MQTT / Swagger 등 다양한 인프라와 자연스러운 통합
-- 모듈 구조 기반으로 기능 확장 및 서비스 추가 용이
+
+- Redis, Kafka, MQTT, Swagger 등 다양한 인프라와 자연스럽게 통합되도록 모듈 구조를 설계하여 기능 확장 및 서비스 추가가 용이합니다.
 
 ### 5) 문서화 자동화
-- Swagger(OpenAPI) UI 자동 제공 → API 문서·테스트 통합
-- JavaDoc 기반 문서 자동화 구조까지 제공
+
+- Swagger(OpenAPI) UI 를 자동 제공해 API 문서·테스트를 통합하고, JavaDoc 기반 문서 자동화 구조까지 제공합니다.
 
 ---
 
 ## 🧩 주요 특징 (Key Features)
 
 ### ✔ 1. 표준 백엔드 아키텍처 제공
+
 - Controller → Service → Domain → Repository 구조
 - 전역 예외 처리, 공통 응답 포맷, Validation, 로깅 기본 내장
 - 실서비스 기준의 코드 품질을 템플릿 수준에서 확보
 
 ### ✔ 2. 자동 API 문서화
+
 - Swagger(OpenAPI 3) 자동 문서화 제공
 - JavaDoc 주석 기반 자동 문서 생성 지원
 
 ### ✔ 3. DB 버전 관리 + 고성능 캐시 구조
-- Liquibase 기반 DB 스키마 버전관리
+
+- Liquibase 기반 DB 스키마 버전 관리
 - PostgreSQL / MariaDB / MySQL / Oracle DB 호환
 - Redis 기반 캐싱·세션·토큰스토리지 확장 가능
 
 ### ✔ 4. 클라우드·온프레 모두 즉시 배포 가능
-- Oracle Cloud / Azure / On-Prem 환경 모두 프로필 기반 즉시 배포
-- Dockerfile + Compose + 배포 스크립트 기본 포함
-- HTTPS(SSL-ready) 구성 쉽게 지원
+
+- Oracle Cloud / Azure / On-Prem 환경 모두 프로필 기반으로 즉시 배포 가능
+- Dockerfile + Compose + 배포 스크립트를 기본 포함하여 HTTPS(SSL-ready) 구성을 쉽게 지원
 
 ### ✔ 5. 기본 비즈니스 모델 탑재 (Ready-to-Use Modules)
-초기 서비스에서 가장 많이 쓰이는 도메인을 기본 내장:
 
-- 회원 관리(User Management)
-  - 가입/로그인/권한(Role) 구조
-  - JWT 인증/인가 구조 확장 가능
-- 게시판 관리(Board/Post)
-  - 게시글 CRUD, 카테고리 연동
-- 카테고리 관리(Category Management)
-  - 계층형 카테고리, 태깅 모델
-- 관리자 전용 메트릭 페이지(Admin Metrics)
-  - 시스템 상태, DB/Redis 연결, 요청 카운트 등 모니터링
+회원 관리 (User Management), 게시판 (Board/Post), 카테고리 (Category) 등 초기 서비스에서 가장 많이 쓰이는 도메인을 기본 내장하여 반복 구현을 줄입니다.
 
-즉, “서비스가 기본적으로 갖춰야 하는 기능”을 반복 구현하지 않아도 된다.
+### ✔ 6. Vue 3 기반 프런트엔드 템플릿 제공
 
-### ✔ 6.Vue3 기반의 프런트엔드 템플릿 제공
-- TypeScript, Vite, Pinia 등 최신 기술 스택이 기본으로 설정되어 있어 견고한 프런트엔드 기반을 제공
-- 백엔드 Spring Boot API와 연동되는 서비스 레이어와 타입 정의가 포함되어 개발 시간을 획기적으로 단축
-- JWT, OAuth2 등 Spring Security 설정과 동기화된 로그인, 권한 제어, 세션 관리 기능이 클라이언트 단에 미리 구현
-- i18next 라이브러리를 통해 한국어를 포함한 다양한 언어 팩을 손쉽게 관리하고 동적으로 전환할 수 있는 구조를 제공
-  사용자 관리, 권한 설정, API 문서(Swagger) 확인, 헬스 체크 등 운영에 필요한 관리자 페이지가 기본 제공
-- 관리자 페이지, 대시보드, 웹앱 구조를 빠른 구축 및  커스터마이징 가능
+TypeScript, Vite, Pinia 등 최신 기술 스택이 기본으로 설정된 Vue 3 템플릿을 제공하며, 백엔드 Spring Boot API 와 연동되는 서비스 레이어 및 타입 정의가 포함되어 개발 시간을 단축합니다. 관리자 페이지, 대시보드, 권한 관리 등이 기본으로 제공되어 빠르게 커스터마이징할 수 있습니다.
+
+### ✔ 7. 체계적인 파일 저장 구조 (Local & Cloud Ready)
+
+로컬 및 클라우드 (OCI, Azure, S3), 공유 폴더 (NFS/SMB) 환경 어디서나 동일한 설정 기반으로 동작하며, 모든 파일은 체계적인 디렉토리 구조로 자동 저장됩니다.
+
+```
+uploads/
+├── public/                    # 공개 파일 (웹 접근 가능)
+│   └── {storageKey}/          # 용도별 분류 (NOTICE, PROFILE, BOARD 등)
+│       └── yyyy/MM/           # 연/월 기준 날짜 분할
+│           └── {timestamp}_{uuid}.{ext}
+└── private/                   # 비공개 파일 (인증 필요)
+    └── {storageKey}/
+        └── yyyy/MM/
+            └── {timestamp}_{uuid}.{ext}
+```
+
+- 환경별 저장소: `LOCAL`(실행 경로), `SHARE`(공유 폴더), `CLOUD_S3`, `CLOUD_OCI` 지원
+- 자동 디렉토리 생성: 파일 업로드 시 용도 (storageKey) 와 날짜 (yyyy/MM) 기준 폴더 자동 생성
+- 파일명 규칙: `yyyyMMddHHmmss_uuid.ext` 형식으로 중복 없는 안전한 파일명 자동 생성
+- 공개/비공개 분리: 접근 권한에 따라 물리 경로를 분리하여 보안 강화
+- Apache Tika 기반 MIME 타입 검증: 파일 확장자 위조를 방지하기 위해 실제 바이너리 콘텐츠를 분석하여 허용된 타입만 저장
+- 스트리밍 전송: 대용량 파일도 `InputStream.transferTo()` 로 OOM 위험 없이 안전 전송
+
+### ✔ 8. 다층 보안 아키텍처 (Multi-Layer Security)
+
+- Rate Limiting: 토큰 버킷 알고리즘 기반 IP/엔드포인트별 요청 제한 (로그인, 회원가입, OTP 등)
+- Trusted Proxy 지원: L4/L7 프록시 환경에서 `X-Forwarded-For` 헤더 기반 클라이언트 IP 식별
+- CSP (Content Security Policy): XSS 공격 방지를 위한 nonce 기반 스크립트 실행 제한
+- JWT 보안: Bearer Token 기반 상태 비저장 (STATELESS) 인증, 512-bit Base64 시크릿 지원
+- 파일 업로드 보안: MIME 타입 화이트리스트, 확장자 제한, Apache Tika 기반 콘텐츠 검증
+
+---
+
+### ✔ 9. 동적 파일 업로드 정책 & 템플릿 관리
+- 실시간 정책 변경: 서버 재시작 없이 관리자 UI에서 파일 확장자, MIME 타입, 최대 용량 제한을 실시간으로 변경하고 즉시 적용 가능합니다.
+- 추천 템플릿 시스템: MS 오피스, 한글(HWP, HWPX), PDF, 이미지, 비디오, 압축 파일 등 자주 사용되는 10여 종의 정책을 템플릿으로 제공하여 원클릭으로 추가할 수 있습니다.
+- MIME 타입 입력 가이드: 일반 사용자가 알기 어려운 MIME 타입 및 확장자 조합(예: Adobe Photoshop, 한컴오피스 등)에 대한 가이드를 UI 내에 내장하여 편의성을 극대화했습니다.
+- 표준값 복원 기능: 언제든지 시스템 표준 초기 템플릿 목록으로 복원할 수 있는 기능을 제공하여 관리 실수를 방지합니다.
+
+
+---
+
+## ✨ 2026 년 3 월 업데이트 (Migration Highlights)
+
+2026 년 3 월에 진행된 주요 시스템 고도화 및 보안 강화 사항입니다.
+
+- Jackson 3 통합: JSON 직렬화 엔진을 Jackson 3 로 통일하여 Spring Boot 4 환경 최적화
+- 동적 파일 업로드 정책 및 템플릿 시스템: 관리자 UI에서 실시간으로 업로드 허용 범위 제어 (PSD, HWP 등 특수 타입 대응 가이드 및 원클릭 복원 제공)
+- Apache Tika 기반 MIME 검증: 실제 바이너리 콘텐츠 분석으로 파일 확장자 위조 방지 (보안 강화)
+- 다층 보안 체계: Rate Limiting, CSP Nonce, Trusted Proxy 지원
+- HikariCP 동적 풀: CPU 코어 기반 자동 계산으로 환경별 최적 DB 연결 풀 유지
+- 가상 스레드 활성화: Java 21 가상 스레드로 동시성 처리 성능 향상
+- 글로벌 Settings JSON 통합: 단일 JSON 필드로 스키마 변경 없이 유연한 설정 확장
+
 ---
 
 ## 🔧 기술 스택 (Tech Stack)
 
 ### Backend
-- Framework: Spring Boot 4.x
-- Language: Java 21+  
-- Build Tool: Maven  
-- Database: Oracle / PostgreSQL / MariaDB / MySQL  
-- Database Migration: Liquibase  
-- Persistence: Spring Data JPA (Hibernate)  
-- Caching: Redis (Redisson) + Hibernate 2nd Cache  
-- Security: Spring Security, JWT  
-- Error Handling: RFC 7807 (ProblemDetail)  
-- API Docs: Swagger UI (springdoc-openapi)  
-- Testing: JUnit 5, Spring Boot Test, MockMvc  
+
+- Framework: Spring Boot 4.x (가상 스레드, JSpecify 지원)
+- Language: Java 21+
+- Build Tool: Maven
+- Database: Oracle / PostgreSQL / MariaDB / MySQL
+- Database Migration: Liquibase
+- Persistence: Spring Data JPA (Hibernate 7.x)
+- Caching: Redis (Redisson) + Hibernate 2nd Cache
+- JSON Engine: Jackson 3 (Unification)
+- Security: Spring Security, JWT, Rate Limiting
+- Error Handling: RFC 7807 (ProblemDetail)
+- Cloud Storage: AWS S3, Oracle Cloud Infrastructure (OCI)
+- File Analysis: Apache Tika
 
 ### Frontend
+
 - Framework: Vue 3
 - Build Tool: Vite
 - Language: TypeScript
@@ -110,58 +157,35 @@ Spring Boot 4.x 기반 REST API 서버 프레임워크
 - UI Components: Bootstrap-Vue-Next / Bootswatch
 - Testing: Vitest
 
-### Infrastructure & DevOps
-- Deployment Target: Oracle Cloud Infrastructure (OCI) VM  
-- Container: Docker, Docker Compose
-- Messaging Queue: MQTT Integration (Eclipse Paho)
-- CI/CD: GitHub Actions (ready) / SonarQube
-
 ---
 
-## 🛠 향후 계획 (Future Plans)
+## ⚡ 설치 및 실행 (Installation & Execution)
 
-### 실시간 양방향 통신 (WebSocket)
-- 서버 ↔ 클라이언트 실시간 데이터 동기화, 알림·모니터링 기능 강화
-
-### Event-Driven 아키텍처
-- Loosely Coupled 구조 → 대규모 서비스 확장성 확보
-
-### 외부 시스템 통합
-- Granpada 등 외부 플랫폼과의 안정적 연동
-
-### MQTT 기반 IoT 메시징 강화
-- 다양한 디바이스 환경 대응
-- 센서 데이터 수집/모니터링 용이
-
-### 멀티 플랫폼 클라이언트 제공 (개별 프로젝트로 진행)
-- Windows / macOS 데스크톱 클라이언트
-- iOS / Android 모바일 앱
-
-### Spring AI 활용
-- RAG(Retrieval-Augmented Generation)를 도입하여 사내 문서 및 DB 데이터를 기반으로 정교한 답변을 제공하는 맞춤형 지식 베이스를 구축
-- LLM의 Function Calling 기능을 활용해 사용자의 자연어 요청을 실시간 DB 쿼리나 API 호출로 변환하여 업무 자동화를 실현
-- 멀티모달 모델을 연동하여 텍스트뿐만 아니라 이미지 분석, 음성 인식(STT), 요약 등 고도화된 콘텐츠 처리 기능을 제공
-- Spring AI의 추상화 레이어를 활용해 OpenAI, Gemini, 로컬 LLM(Ollama) 등 다양한 모델을 유연하게 교체하며 최적의 비용 대비 성능을 확보
-- 
----
-
-## ⚡ 설치 및 실행
-
+### 1) 백엔드 실행 (Backend)
+로컬 환경에서 다음 커맨드로 서버를 실행합니다.
 ```bash
-# 프로젝트 클론
-git clone https://github.com/username/stack-app-2025.git
-cd stack-app-2025
-
-# 빌드 및 실행
-./mvnw clean package
-java -jar target/app.jar
+./springboot
 ```
 
+### 2) 프런트엔드 실행 (Frontend)
+클라이언트 개발 서버를 실행합니다.
+```bash
+npm start
+```
+
+### 3) 접속 정보
+- 사용자/관리자 페이지: [https://localhost:9000](https://localhost:9000)
+- API 문서 (Swagger): [https://localhost:8443/swagger-ui/index.html](https://localhost:8443/swagger-ui/index.html)
+
+---
+
+### 4) 개발 환경에서 데이터 초기화
+
+```bash
+./mvnw liquibase:dropAll liquibase:update -Pdev
+```
 ---
 
 ## 📜 안내 (About)
-이 프로젝트는 개발자로서 쌓아온 경험과 생산성을 정리한  
-개인 Project이자, Full-Stack Starter Framework입니다.  
-온프레미스와 클라우드 어디서나 빠르게 서비스를 구축할 수 있도록 설계되어 있으며,  
-앞으로도 지속적으로 개선될 예정입니다.
-
+이 프로젝트는 개발자로서 쌓아온 경험과 생산성을 정리한 개인 Project 이자, Full-Stack Starter Framework 입니다.
+온프레미스와 클라우드 어디서나 빠르게 서비스를 구축할 수 있도록 설계되어 있으며, 앞으로도 지속적으로 개선될 예정입니다.

@@ -10,6 +10,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -34,6 +35,10 @@ public class JwtAuthenticationTestUtils {
     }
 
     public static String createValidTokenForUser(String jwtKey, String user) {
+        return createTokenForUser(jwtKey, user, Collections.singletonList(ADMIN));
+    }
+
+    public static String createTokenForUser(String jwtKey, String user, List<String> authorities) {
         JwtEncoder encoder = jwtEncoder(jwtKey);
 
         var now = Instant.now();
@@ -42,7 +47,7 @@ public class JwtAuthenticationTestUtils {
             .issuedAt(now)
             .expiresAt(now.plusSeconds(60))
             .subject(user)
-            .claims(customClaim -> customClaim.put(AUTHORITIES_CLAIM, Collections.singletonList(ADMIN)))
+            .claims(customClaim -> customClaim.put(AUTHORITIES_CLAIM, authorities))
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

@@ -59,7 +59,10 @@ class GlobalSettingsServiceT {
             settings.getTokenValiditySeconds(),
             settings.getTokenValiditySecondsForRememberMe(),
             settings.getLoginMaxFailureAttempts(),
-            "Description"
+            "Description",
+            null,
+            null,
+            null
         );
 
         // 캐시 관련 Mock 설정
@@ -117,7 +120,7 @@ class GlobalSettingsServiceT {
         // given
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
 
-        SettingsDTO updateRequest = new SettingsDTO(86400L, 2592000L, 10, "Updated");
+        SettingsDTO updateRequest = new SettingsDTO(86400L, 2592000L, 10, "Updated", null, null, null);
 
         // when
         globalSettingsService.updateSettings(updateRequest);
@@ -142,7 +145,7 @@ class GlobalSettingsServiceT {
     void updateSettings_InvalidData_ShouldThrowException() {
         // given
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
-        SettingsDTO invalidDTO = new SettingsDTO(0L, 7200L, 5, "Invalid");
+        SettingsDTO invalidDTO = new SettingsDTO(0L, 7200L, 5, "Invalid", null, null, null);
 
         // when & then
         assertThatThrownBy(() -> globalSettingsService.updateSettings(invalidDTO))

@@ -2,6 +2,7 @@ package com.daangcool.stack.service;
 
 import com.daangcool.stack.common.constant.Constants;
 import com.daangcool.stack.domain.Settings;
+
 import com.daangcool.stack.repository.SettingsRepository;
 import com.daangcool.stack.service.dto.SettingsDTO;
 import com.daangcool.stack.common.exception.BadRequestAlertException;
@@ -60,7 +61,7 @@ public class GlobalSettingsService {
         if (cache != null) {
             SettingsDTO cached = cache.get(SETTINGS_ID, SettingsDTO.class);
             if (cached != null) {
-                log.debug("[SETTINGS CACHE] Cache hit for settings ID={}", SETTINGS_ID);
+                log.trace("[SETTINGS CACHE] Cache hit for settings ID={}", SETTINGS_ID);
                 return cached;
             }
         }
@@ -73,7 +74,10 @@ public class GlobalSettingsService {
             settings.getTokenValiditySeconds(),
             settings.getTokenValiditySecondsForRememberMe(),
             settings.getLoginMaxFailureAttempts(),
-            settings.getDescription()
+            settings.getDescription(),
+            settings.getFileUploadDefaults(),
+            settings.getFileTypePolicies(),
+            settings.getFileTypeTemplates()
         );
 
         if (cache != null) {
@@ -105,6 +109,9 @@ public class GlobalSettingsService {
         settings.setTokenValiditySecondsForRememberMe(settingsDTO.getTokenValiditySecondsForRememberMe());
         settings.setLoginMaxFailureAttempts(settingsDTO.getLoginMaxFailureAttempts());
         settings.setDescription(settingsDTO.getDescription());
+        settings.setFileUploadDefaults(settingsDTO.getFileUploadDefaults());
+        settings.setFileTypePolicies(settingsDTO.getFileTypePolicies());
+        settings.setFileTypeTemplates(settingsDTO.getFileTypeTemplates());
 
         // DB 저장
         settingsRepository.save(settings);
