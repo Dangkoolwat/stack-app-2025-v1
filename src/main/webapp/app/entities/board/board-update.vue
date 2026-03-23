@@ -32,7 +32,15 @@
           </div>
 
           <!-- 태그 입력 영역 -->
-          <div class="form-group mb-4" @keydown.enter.prevent>
+          <div
+            class="form-group mb-4"
+            @keydown.enter.prevent
+            @keydown.enter.capture="
+              e => {
+                if (e.isComposing) e.stopPropagation();
+              }
+            "
+          >
             <label class="form-control-label fw-bold" for="board-tags">Tags</label>
             <div class="d-flex align-items-center justify-content-center mt-2">
               <b-form-tags
@@ -55,7 +63,7 @@
               @dragleave.prevent="dragover = false"
               @drop.prevent="handleDrop"
               :class="{ 'bg-light border-primary': dragover, 'border-secondary': !dragover }"
-              style="border-style: dashed !important; border-width: 2px !important; cursor: pointer;"
+              style="border-style: dashed !important; border-width: 2px !important; cursor: pointer"
               @click="triggerFileInput"
             >
               <font-awesome-icon icon="cloud-upload-alt" class="text-muted fa-2x mb-2"></font-awesome-icon>
@@ -78,7 +86,7 @@
               </li>
             </ul>
           </div>
-          
+
           <div class="row">
             <div class="col-md-6 form-group">
               <label class="form-control-label fw-bold" v-text="t$('entities.board.form.boardTypeCode')" for="board-type"></label>
@@ -91,14 +99,7 @@
             </div>
             <div class="col-md-6 form-group d-flex align-items-end mb-3">
               <div class="form-check form-switch ms-2">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  name="notice"
-                  id="board-notice"
-                  data-cy="notice"
-                  v-model="board.notice"
-                />
+                <input type="checkbox" class="form-check-input" name="notice" id="board-notice" data-cy="notice" v-model="board.notice" />
                 <label class="form-check-label fw-bold" v-text="t$('entities.board.form.notice')" for="board-notice"></label>
               </div>
             </div>
