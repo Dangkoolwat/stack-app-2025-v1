@@ -131,6 +131,7 @@ class GlobalSettingsServiceT {
         // 실제 객체의 값이 변경되었는지 확인합니다.
         assertThat(settings.getTokenValiditySeconds()).isEqualTo(86400L);
         assertThat(settings.getLoginMaxFailureAttempts()).isEqualTo(10);
+        assertThat(settings.getDescription()).isEqualTo("Updated");
     }
 
     /**

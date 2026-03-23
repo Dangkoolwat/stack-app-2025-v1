@@ -11,14 +11,8 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="token_validity_seconds" type="bigint">
+            <column name="global_settings" type="varchar(2000)">
                 <constraints nullable="true" />
-            </column>
-            <column name="token_validity_seconds_for_remember_me" type="bigint">
-                <constraints nullable="true" />
-            </column>
-            <column name="login_nmax_failure_attempts" type="int">
-                <constraints nullable="false" />
             </column>
             <column name="description" type="varchar(255)">
                 <constraints nullable="true" />
@@ -35,9 +29,7 @@
     <changeSet id="20251005203000-2" author="jhipster">
         <insert tableName="stack_settings">
             <column name="id" value="1"/>
-            <column name="token_validity_seconds" value="86400"/>
-            <column name="token_validity_seconds_for_remember_me" value="2592000"/>
-            <column name="login_nmax_failure_attempts" value="5"/>
+            <column name="global_settings" value='{"tokenValiditySeconds": 86400, "tokenValiditySecondsForRememberMe": 2592000, "loginMaxFailureAttempts": 5}'/>
             <column name="description" value="Initial default settings"/>
             <column name="created_by" value="system"/>
         </insert>
