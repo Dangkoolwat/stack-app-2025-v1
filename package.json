@@ -104,6 +104,8 @@
     "vue-router": "5.0.3"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "10.0.1",
     "@pinia/testing": "1.0.3",
     "@tsconfig/node18": "18.2.6",
