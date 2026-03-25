@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
     <relativePath/>
   </parent>
 
@@ -731,7 +731,7 @@
                 <delegatePattern>true</delegatePattern>
                 <title>stack</title>
                 <useSpringBoot3>true</useSpringBoot3>
-                <springBootVersion>4.0.3</springBootVersion>
+                <springBootVersion>4.0.4</springBootVersion>
                 <useJakartaEe>true</useJakartaEe>
               </configOptions>
             </configuration>
