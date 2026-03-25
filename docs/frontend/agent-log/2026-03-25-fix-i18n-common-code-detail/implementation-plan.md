@@ -1,5 +1,5 @@
 ---
-agent: Antigravity (GPT-4o)
+agent: Antigravity (Gemini 2.0 Flash)
 created_at: 2026-03-25 (수요일)
 language: ko
 ---
