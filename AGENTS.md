@@ -3,6 +3,7 @@
 ## Language Policy (MANDATORY)
 
 - All shared documentation under `docs/` MUST be written in English.
+- Exception: system-wide review or architecture-wide review documents under `docs/analysis/` MAY be written in Korean when the user explicitly requests Korean.
 - All source code comments SHOULD be written in Korean.
 - All `agent-log` files MUST be written in Korean.
 

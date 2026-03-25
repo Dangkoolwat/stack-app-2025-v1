@@ -1,26 +1,26 @@
 ---
 agent: GPT-5.4
 created_at: 2026-03-25 (수)
-language: en
+language: ko
 ---
 
-# Project-Wide Review Based on the Existing Entity-Centered Analysis
+# 기존 엔티티 중심 분석을 확장한 프로젝트 전체 리뷰
 
-## 1. Purpose
+## 1. 문서 목적
 
-This document extends the entity-centered review in `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md` and reframes the project as a whole-system review.
+이 문서는 `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md` 의 엔티티 중심 분석을 출발점으로 삼아, 프로젝트 전체를 시스템 관점에서 다시 점검한 결과를 정리한 문서입니다.
 
-The main goal is not to repeat every board-domain issue already captured there, but to identify what is still missing at the project level:
+이번 리뷰의 목적은 기존 문서를 반복하는 것이 아니라, 그 문서에서 상대적으로 덜 다뤄졌던 전역 이슈를 식별하는 것입니다.
 
-- authorization boundaries
-- operational safety
-- cache consistency
-- test execution reliability
-- documentation governance
+- 인가 경계
+- 운영 안전성
+- 캐시 정합성
+- 테스트 실행 신뢰도
+- 문서 정책 정합성
 
-## 2. Review Basis
+## 2. 검토 기준과 참고 자료
 
-Reviewed sources:
+검토한 주요 자료는 다음과 같습니다.
 
 - `AGENTS.md`
 - `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md`
@@ -37,615 +37,585 @@ Reviewed sources:
 - `src/main/java/com/daangcool/stack/web/rest/CommentResource.java`
 - `src/main/java/com/daangcool/stack/web/rest/UploadResource.java`
 - `pom.xml`
-- representative tests under `src/test/java`
+- `src/test/java` 하위 대표 테스트 파일들
 
-## 3. Executive Summary
+## 3. 전체 평가 요약
 
-The project has strong intent and a meaningful amount of supporting infrastructure:
+이 프로젝트는 방향성과 기반 구조 자체는 좋습니다.
 
-- layered backend structure
-- explicit cache configuration
-- DTO-oriented service boundaries in many places
-- broad integration-test presence
-- solid initial entity analysis already written by another agent
+- 계층 구조가 비교적 분명합니다.
+- 캐시 설정이 명시적으로 관리되고 있습니다.
+- 서비스 계층에서 DTO 기반 처리 의도가 보입니다.
+- 통합 테스트가 제법 갖춰져 있습니다.
+- 기존 antigravity 분석 문서가 게시판 도메인 정합성을 잘 짚고 있습니다.
 
-However, the current project still has several system-level gaps that are more dangerous than typical implementation bugs:
+하지만 실제 운영 관점에서 더 위험한 전역 이슈가 남아 있습니다.
 
-1. Management endpoints appear to be publicly exposed because the security matcher order is unsafe.
-2. Object-level authorization is weak across board, comment, and upload flows.
-3. The existing board-domain integrity issues remain important and should be treated as platform risk, not as isolated board bugs.
-4. Cache invalidation rules are inconsistent across services.
-5. Public file delivery still loads full payloads into memory.
-6. A non-trivial portion of unit tests is likely not executed by default because of test naming.
-7. Documentation governance is drifting away from the repository policy.
+1. 관리 엔드포인트가 공개될 가능성이 있습니다.
+2. 게시글, 댓글, 파일에 대한 객체 수준 인가가 약합니다.
+3. 게시글 묶음의 삭제/복구/완전삭제 정합성이 아직 불완전합니다.
+4. 캐시 무효화 규칙이 서비스마다 어긋나 있습니다.
+5. 공개 파일 다운로드가 메모리를 과도하게 사용할 수 있습니다.
+6. 일부 단위 테스트가 실제로 실행되지 않을 가능성이 큽니다.
+7. 문서 언어 정책과 실제 문서 상태가 맞지 않습니다.
 
-The highest priority is security hardening first, then integrity/caching, then test and documentation reliability.
+우선순위는 보안 인가 보강이 1순위, 그다음이 생명주기 정합성과 캐시, 마지막이 테스트/문서 체계 정비입니다.
 
-## 4. What the Existing Antigravity Analysis Already Covers Well
+## 4. 기존 antigravity 문서가 잘 다룬 부분
 
-The existing review is valuable and should remain the baseline for board-domain integrity work.
+기존 문서는 게시판 도메인 기준으로 매우 유의미한 분석을 이미 해 두었습니다.
 
-It already identifies important issues such as:
+특히 아래 이슈들은 그대로 기준 문서로 유지할 가치가 있습니다.
 
-- soft-delete and unique-constraint collision in tag reuse
-- tag usage count drift
-- missing soft-delete cascade for board children
-- missing restore cascade
-- potential hard-delete foreign key failure
-- service responsibility leakage between `BoardService` and `BoardTagService`
+- soft delete 와 unique 제약 충돌
+- tag usageCount drift
+- board 삭제 시 연관 엔티티 연쇄 처리 누락
+- restore 연쇄 처리 누락
+- hard delete 시 FK 제약 위반 가능성
+- `BoardService` 와 `BoardTagService` 책임 분리 문제
 
-That document is strong on entity relationships and lifecycle consistency. The additional findings below are the project-wide gaps that were still underexplored.
+즉, 기존 문서는 엔티티 연관관계와 게시판 생명주기 관점에서 강합니다. 이번 문서는 그 위에 보안, 운영, 테스트, 정책 관점의 빠진 부분을 보완하는 성격입니다.
 
-## 5. Additional Findings Missing From the Current Analysis
+## 5. 추가로 드러난 프로젝트 전체 문제점
 
-### Finding A. Management endpoints are likely public because the security matcher order is unsafe
+### A. 관리 엔드포인트가 공개될 가능성
 
-Severity: Critical
+심각도: Critical
 
-Evidence:
+근거:
 
-- `src/main/java/com/daangcool/stack/config/ApplicationProperties.java:136` defines `"/management/**"` as a public path.
-- `src/main/java/com/daangcool/stack/config/SecurityConfiguration.java:121` permits `applicationProperties.getSecurity().getPublicPaths().getManagement()`.
-- `src/main/java/com/daangcool/stack/config/SecurityConfiguration.java:122-123` then tries to restrict `/management/prometheus` and `/management/**` to admin.
+- `src/main/java/com/daangcool/stack/config/ApplicationProperties.java:136` 에서 `"/management/**"` 가 공개 경로로 정의되어 있습니다.
+- `src/main/java/com/daangcool/stack/config/SecurityConfiguration.java:121` 에서 해당 경로를 `permitAll()` 처리합니다.
+- 바로 다음 `src/main/java/com/daangcool/stack/config/SecurityConfiguration.java:122-123` 에서 `/management/prometheus` 와 `/management/**` 를 관리자 전용으로 제한하려고 합니다.
 
-Risk:
+문제:
 
-- In Spring Security request matching, earlier matching rules take precedence.
-- That means the broader `permitAll()` rule for `/management/**` can make the later admin-only rules ineffective.
-- If that behavior is active at runtime, operational endpoints such as health, metrics, env-like surfaces, and other management handlers may be accessible without admin authorization.
+- 스프링 시큐리티는 일반적으로 먼저 매칭된 규칙이 우선됩니다.
+- 따라서 앞의 `permitAll()` 이 뒤의 관리자 제한을 무력화할 가능성이 큽니다.
+- 실제로 그렇다면 health, metrics, prometheus, 기타 관리 기능이 익명 사용자에게 노출될 수 있습니다.
 
-Recommended solution:
+영향:
 
-1. Remove `/management/**` from `application.security.public-paths.management` defaults.
-2. Explicitly allow only the exact public endpoints you truly want, for example `/management/health` and optionally `/management/health/**`.
-3. Keep all remaining `/management/**` endpoints admin-only.
-4. Add integration tests that verify:
-   - anonymous access allowed only for intended health endpoints
-   - anonymous access forbidden for `/management/info`, `/management/metrics`, `/management/prometheus`, and other management routes
+- 운영 정보 노출
+- 공격 표면 확대
+- 관리 API 접근 통제 실패
 
-Alternative:
+권장 해결안:
 
-- Keep `publicPaths.management`, but restrict it to a minimal allowlist rather than a wildcard.
+1. `/management/**` 전체 공개 설정을 제거합니다.
+2. 꼭 공개해야 하는 경로만 명시적으로 허용합니다.
+3. 일반적으로는 `/management/health`, 필요 시 `/management/health/**` 정도만 공개합니다.
+4. 나머지 `/management/**` 는 전부 관리자 전용으로 고정합니다.
+5. 익명 사용자 기준 통합 테스트를 추가합니다.
 
-### Finding B. Object-level authorization is missing across board, comment, and upload flows
+### B. 게시글, 댓글, 파일의 객체 수준 인가 부족
 
-Severity: Critical
+심각도: Critical
 
-Evidence:
+근거:
 
-- `src/main/java/com/daangcool/stack/service/board/BoardService.java:90-101`
-  - if `userId` is provided in the request, the service trusts it instead of forcing the authenticated principal.
-- `src/main/java/com/daangcool/stack/service/board/BoardService.java:165-181`
-  - board update has no ownership or admin check.
-- `src/main/java/com/daangcool/stack/service/board/CommentService.java:79-89`
-  - comment creation trusts request `userId`.
-- `src/main/java/com/daangcool/stack/service/board/CommentService.java:161-190`
-  - comment update and delete have no ownership or admin check.
-- `src/main/java/com/daangcool/stack/web/rest/UploadResource.java:87-91`
-  - delete endpoint requires only authentication and delegates directly.
-- `src/main/java/com/daangcool/stack/service/board/UploadService.java:121-130`
-  - upload soft delete performs no owner/admin authorization.
-- `src/main/java/com/daangcool/stack/web/rest/UploadResource.java:203-240`
-  - private file download requires authentication, but there is no per-file ownership or entitlement verification before streaming.
+- `BoardService.save()` 는 `userId` 가 비어 있을 때만 현재 로그인 사용자를 채우고, 값이 이미 들어오면 그대로 신뢰합니다.
+- `BoardService.update()` 는 소유자 또는 관리자 검사가 없습니다.
+- `CommentService.save()` 는 요청의 `userId` 를 그대로 신뢰합니다.
+- `CommentService.update()` 와 `delete()` 는 소유자 검사 없이 동작합니다.
+- `UploadResource.deleteUpload()` 는 인증만 요구하고, 실제 소유권 판단은 없습니다.
+- `UploadService.softDelete()` 는 권한 검증 없이 삭제합니다.
+- `UploadResource.downloadPrivateFile()` 는 인증만 검사하고 파일 소유자 또는 접근권한 여부는 보지 않습니다.
 
-Risk:
+문제:
 
-- Any authenticated user may be able to:
-  - create boards/comments as another user by sending a different `userId`
-  - update or delete another user’s board/comment
-  - soft-delete another user’s upload
-  - download private files that do not belong to them
+- 로그인만 되어 있으면 남의 게시글, 댓글, 파일을 다룰 수 있는 구조가 될 수 있습니다.
 
-This is a broken object-level authorization pattern, not a single endpoint bug.
+영향:
 
-Recommended solution:
+- 타인 게시글 수정/삭제 가능성
+- 타인 댓글 수정/삭제 가능성
+- 타인 업로드 파일 삭제 가능성
+- 타인 비공개 파일 다운로드 가능성
 
-1. Introduce a shared authorization policy layer for ownership checks.
-2. For user-facing create APIs, ignore incoming `userId` and always derive the owner from `SecurityUtils.getCurrentUserLogin()`.
-3. For update/delete/download operations, enforce:
-   - owner access
-   - admin override
-4. Add negative integration tests for cross-user access on:
-   - board update/delete
-   - comment create/update/delete
-   - upload delete
-   - private upload download
+권장 해결안:
 
-Preferred implementation direction:
+1. 소유자/관리자 판별을 공통으로 수행하는 인가 서비스 또는 정책 계층을 둡니다.
+2. 생성 API 는 요청의 `userId` 를 무시하고 로그인 사용자 기준으로 강제합니다.
+3. 수정/삭제/다운로드 API 는 반드시 아래 둘 중 하나만 허용합니다.
+   - 리소스 소유자
+   - 관리자
+4. 교차 사용자 시나리오에 대한 부정 테스트를 추가합니다.
 
-- Centralize authorization in dedicated helper methods or a domain-specific authorization service instead of repeating ad hoc checks in every controller.
+### C. 게시글 aggregate 의 생명주기 정합성 부족
 
-### Finding C. Board lifecycle integrity is still a project-level risk, not only a board-module issue
+심각도: High
 
-Severity: High
+배경:
 
-Baseline:
+- 기존 antigravity 문서가 이미 `Board`, `BoardTag`, `Upload`, `Comment` 연계 이슈를 상당수 지적했습니다.
 
-- `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md:49-120` and later sections already describe the core board-domain integrity issues.
+이번 문서에서 강조하는 점:
 
-Why this is still a project-wide finding:
+- 이 문제는 더 이상 게시판 모듈 내부 버그가 아니라, 프로젝트 전역 데이터 정합성 문제로 봐야 합니다.
+- 현재 구조상 게시글은 사실상 하나의 aggregate 로 동작합니다.
 
-- `Board`, `BoardTag`, `Upload`, and `Comment` together form one user-visible content aggregate.
-- Current behavior leaves soft-delete, restore, and hard-delete flows only partially modeled.
-- That affects more than board correctness:
-  - cache correctness
-  - orphan-resource detection
-  - admin cleanup safety
-  - tag analytics correctness
-  - data retention behavior
+포함해야 하는 묶음:
 
-Recommended solution:
+- `Board`
+- `BoardTag`
+- `Upload`
+- `Comment`
 
-1. Promote board lifecycle handling to an aggregate policy.
-2. Define explicit rules for:
-   - soft delete
-   - restore
-   - hard delete
-3. Treat the board aggregate as:
-   - `Board`
-   - `BoardTag`
-   - `Upload`
-   - `Comment`
-4. Make cleanup order explicit and test it.
-5. Add one integration test per lifecycle:
-   - board soft delete cascades
-   - board restore cascades
-   - board hard delete removes children safely
+문제:
 
-### Finding D. Cache invalidation contracts are inconsistent across services
+- soft delete
+- restore
+- hard delete
 
-Severity: High
+이 세 흐름이 한 덩어리로 정리되어 있지 않습니다.
 
-Evidence:
+영향:
 
-- `src/main/java/com/daangcool/stack/service/board/BoardService.java:54-59` uses `CACHE_BOARD_PAGE = "BOARD_PAGE_V2"`.
-- `src/main/java/com/daangcool/stack/service/board/BoardTagService.java:46-49` still uses `CACHE_BOARD_PAGE = "BOARD_PAGE"`.
-- `src/main/java/com/daangcool/stack/service/board/BoardTagService.java:82-85` clears the older cache name.
+- orphan resource 판정 왜곡
+- tag usageCount 불일치
+- 관리자 정리 기능 위험 증가
+- 캐시 stale 가능성 증가
+- 데이터 보존 정책 혼란
 
-Risk:
+권장 해결안:
 
-- When board-tag relationships change through `BoardTagService`, page/search cache invalidation can miss the actual board page cache.
-- That produces stale board listing behavior and undermines cache safety rules in `docs/standards/cache-safety-guideline.md`.
+1. 게시글 aggregate 를 명시적으로 정의합니다.
+2. soft delete, restore, hard delete 를 하나의 오케스트레이션 흐름으로 정리합니다.
+3. 각 단계의 처리 순서를 명시합니다.
+4. 생명주기별 통합 테스트를 추가합니다.
 
-Recommended solution:
+### D. 캐시 무효화 규칙 불일치
 
-1. Move cache names into a single shared cache-name contract.
-2. Replace duplicated string constants across services.
-3. Add one cache invalidation test proving that board listings are refreshed after tag changes.
+심각도: High
 
-Preferred implementation direction:
+근거:
 
-- A dedicated `CacheNames` class or package-level constants for each bounded context.
+- `BoardService` 는 `CACHE_BOARD_PAGE = "BOARD_PAGE_V2"` 를 사용합니다.
+- `BoardTagService` 는 여전히 `CACHE_BOARD_PAGE = "BOARD_PAGE"` 를 사용합니다.
+- 따라서 `BoardTagService` 가 캐시를 지워도 실제 게시글 페이지 캐시가 안 지워질 수 있습니다.
 
-### Finding E. Public file delivery still loads the entire payload into memory
+문제:
 
-Severity: Medium
+- 서비스마다 같은 캐시를 다른 이름으로 관리하고 있습니다.
 
-Evidence:
+영향:
 
-- `src/main/java/com/daangcool/stack/web/rest/UploadResource.java:104-131`
-- `src/main/java/com/daangcool/stack/web/rest/UploadResource.java:154-182`
+- 게시글 목록 stale
+- 태그 수정 후 화면 반영 지연
+- 캐시 정책에 대한 신뢰 저하
 
-Risk:
+권장 해결안:
 
-- `readAllBytes()` can cause high memory pressure or OOM under large file downloads or concurrent traffic.
-- The class-level documentation already states that streaming should be preferred.
-- The private download endpoint already uses `StreamingResponseBody`, so the public endpoints are inconsistent with the intended design.
+1. 캐시 이름 상수를 한 군데로 통합합니다.
+2. 개별 서비스에서 문자열 상수를 중복 선언하지 않도록 합니다.
+3. 태그 수정 후 게시글 목록 캐시가 제대로 무효화되는지 테스트로 보장합니다.
 
-Recommended solution:
+### E. 공개 파일 다운로드의 메모리 사용 위험
 
-1. Change public download and preview endpoints to stream rather than buffer the full file.
-2. Keep content type and content disposition headers, but move the payload path to `StreamingResponseBody`.
-3. Add at least one large-file test or mock-based streaming behavior test.
+심각도: Medium
 
-### Finding F. Many unit tests are likely not executed by default
+근거:
 
-Severity: High
+- `UploadResource.downloadFile()` 과 `previewFile()` 이 `readAllBytes()` 로 전체 파일을 메모리에 올립니다.
+- 반면 비공개 다운로드는 이미 `StreamingResponseBody` 를 사용합니다.
 
-Evidence:
+문제:
 
-- `pom.xml:673-685` configures Surefire exclusions but does not add custom includes for `*T.java`.
-- The repository contains multiple tests named with the `T.java` suffix, for example:
-  - `src/test/java/com/daangcool/stack/service/board/BoardServiceT.java`
-  - `src/test/java/com/daangcool/stack/service/board/UploadServiceT.java`
-  - `src/test/java/com/daangcool/stack/service/board/CommentServiceT.java`
-  - `src/test/java/com/daangcool/stack/service/storage/LocalDefaultFileStorageServiceT.java`
+- 구현 의도와 실제 방식이 다릅니다.
 
-Inference:
+영향:
 
-- Under standard Surefire defaults, `*T.java` classes are typically not part of the default include pattern.
-- If that default is active here, a meaningful portion of service-level unit tests is not running in normal `test` builds.
+- 큰 파일 다운로드 시 메모리 부담
+- 동시 요청 증가 시 OOM 위험
+- 파일 트래픽이 많아질수록 서버 안정성 저하
 
-Risk:
+권장 해결안:
 
-- The project may appear well-tested while silently skipping important unit tests.
-- This is especially dangerous because several security and lifecycle gaps exist exactly in the service layer.
+1. 공개 다운로드와 미리보기 역시 스트리밍 방식으로 전환합니다.
+2. 헤더 처리만 유지하고 본문은 `StreamingResponseBody` 로 전송합니다.
+3. 큰 파일 시나리오 테스트 또는 스트리밍 동작 테스트를 추가합니다.
 
-Recommended solution:
+### F. 일부 단위 테스트 미실행 가능성
 
-1. Standardize all unit test names to `*Test.java`.
-2. Or explicitly configure Surefire includes for `**/*T.java`.
-3. Add CI reporting that shows executed test counts by class.
-4. Prefer renaming over custom includes because it lowers cognitive overhead for future contributors.
+심각도: High
 
-### Finding G. Documentation governance is drifting from the repository policy
+근거:
 
-Severity: Medium
+- `pom.xml` 의 Surefire 설정에는 `*T.java` 를 명시적으로 포함시키는 규칙이 없습니다.
+- 그런데 저장소에는 `BoardServiceT.java`, `UploadServiceT.java`, `CommentServiceT.java` 처럼 `T.java` 접미사 테스트가 여럿 있습니다.
 
-Evidence:
+추론:
 
-- `AGENTS.md:5` requires all shared documentation under `docs/` to be written in English.
-- `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md:4` declares `language: ko`.
-- The body of that same analysis is primarily written in Korean.
-- `AGENTS.md:24-31` defines the required top-level documentation structure, while the repository also contains `docs/release-notes`.
+- Maven 기본 패턴 기준으로는 이런 테스트가 기본 실행 대상이 아닐 가능성이 큽니다.
 
-Risk:
+영향:
 
-- Review outputs become inconsistent across agents and over time.
-- Shared engineering knowledge becomes less searchable and less reusable.
-- Process rules lose authority when exceptions accumulate without explicit approval.
+- 테스트가 많은 것처럼 보여도 실제로는 중요한 단위 테스트가 안 돌 수 있습니다.
+- 특히 보안, 캐시, 서비스 로직 문제를 놓칠 수 있습니다.
 
-Recommended solution:
+권장 해결안:
 
-1. Treat English as mandatory for all future shared docs under `docs/`.
-2. Migrate key cross-team documents to English in priority order:
-   - analysis
-   - operations
-   - standards-adjacent supporting docs
-3. Decide whether `docs/release-notes` is an approved extension or should be relocated/documented in policy.
+1. 단위 테스트 이름을 `*Test.java` 로 통일합니다.
+2. 또는 Surefire include 에 `**/*T.java` 를 추가합니다.
+3. CI 에서 실행된 테스트 클래스 수를 확인 가능하게 만듭니다.
 
-## 6. Alternative Solutions and Decision Guide
+### G. 문서 정책과 실제 문서 상태의 불일치
 
-This section converts the major findings into implementation options so the next engineering step can be chosen intentionally rather than reactively.
+심각도: Medium
 
-### A. Management endpoint exposure
+근거:
 
-Recommended option:
+- `AGENTS.md` 는 원래 `docs/` 아래 공유 문서를 영어로 쓰도록 요구합니다.
+- 하지만 실제 `docs/analysis/2026-03-25-antigravity/board-entity-relationship-analysis.md` 는 한국어 문서입니다.
+- 또한 `docs/release-notes` 디렉터리는 현재 문서 구조 정책에 명시되어 있지 않습니다.
 
-- Remove the wildcard public configuration for `/management/**` and expose only explicit health endpoints.
+문제:
 
-Why this is the best fit:
+- 정책과 실제가 어긋나면 다음 에이전트나 협업자가 무엇을 따라야 할지 혼란스러워집니다.
 
-- It is the safest operational default.
-- It makes intent obvious in both configuration and code review.
-- It minimizes future regression risk when new management endpoints are added.
+영향:
 
-Alternative 1:
+- 지식 축적 품질 저하
+- 문서 검색성 저하
+- 협업 규칙 약화
 
-- Keep a public-path configuration property, but change its default value to a minimal allowlist such as `/management/health` and `/management/health/**`.
+권장 해결안:
 
-Pros:
+1. 정책을 유지할지, 예외를 둘지 명시적으로 결정합니다.
+2. 이번 요청에 맞춰 `docs/analysis` 내 시스템 전체 리뷰 문서는 사용자 요청 시 한국어 허용으로 정책을 좁게 보완합니다.
+3. 나머지 공유 문서의 언어 정책은 계속 명확히 관리합니다.
 
-- Keeps configurability.
-- Works well when different environments need different public health visibility.
+## 6. 문제별 대안과 선택 기준
 
-Cons:
+이 절은 각 문제를 실제로 어떻게 풀지 결정할 수 있도록 대안을 정리한 부분입니다.
 
-- Still depends on disciplined configuration management.
-- Easier to reintroduce unsafe wildcard values later.
+### A. 관리 엔드포인트 노출 문제
 
-Alternative 2:
+권장안:
 
-- Separate management exposure by profile, exposing public health only in specific deployment profiles.
+- `/management/**` 전체 공개를 제거하고, 필요한 health 경로만 명시적으로 공개합니다.
 
-Pros:
+장점:
 
-- Stronger environment control.
-- Good for production systems with different infra requirements.
+- 가장 안전합니다.
+- 설정 의도가 명확해집니다.
+- 이후 새 관리 엔드포인트가 추가되어도 실수로 공개될 가능성이 줄어듭니다.
 
-Cons:
+대안 1:
 
-- More complex to reason about.
-- Higher chance of profile drift between local, CI, and production.
+- `publicPaths.management` 는 유지하되 기본값을 `/management/health`, `/management/health/**` 수준의 allowlist 로 줄입니다.
 
-Decision rule:
+장점:
 
-- If the project wants the simplest and safest path, use the recommended option.
-- If environment-specific actuator visibility is a real business requirement, use Alternative 1 plus integration tests.
+- 환경별 조정이 가능합니다.
 
-### B. Object-level authorization gaps
+단점:
 
-Recommended option:
+- 설정을 잘못 바꾸면 다시 위험해집니다.
 
-- Introduce a shared authorization service or policy layer that evaluates ownership and admin override centrally.
+대안 2:
 
-Why this is the best fit:
+- 프로파일별로 actuator 공개 범위를 분리합니다.
 
-- The same vulnerability pattern appears in boards, comments, and uploads.
-- Centralization reduces duplicated logic and inconsistent fixes.
-- It is easier to test and audit.
+장점:
 
-Alternative 1:
+- 환경 제어가 더 정교합니다.
 
-- Add ownership checks directly inside each service method.
+단점:
 
-Pros:
+- 운영 복잡도가 올라갑니다.
 
-- Fastest short-term patch.
-- Minimal refactoring cost.
+선택 기준:
 
-Cons:
+- 가장 안전하고 단순한 방향이 필요하면 권장안을 선택합니다.
+- 환경별로 health 공개 요구가 다르면 대안 1 을 택하되 테스트를 함께 둡니다.
 
-- Logic becomes duplicated.
-- Future endpoints are likely to miss the same checks again.
+### B. 객체 수준 인가 문제
 
-Alternative 2:
+권장안:
 
-- Move most ownership checks to method security with custom `@PreAuthorize` expressions.
+- 소유자/관리자 판별을 중앙화한 공통 인가 서비스 또는 정책 계층을 도입합니다.
 
-Pros:
+장점:
 
-- Strong declarative style.
-- Easy to spot authorization rules at entry points.
+- 게시글, 댓글, 파일에 같은 규칙을 일관되게 적용할 수 있습니다.
+- 중복 로직을 줄일 수 있습니다.
+- 감사와 테스트가 쉬워집니다.
 
-Cons:
+대안 1:
 
-- Can become hard to debug when rules need repository lookups.
-- Often still requires service-side validation for non-controller call paths.
+- 각 서비스 메서드에 직접 소유권 체크를 넣습니다.
 
-Decision rule:
+장점:
 
-- For emergency patching, Alternative 1 is acceptable.
-- For long-term maintainability, the recommended option is better.
-- If the team already favors declarative authorization heavily, Alternative 2 can be used together with a shared checker bean.
+- 가장 빨리 막을 수 있습니다.
 
-### C. Board aggregate lifecycle integrity
+단점:
 
-Recommended option:
+- 중복이 늘고, 다음 엔드포인트에서 또 빠질 수 있습니다.
 
-- Define the board aggregate explicitly and implement one orchestration path for soft delete, restore, and hard delete.
+대안 2:
 
-Why this is the best fit:
+- `@PreAuthorize` 표현식을 더 적극적으로 사용합니다.
 
-- The project already behaves as if `Board`, `BoardTag`, `Upload`, and `Comment` are one functional unit.
-- Aggregate-level orchestration makes cache, orphan cleanup, and analytics easier to reason about.
+장점:
 
-Alternative 1:
+- 선언적으로 보이기 때문에 컨트롤러 레벨에서 읽기 쉽습니다.
 
-- Keep the current service split, but add missing cascades manually in `BoardService`.
+단점:
 
-Pros:
+- 리포지토리 조회가 섞이면 디버깅이 어려워질 수 있습니다.
+- 서비스 내부 호출에는 추가 방어가 여전히 필요합니다.
 
-- Smaller code delta.
-- Faster to ship.
+선택 기준:
 
-Cons:
+- 급한 차단이 목적이면 대안 1 이 실용적입니다.
+- 장기 유지보수성과 재사용성을 보려면 권장안이 더 적합합니다.
 
-- Keeps too much cross-domain knowledge inside one service.
-- Makes future maintenance harder.
+### C. 게시글 aggregate 생명주기 문제
 
-Alternative 2:
+권장안:
 
-- Push more lifecycle behavior into domain events or asynchronous cleanup jobs.
+- `Board`, `BoardTag`, `Upload`, `Comment` 를 하나의 aggregate 로 명시하고 삭제/복구/완전삭제를 통합 오케스트레이션으로 구현합니다.
 
-Pros:
+장점:
 
-- Better decoupling.
-- Can scale for heavier cleanup workloads.
+- 정합성 설명이 쉬워집니다.
+- orphan 정리, 캐시, 통계가 함께 정리됩니다.
 
-Cons:
+대안 1:
 
-- Adds eventual consistency.
-- Harder to debug and test than a synchronous transactional flow.
+- 당장은 `BoardService` 안에 누락된 cascade 만 우선 보강합니다.
 
-Decision rule:
+장점:
 
-- If correctness must be restored quickly, Alternative 1 is a practical bridge.
-- If the team wants a cleaner domain model, use the recommended orchestration approach.
-- Avoid Alternative 2 unless there is a clear scalability reason.
+- 빠르게 적용 가능합니다.
 
-### D. Cache invalidation inconsistency
+단점:
 
-Recommended option:
+- 서비스 책임이 더 비대해집니다.
 
-- Introduce a single shared cache-name contract and remove duplicated cache string declarations from individual services.
+대안 2:
 
-Why this is the best fit:
+- 도메인 이벤트 또는 비동기 정리 작업으로 분리합니다.
 
-- The current defect exists because names are duplicated.
-- A shared contract prevents silent drift.
+장점:
 
-Alternative 1:
+- 더 느슨한 결합을 만들 수 있습니다.
 
-- Keep local constants but enforce consistency with tests.
+단점:
 
-Pros:
+- eventual consistency 가 생깁니다.
+- 테스트와 디버깅 난이도가 올라갑니다.
 
-- Low refactoring cost.
+선택 기준:
 
-Cons:
+- 빠른 복구가 목표면 대안 1 이 임시 해법으로 괜찮습니다.
+- 구조를 제대로 정리하려면 권장안이 맞습니다.
+- 대안 2 는 확실한 확장성 요구가 있을 때만 고려하는 편이 좋습니다.
 
-- Still allows drift.
-- Requires developers to remember multiple sources of truth.
+### D. 캐시 무효화 불일치 문제
 
-Alternative 2:
+권장안:
 
-- Replace manual cache management with more declarative caching annotations where possible.
+- 캐시 이름 상수를 한 곳으로 통합합니다.
 
-Pros:
+장점:
 
-- Less hand-written eviction code.
-- Better consistency for straightforward CRUD flows.
+- 이번 문제의 재발 가능성을 가장 직접적으로 줄입니다.
+- 캐시 계약이 명확해집니다.
 
-Cons:
+대안 1:
 
-- Harder to model complex multi-entity invalidation.
-- Existing explicit cache patterns are already widely used in this project.
+- 지금 구조를 유지하되 이름 일치 여부를 테스트로 강제합니다.
 
-Decision rule:
+장점:
 
-- Use the recommended option for cache names immediately.
-- Consider Alternative 2 only after naming and lifecycle consistency are fixed.
+- 리팩터링 비용이 적습니다.
 
-### E. Public file download memory usage
+단점:
 
-Recommended option:
+- 여전히 상수 출처가 여러 곳이라 drift 위험이 남습니다.
 
-- Convert public download and preview endpoints to streaming responses.
+대안 2:
 
-Why this is the best fit:
+- 가능한 부분은 선언적 캐싱으로 옮깁니다.
 
-- The private endpoint already uses streaming.
-- This aligns implementation with the current class documentation.
+장점:
 
-Alternative 1:
+- 수동 eviction 코드가 줄어듭니다.
 
-- Keep `byte[]` responses but add file-size limits for public download endpoints.
+단점:
 
-Pros:
+- 다중 엔티티가 얽힌 복잡한 invalidation 은 오히려 표현이 어려울 수 있습니다.
 
-- Smallest change.
-- Can reduce worst-case memory spikes quickly.
+선택 기준:
 
-Cons:
+- 지금 단계에서는 권장안이 가장 합리적입니다.
+- 선언적 캐싱 전환은 생명주기 정합성 정리 이후 검토하는 편이 좋습니다.
 
-- Still not robust for concurrent load.
-- Adds artificial product limitations.
+### E. 공개 파일 메모리 사용 문제
 
-Alternative 2:
+권장안:
 
-- Offload public file delivery to the web server, CDN, or object-storage signed URL flow.
+- 공개 다운로드와 미리보기를 스트리밍 방식으로 전환합니다.
 
-Pros:
+장점:
 
-- Best scalability.
-- Lower app-server memory and bandwidth pressure.
+- 현재 private 다운로드와 구현 방향이 일치합니다.
+- 큰 파일과 동시 요청에 더 안전합니다.
 
-Cons:
+대안 1:
 
-- More infrastructure complexity.
-- Requires stronger storage and access-control design.
+- 현재 방식은 유지하되 공개 파일 크기 제한을 강하게 둡니다.
 
-Decision rule:
+장점:
 
-- If the project wants immediate safety without infra redesign, use the recommended option.
-- If file traffic is expected to grow significantly, Alternative 2 should become part of the medium-term architecture.
+- 변경 폭이 작습니다.
 
-### F. Test execution reliability
+단점:
 
-Recommended option:
+- 근본 해결은 아닙니다.
 
-- Rename `*T.java` unit tests to `*Test.java` and keep Maven defaults simple.
+대안 2:
 
-Why this is the best fit:
+- 웹서버, CDN, 오브젝트 스토리지 signed URL 로 파일 서빙을 오프로드합니다.
 
-- It matches common Java ecosystem conventions.
-- New contributors will understand it immediately.
-- CI becomes easier to reason about.
+장점:
 
-Alternative 1:
+- 가장 확장성이 좋습니다.
 
-- Keep existing names and add Surefire include rules for `**/*T.java`.
+단점:
 
-Pros:
+- 인프라 설계 복잡도가 높아집니다.
 
-- Minimal file rename churn.
+선택 기준:
 
-Cons:
+- 당장 안정성을 높이려면 권장안이 가장 좋습니다.
+- 파일 트래픽이 본격적으로 커질 예정이면 중기적으로 대안 2 를 검토해야 합니다.
 
-- Non-standard convention remains.
-- Future contributors may still add tests that are not picked up.
+### F. 테스트 실행 신뢰도 문제
 
-Alternative 2:
+권장안:
 
-- Split test suites more formally into unit, integration, and architecture profiles with explicit naming and plugin rules.
+- `*T.java` 를 `*Test.java` 로 일괄 통일합니다.
 
-Pros:
+장점:
 
-- Strong long-term build discipline.
-- Clearer CI stages.
+- 자바 생태계 관례와 맞습니다.
+- 신규 참여자도 이해하기 쉽습니다.
+- Maven 기본 동작과 자연스럽게 맞습니다.
 
-Cons:
+대안 1:
 
-- Higher initial setup cost.
-- More maintenance burden for a small or medium-sized team.
+- 파일명은 유지하고 Surefire include 에 `**/*T.java` 를 추가합니다.
 
-Decision rule:
+장점:
 
-- If the goal is to restore trust quickly, use the recommended option.
-- If the team already plans CI restructuring, Alternative 2 can be adopted as part of that work.
+- 파일 rename 비용이 적습니다.
 
-### G. Documentation language and governance drift
+단점:
 
-Recommended option:
+- 비표준 규칙이 계속 남습니다.
 
-- Keep the repository policy unchanged and migrate shared cross-team documents under `docs/` to English.
+대안 2:
 
-Why this is the best fit:
+- unit / integration / architecture 테스트를 더 엄격하게 분리한 빌드 체계로 재정비합니다.
 
-- It matches the current project rule.
-- It improves consistency for future agents and collaborators.
+장점:
 
-Alternative 1:
+- 장기적으로 CI 품질이 좋아집니다.
 
-- Officially revise `AGENTS.md` to allow bilingual documents in specific folders such as `docs/analysis`.
+단점:
 
-Pros:
+- 초기 정리 비용이 큽니다.
 
-- Better local readability for Korean-speaking maintainers.
+선택 기준:
 
-Cons:
+- 빠르게 신뢰를 회복하려면 권장안이 좋습니다.
+- CI 구조 개편까지 묶어서 할 거라면 대안 2 도 가치가 있습니다.
 
-- Weakens the current single-language governance model.
-- Searchability and consistency may drop again.
+### G. 문서 언어 정책 문제
 
-Alternative 2:
+권장안:
 
-- Keep shared docs in English, but require a short Korean summary section in agent logs or PR descriptions.
+- 기본 정책은 유지하되, `docs/analysis` 의 시스템 전체 리뷰 문서는 사용자 요청 시 한국어 허용이라는 좁은 예외를 둡니다.
 
-Pros:
+장점:
 
-- Balances repository consistency with local readability.
-- Avoids changing the `docs/` language rule.
+- 저장소 정책 전체를 흔들지 않습니다.
+- 실제 사용자 가독성을 확보할 수 있습니다.
 
-Cons:
+대안 1:
 
-- Requires process discipline outside the document itself.
+- `docs/analysis` 전반을 이중 언어 허용으로 바꿉니다.
 
-Decision rule:
+장점:
 
-- If the project is primarily maintained in Korean but still wants disciplined shared docs, Alternative 2 is the most balanced supplement.
-- If the team wants fully Korean shared docs, `AGENTS.md` must be changed explicitly first.
+- 한국어 사용자에게는 편합니다.
 
-## 7. Recommended Remediation Roadmap
+단점:
 
-### Phase 1. Immediate security hardening
+- 일관성이 낮아질 수 있습니다.
 
-1. Fix management endpoint matcher order and public path configuration.
-2. Enforce owner/admin authorization for board, comment, and upload operations.
-3. Add negative integration tests for unauthorized cross-user access.
+대안 2:
 
-### Phase 2. Aggregate integrity and cache correctness
+- 공유 문서는 영어 유지, 대신 별도 한국어 요약 문서를 둡니다.
 
-1. Implement board aggregate lifecycle rules for delete, restore, and hard delete.
-2. Unify cache name constants and invalidation contracts.
-3. Verify orphan resource logic after lifecycle fixes.
+장점:
 
-### Phase 3. Reliability and governance
+- 정책 일관성이 좋습니다.
 
-1. Normalize test naming so all intended tests execute.
-2. Add security and cache-focused regression tests.
-3. Bring shared documentation back into policy compliance.
+단점:
 
-## 8. Suggested Verification Checklist
+- 문서가 이중 관리됩니다.
 
-Before calling the project review complete, the repository should be able to prove the following:
+선택 기준:
 
-- anonymous access to `/management/**` is restricted to the exact intended subset
-- authenticated non-owners cannot edit or delete another user’s board/comment/upload
-- authenticated non-owners cannot download another user’s private file
-- board delete/restore/hard-delete flows preserve aggregate consistency
-- tag changes invalidate the real board page cache
-- all intended unit tests are executed in CI
-- shared docs under `docs/` follow the language policy
+- 현재 사용자 요구와 정책 균형을 함께 맞추려면 권장안이 가장 적절합니다.
 
-## 9. Final Assessment
+## 7. 권장 실행 순서
 
-The project is not weak in ambition or structure. The bigger problem is that several strong-looking subsystems are not yet fully aligned with one another:
+### 1단계. 즉시 처리할 보안 항목
 
-- authentication exists, but authorization is incomplete
-- caching exists, but invalidation contracts are fragmented
-- tests exist, but execution reliability is questionable
-- analysis exists, but documentation policy is not consistently enforced
+1. `/management/**` 보안 규칙 수정
+2. board/comment/upload 소유권 기반 인가 도입
+3. 교차 사용자 접근 차단 테스트 추가
 
-The most important next step is to treat security authorization and lifecycle integrity as cross-cutting architecture work, not as local bug fixes.
+### 2단계. 정합성과 캐시 정리
+
+1. 게시글 aggregate 삭제/복구/완전삭제 흐름 정리
+2. 캐시 이름 상수 통합
+3. orphan resource 판정 로직 재검증
+
+### 3단계. 신뢰성과 협업 체계 보강
+
+1. 테스트 파일명 또는 Surefire 규칙 정리
+2. 보안/캐시 회귀 테스트 추가
+3. 문서 정책 예외 적용 범위 정리
+
+## 8. 검증 체크리스트
+
+아래 항목을 만족해야 이번 리뷰의 핵심 문제가 실제로 해결되었다고 볼 수 있습니다.
+
+- 익명 사용자가 허용된 health 경로 외의 `/management/**` 에 접근하지 못한다.
+- 일반 사용자가 남의 게시글, 댓글, 파일을 수정/삭제하지 못한다.
+- 일반 사용자가 남의 비공개 파일을 내려받지 못한다.
+- 게시글 삭제/복구/완전삭제 시 연관 리소스 정합성이 유지된다.
+- 태그 변경 후 게시글 목록 캐시가 올바르게 비워진다.
+- 의도한 단위 테스트가 CI 에서 실제로 실행된다.
+- 문서 정책이 실제 저장소 상태와 일치한다.
+
+## 9. 최종 판단
+
+이 프로젝트는 뼈대가 약한 프로젝트는 아닙니다. 오히려 방향은 좋고, 이미 많은 기반을 갖추고 있습니다.
+
+하지만 지금의 핵심 문제는 “기능이 없다” 가 아니라 “여러 좋은 구성 요소가 아직 서로 맞물려 있지 않다” 는 점입니다.
+
+- 인증은 있지만 인가는 약합니다.
+- 캐시는 있지만 무효화 계약이 갈라져 있습니다.
+- 테스트는 많지만 실제 실행 신뢰도가 불명확합니다.
+- 문서는 있지만 정책과 실제가 완전히 맞지는 않습니다.
+
+따라서 다음 작업은 단순 버그 패치 묶음이 아니라, 보안 인가와 생명주기 정합성을 중심으로 한 구조 정리 작업으로 접근하는 것이 가장 맞습니다.
