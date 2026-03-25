@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,4 +116,15 @@ public interface TagRepository extends JpaRepository<Tag, Long>, JpaSpecificatio
      */
     @Query("SELECT t FROM Tag t WHERE t.id = :id")
     Optional<Tag> findByIdEvenIfDeleted(@Param("id") Long id);
+
+    /**
+     * 고아 태그 일괄 조회 (사용처 소진 또는 삭제된 후 24시간 경과한 태그)
+     */
+    @Query("SELECT t FROM Tag t WHERE (t.usageCount <= 0 OR t.deleted = true) AND t.lastModifiedDate <= :threshold ORDER BY t.id DESC")
+    List<Tag> findAllOrphanTags(@Param("threshold") Instant threshold);
+
+    /** 다건 물리 삭제 */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Tag t WHERE t.id IN :ids")
+    void deleteByIds(@Param("ids") List<Long> ids);
 }

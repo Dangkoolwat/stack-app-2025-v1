@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,4 +121,15 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
      */
     @Query("SELECT c FROM Comment c ORDER BY c.id DESC")
     List<Comment> findAllWithDeleted();
+
+    /**
+     * 고아 댓글 일괄 조회 (삭제 후 24시간 경과 - lastModifiedDate 기준)
+     */
+    @Query("SELECT c FROM Comment c WHERE c.deleted = true AND c.lastModifiedDate <= :threshold ORDER BY c.id DESC")
+    List<Comment> findAllOrphanComments(@Param("threshold") Instant threshold);
+
+    /** 다건 물리 삭제 */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("DELETE FROM Comment c WHERE c.id IN :ids")
+    void deleteByIds(@Param("ids") List<Long> ids);
 }

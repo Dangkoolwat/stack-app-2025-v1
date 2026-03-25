@@ -48,6 +48,13 @@ public interface BoardTagRepository extends JpaRepository<BoardTag, Long>, JpaSp
      */
     Optional<BoardTag> findById(Long id);
 
+    /**
+     * 게시글 ID와 태그 ID로 활성/비활성(Soft Deleted) 관계 모두 찾기 (Native Query)
+     * UniqueConstraint (board_id, tag_id) 위반을 방지하기 위해 사용
+     */
+    @Query(value = "SELECT * FROM stack_board_tag WHERE board_id = :boardId AND tag_id = :tagId", nativeQuery = true)
+    Optional<BoardTag> findByBoardIdAndTagIdNative(@Param("boardId") Long boardId, @Param("tagId") Long tagId);
+
 
     // -----------------------------------------------------
     //  Soft Delete (Auditing 포함)

@@ -14,6 +14,11 @@ export default defineComponent({
     const tags: Ref<any[]> = ref([]);
     const isFetching = ref(false);
     const removeId = ref<number | null>(null);
+    const removeEntity = ref<any>(null);
+
+    const closeDialog = () => {
+      removeEntity.value.hide();
+    };
 
     const retrieveAllTags = async () => {
       isFetching.value = true;
@@ -41,6 +46,7 @@ export default defineComponent({
         alertService.showInfo(t$('entities.tag.messages.deleted', { param: removeId.value }));
         removeId.value = null;
         retrieveAllTags();
+        closeDialog();
       } catch (err: any) {
         alertService.showHttpError(err.response);
       }
@@ -65,6 +71,8 @@ export default defineComponent({
       prepareRemove,
       removeTag,
       undeleteTag,
+      removeEntity,
+      closeDialog,
       t$,
     };
   },

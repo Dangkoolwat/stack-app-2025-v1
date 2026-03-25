@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -300,6 +301,26 @@ public class CommentService {
             .filter(Comment::isDeleted)
             .map(commentMapper::toDto)
             .collect(Collectors.toList());
+    }
+
+    // -----------------------------------------------------
+    // 관리자 고아/완전 삭제 API 용 (시간 조건 필터링)
+    // -----------------------------------------------------
+    @IncludeDeleted
+    @Transactional(readOnly = true)
+    public List<CommentDTO> getOrphanComments(Instant threshold) {
+        log.debug("Admin request to get orphan comments older than threshold");
+        return commentRepository.findAllOrphanComments(threshold).stream()
+            .map(commentMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+    @IncludeDeleted
+    public int hardDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+        commentRepository.deleteByIds(ids);
+        clearAllCommentCaches();
+        return ids.size();
     }
 
     // -----------------------------------------------------

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -125,4 +126,11 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
      */
     @Query("SELECT u FROM Upload u WHERE u.deleted = true ORDER BY u.id DESC")
     List<Upload> findAllDeletedFiles();
+
+    /**
+     * 고아 첨부파일 일괄 조회 (게시글 미매핑 또는 삭제된 후 24시간 경과한 파일)
+     * {@link com.daangcool.stack.service.softdelete.IncludeDeleted} 스코프에서 호출해야 합니다.
+     */
+    @Query("SELECT u FROM Upload u WHERE (u.board IS NULL OR u.deleted = true) AND u.lastModifiedDate <= :threshold ORDER BY u.id DESC")
+    List<Upload> findAllOrphanFiles(@Param("threshold") Instant threshold);
 }

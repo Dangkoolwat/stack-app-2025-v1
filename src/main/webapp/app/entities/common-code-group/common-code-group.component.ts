@@ -14,6 +14,11 @@ export default defineComponent({
     const commonCodeGroups: Ref<any[]> = ref([]);
     const isFetching = ref(false);
     const removeId = ref<string | null>(null);
+    const removeEntity = ref<any>(null);
+
+    const closeDialog = () => {
+      removeEntity.value.hide();
+    };
 
     const retrieveAllGroups = async () => {
       isFetching.value = true;
@@ -41,6 +46,7 @@ export default defineComponent({
         alertService.showInfo(t$('entities.commonCodeGroup.messages.deleted', { param: removeId.value }));
         removeId.value = null;
         retrieveAllGroups();
+        closeDialog();
       } catch (err: any) {
         alertService.showHttpError(err.response);
       }
@@ -54,6 +60,8 @@ export default defineComponent({
       removeId,
       prepareRemove,
       removeGroup,
+      removeEntity,
+      closeDialog,
       t$,
     };
   },

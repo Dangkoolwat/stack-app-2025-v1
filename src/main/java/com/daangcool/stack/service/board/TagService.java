@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -185,6 +186,26 @@ public class TagService {
         tag.setDeleted(false);
         Tag savedTag = tagRepository.save(tag);
         clearTagCaches(savedTag);
+    }
+
+    /**
+     * 고아 태그 목록 조회 (사용안됨 & 24시간 초과 또는 삭제됨)
+     */
+    @Transactional(readOnly = true)
+    @IncludeDeleted
+    public List<TagDTO> getOrphanTags(Instant threshold) {
+        return tagRepository.findAllOrphanTags(threshold).stream()
+            .map(tagMapper::toDto)
+            .collect(Collectors.toList());
+    }
+
+    /** 다건 하드 삭제 */
+    @IncludeDeleted
+    public int hardDelete(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+        tagRepository.deleteByIds(ids);
+        clearAllTagCaches(); // 안전하게 전체 캐시 초기화
+        return ids.size();
     }
 
     // ------------------------------------------------------

@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -178,6 +179,40 @@ public class UploadService {
                 count++;
             } catch (Exception e) {
                 log.error("[UPLOAD PURGE] Error deleting file id={}", file.getId(), e);
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 고아 파일 메타데이터 목록 조회
+     */
+    @Transactional(readOnly = true)
+    @IncludeDeleted
+    public List<UploadDTO> getOrphanUploads(Instant threshold) {
+        return uploadRepository.findAllOrphanFiles(threshold).stream()
+            .map(UploadDTO::new)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 여러 파일 선택 하드 삭제
+     */
+    @IncludeDeleted
+    public int hardDelete(List<Long> ids) {
+        int count = 0;
+        for (Long id : ids) {
+            Optional<Upload> opt = uploadRepository.findById(id);
+            if (opt.isPresent()) {
+                Upload file = opt.get();
+                try {
+                    storageService.delete(file.getFilePath());
+                    uploadRepository.delete(file);
+                    clearUploadCaches(file);
+                    count++;
+                } catch (Exception e) {
+                    log.error("[UPLOAD DELETE] Error hard-deleting file id={}", id, e);
+                }
             }
         }
         return count;

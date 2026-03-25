@@ -79,7 +79,7 @@
         </tbody>
       </table>
     </div>
-    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')" @ok="removeDetail()">
+    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')">
       <div class="modal-body">
         <p id="jhi-delete-commonCodeDetail-heading" v-text="t$('entities.commonCodeDetail.messages.deleteConfirm', { id: removeId })"></p>
       </div>
@@ -89,7 +89,7 @@
             type="button"
             class="btn btn-secondary btn-sm me-2"
             v-text="t$('entities.commonCodeDetail.actions.cancel')"
-            @click="removeDetail()"
+            @click="closeDialog()"
           ></button>
           <button
             type="button"

@@ -165,7 +165,7 @@ public class BoardService {
     public BoardDTO update(Long id, BoardDTO dto) {
         log.debug("Request to update Board : {}", id);
 
-        Board board = boardRepository.findById(id)
+        Board board = boardRepository.findByIdWithDetails(id)
             .orElseThrow(() -> new EntityNotFoundException("수정할 게시글을 찾을 수 없습니다. ID=" + id));
 
         if (board.isDeleted())
@@ -208,6 +208,8 @@ public class BoardService {
         for (com.daangcool.stack.domain.board.BoardTag bt : toRemove) {
             boardTagRepository.softDelete(bt.getId(), "게시글 수정 중 태그 제거");
             tagRepository.decreaseUsage(bt.getTag().getId());
+            // [FIX] LazyInitializationException 방지를 위해 메모리 상의 컬렉션 조작은 제거합니다.
+            // 이후 findByIdWithDetails를 통한 refresh 과정에서 DB 상태가 반영된 컬렉션이 로드됩니다.
         }
 
         // 추가할 태그 식별 및 처리
@@ -224,10 +226,20 @@ public class BoardService {
                     return tagRepository.save(newTag);
                 });
             
-            com.daangcool.stack.domain.board.BoardTag bt = new com.daangcool.stack.domain.board.BoardTag();
-            bt.setBoard(board);
-            bt.setTag(tag);
-            boardTagRepository.save(bt);
+            // [FIX] 기존에 삭제(Soft Delete)된 관계가 있다면 재활용하여 UniqueConstraint(board_id, tag_id) 위반 방지
+            com.daangcool.stack.domain.board.BoardTag bt = boardTagRepository.findByBoardIdAndTagIdNative(board.getId(), tag.getId())
+                .orElse(null);
+
+            if (bt != null) {
+                bt.setDeleted(false);
+                bt.setDescription(null);
+                bt = boardTagRepository.save(bt);
+            } else {            
+                bt = new com.daangcool.stack.domain.board.BoardTag();
+                bt.setBoard(board);
+                bt.setTag(tag);
+                bt = boardTagRepository.save(bt);
+            }
             tagRepository.increaseUsage(tag.getId());
         }
     }

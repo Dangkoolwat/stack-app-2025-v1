@@ -83,7 +83,7 @@
         </tbody>
       </table>
     </div>
-    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')" @ok="removeGroup()">
+    <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')">
       <div class="modal-body">
         <p id="jhi-delete-commonCodeGroup-heading" v-text="t$('entities.commonCodeGroup.messages.deleteConfirm', { id: removeId })"></p>
       </div>
@@ -93,7 +93,7 @@
             type="button"
             class="btn btn-secondary btn-sm"
             v-text="t$('entities.commonCodeGroup.actions.cancel')"
-            @click="removeGroup()"
+            @click="closeDialog()"
           ></button>
           <button
             type="button"

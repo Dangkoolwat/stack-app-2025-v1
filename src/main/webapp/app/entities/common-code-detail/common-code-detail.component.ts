@@ -18,6 +18,11 @@ export default defineComponent({
     const selectedGroupCode = ref<string | null>((route.query?.groupCode as string) || null);
     const isFetching = ref(false);
     const removeId = ref<number | null>(null);
+    const removeEntity = ref<any>(null);
+
+    const closeDialog = () => {
+      removeEntity.value.hide();
+    };
 
     const retrieveGroups = async () => {
       try {
@@ -62,6 +67,7 @@ export default defineComponent({
         alertService.showInfo(t$('entities.commonCodeDetail.messages.deleted', { param: removeId.value }));
         removeId.value = null;
         retrieveDetails();
+        closeDialog();
       } catch (err: any) {
         alertService.showHttpError(err.response);
       }
@@ -81,6 +87,8 @@ export default defineComponent({
       removeId,
       prepareRemove,
       removeDetail,
+      removeEntity,
+      closeDialog,
       t$,
     };
   },

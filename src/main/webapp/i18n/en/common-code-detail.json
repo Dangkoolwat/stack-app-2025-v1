@@ -32,7 +32,8 @@
         "updated": "Detail code {param} updated successfully.",
         "deleted": "Detail code {param} deleted successfully.",
         "deleteConfirm": "Are you sure you want to delete detail code {id}?",
-        "notFound": "Detail code not found."
+        "notFound": "Detail code not found.",
+        "selectGroup": "Please select a common code group."
       }
     }
   }

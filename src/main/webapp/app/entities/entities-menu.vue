@@ -20,6 +20,10 @@
       <font-awesome-icon icon="file-alt" />
       <span class="ms-1" v-text="t$('entities.board.menu')"></span>
     </b-dropdown-item>
+    <b-dropdown-item to="/board-resource">
+      <font-awesome-icon icon="trash-alt" />
+      <span class="ms-1" v-text="t$('global.menu.entities.boardResourceManagement')"></span>
+    </b-dropdown-item>
 
     <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
   </div>

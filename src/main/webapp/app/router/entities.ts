@@ -27,6 +27,11 @@ export default {
       component: () => import('@/entities/board/board-detail.vue'),
     },
     {
+      path: 'board-resource',
+      name: 'BoardResourceManagement',
+      component: () => import('@/entities/board-resource-management/board-resource-management.vue'),
+    },
+    {
       path: 'common-code-group',
       name: 'CommonCodeGroup',
       component: () => import('@/entities/common-code-group/common-code-group.vue'),
