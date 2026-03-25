@@ -26,8 +26,16 @@ export default class UserManagementService {
 
   retrieveAuthorities(): Promise<any> {
     return axios.get('api/authorities').then(response => {
-      response.data = response.data.map(authority => authority.name);
+      response.data = response.data.map((authority: any) => authority.name);
       return response;
     });
+  }
+
+  createAuthority(authorityName: string): Promise<any> {
+    return axios.post('api/authorities', { name: authorityName });
+  }
+
+  deleteAuthority(authorityName: string): Promise<any> {
+    return axios.delete(`api/authorities/${authorityName}`);
   }
 }

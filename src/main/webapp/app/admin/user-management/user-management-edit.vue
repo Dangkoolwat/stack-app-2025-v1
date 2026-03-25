@@ -121,10 +121,25 @@
             </select>
           </div>
           <div class="mb-3">
-            <label>{{ t$('userManagement.profiles') }}</label>
-            <select class="form-control" multiple name="authority" data-cy="profiles" v-model="userAccount.authorities">
-              <option v-for="authority of authorities" :value="authority" :key="authority">{{ authority }}</option>
-            </select>
+            <label class="form-control-label">{{ t$('userManagement.profiles') }}</label>
+            <div class="d-flex flex-wrap">
+              <div v-for="auth in authorities" :key="auth" class="form-check me-4 mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  :id="'auth-' + auth"
+                  :value="auth"
+                  :checked="userAccount.authorities && userAccount.authorities.includes(auth)"
+                  @change="toggleAuthority(auth)"
+                />
+                <label class="form-check-label ms-1" :for="'auth-' + auth">
+                  {{ auth }}
+                </label>
+              </div>
+            </div>
+            <div v-if="!authorities || authorities.length === 0" class="text-muted small">
+              No profiles available.
+            </div>
           </div>
         </div>
         <div>

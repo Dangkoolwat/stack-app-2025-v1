@@ -66,10 +66,21 @@ export default defineComponent({
       userAccount.value = response.data;
     };
 
+    const toggleAuthority = (auth: string) => {
+      if (!userAccount.value.authorities) {
+        userAccount.value.authorities = [];
+      }
+      if (userAccount.value.authorities.includes(auth)) {
+        userAccount.value.authorities = userAccount.value.authorities.filter(a => a !== auth);
+      } else {
+        userAccount.value.authorities.push(auth);
+      }
+    };
+
     initAuthorities();
     const userId = route.params?.userId;
     if (userId) {
-      loadUser(userId);
+      loadUser(userId as string);
     }
 
     return {
@@ -79,6 +90,7 @@ export default defineComponent({
       authorities,
       userManagementService,
       previousState,
+      toggleAuthority,
       v$: useVuelidate(),
       languages: languages(),
       t$: useI18n().t,
@@ -94,7 +106,7 @@ export default defineComponent({
             this.returnToList();
             this.alertService.showInfo(this.getToastMessageFromHeader(res));
           })
-          .catch(error => {
+          .catch((error: any) => {
             this.isSaving = true;
             this.alertService.showHttpError(error.response);
           });
@@ -105,7 +117,7 @@ export default defineComponent({
             this.returnToList();
             this.alertService.showSuccess(this.getToastMessageFromHeader(res));
           })
-          .catch(error => {
+          .catch((error: any) => {
             this.isSaving = true;
             this.alertService.showHttpError(error.response);
           });
@@ -119,7 +131,7 @@ export default defineComponent({
 
     getToastMessageFromHeader(res: any): string {
       const message = getMessageFromHeaders(res.headers);
-      return message.alertKey ? this.t$(message.alertKey, { param: message.param }) : message.alertMessage;
+      return message.alertKey ? (this.t$(message.alertKey, { param: message.param }) as string) : message.alertMessage;
     },
   },
 });
