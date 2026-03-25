@@ -1,0 +1,44 @@
+{
+  "stackApp": {
+    "boardResourceManagement": {
+      "home": {
+        "title": "Board Resource Management (Orphans)",
+        "refreshOptions": "Refresh",
+        "warningMessage": "For safe deletion, only orphan resources that are <strong>created more than 24 hours ago</strong> or already soft-deleted are shown.",
+        "searchTarget": "Search Target:",
+        "options": {
+          "uploads": "Attachments/Images (Uploads)",
+          "tags": "Tags",
+          "comments": "Comments"
+        },
+        "deleteSelected": "Hard Delete Selected Items",
+        "table": {
+          "id": "ID",
+          "details": "Details",
+          "date": "Created/Uploaded Date",
+          "status": "Status"
+        },
+        "detailsMap": {
+          "uploads": " ({{size}} KB)",
+          "tags": " (Usage count: {{count}})",
+          "comments": ""
+        },
+        "statusMap": {
+          "softDeleted": "Soft Deleted",
+          "orphaned": "Orphaned"
+        },
+        "noData": "No target items found.",
+        "modal": {
+          "title": "Confirm Hard Delete",
+          "body1": "Are you sure you want to <strong>permanently delete</strong> the {count} selected items from the database and storage?",
+          "body2": "This action cannot be undone.",
+          "okText": "Delete",
+          "cancelText": "Cancel"
+        },
+        "messages": {
+          "deleted": "Hard deletion is complete. ({count} items)"
+        }
+      }
+    }
+  }
+}

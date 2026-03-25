@@ -1,0 +1,44 @@
+{
+  "stackApp": {
+    "boardResourceManagement": {
+      "home": {
+        "title": "게시판 리소스 관리 (고아 목록)",
+        "refreshOptions": "새로고침",
+        "warningMessage": "안전한 삭제를 위해 <strong>작성 후 24시간이 경과</strong>했거나 이미 삭제 처리된 고아(Orphan) 리소스만 표시됩니다.",
+        "searchTarget": "조회 대상:",
+        "options": {
+          "uploads": "첨부파일/이미지 (Uploads)",
+          "tags": "태그 (Tags)",
+          "comments": "댓글 (Comments)"
+        },
+        "deleteSelected": "선택 항목 완전 삭제",
+        "table": {
+          "id": "ID",
+          "details": "세부 정보",
+          "date": "작성/업로드일",
+          "status": "상태"
+        },
+        "detailsMap": {
+          "uploads": " ({{size}} KB)",
+          "tags": " (사용 횟수: {{count}})",
+          "comments": ""
+        },
+        "statusMap": {
+          "softDeleted": "Soft Deleted",
+          "orphaned": "Orphaned"
+        },
+        "noData": "조회된 대상 항목이 없습니다.",
+        "modal": {
+          "title": "완전 삭제 확인",
+          "body1": "선택된 {count}개의 항목을 데이터베이스와 스토리지에서 <strong>완전히 삭제</strong>하시겠습니까?",
+          "body2": "이 작업은 복구할 수 없습니다.",
+          "okText": "삭제",
+          "cancelText": "취소"
+        },
+        "messages": {
+          "deleted": "완전 삭제가 완료되었습니다. ({count} 개)"
+        }
+      }
+    }
+  }
+}
