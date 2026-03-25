@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-17
-- **Agent:** Antigravity
-- **Task Title:** Spring Boot 4 최신 가이드 기준 2차 전체 점검 및 리포트 작성
-- **Goal:** 1차 점검 이후 조치 현황을 확인하고, 신규 이슈(성능, 보안, 유지보수, 중복 리소스)를 발견하여 2차 보고서 파일로 저장.
+- Date: 2026-03-17
+- Agent: Antigravity
+- Task Title: Spring Boot 4 최신 가이드 기준 2차 전체 점검 및 리포트 작성
+- Goal: 1차 점검 이후 조치 현황을 확인하고, 신규 이슈(성능, 보안, 유지보수, 중복 리소스)를 발견하여 2차 보고서 파일로 저장.
 
 ## Context
 
@@ -56,10 +56,10 @@
 
 ## Next Suggested Tasks
 
-1. **NC-2 즉시 조치**: `OtpLogService` 별도 빈 분리
-2. **NC-1 조치**: JWT prod fallback 제거
-3. **NH-4 조치**: Prometheus 엔드포인트 접근 제한
-4. **NH-3 조치**: OTP 코드 로그 마스킹 적용
+1. NC-2 즉시 조치: `OtpLogService` 별도 빈 분리
+2. NC-1 조치: JWT prod fallback 제거
+3. NH-4 조치: Prometheus 엔드포인트 접근 제한
+4. NH-3 조치: OTP 코드 로그 마스킹 적용
 
 ## Notes for Future Agents
 

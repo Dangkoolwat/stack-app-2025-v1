@@ -109,4 +109,4 @@ Steps:
 
 ## Golden Rule
 
-👉 "Simple UI structure beats clever abstraction."
+ "Simple UI structure beats clever abstraction."

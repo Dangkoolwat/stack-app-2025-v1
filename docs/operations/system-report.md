@@ -32,10 +32,10 @@
 - `package.json`이 `eslint`, `prettier`, `vitest` 등을 포함하므로 `npm run lint`·`npm run vitest-run` 등을 정기적으로 실행해 디펜던시 취약점이나 스크립트 충돌을 선제 관리합니다.
 
 ## 종합 권고 및 실행
-1. **보안 헤더 강화**: `SecurityConfiguration.headers`에서 HSTS, Expect-CT, Feature Policy를 명시하고, Swagger/management 노출을 프로파일별 정책이나 WAF 룰로 FMU(Flow Management Unit)합니다.
-2. **환경 일관성 확보**: 프론트에서 사용하는 `SERVER_API_URL`/`SERVER_WS_URL`을 `.env`, CI/CD `VITE_*` 변수로 설정하고, 백엔드 `application.yml`/`ApplicationProperties`와 문서화하여 개발자 onboarding을 단축합니다.
-3. **자동화 및 테스트**: `./mvnw -ntp verify`와 `npm run vitest-run`, `npm run lint`, `npm run prettier:check`를 CI pipeline에 연결하여 코드/설정 변경 시 즉시 검증하도록 구성합니다.
-4. **의존성/캐시 관리**: `pom.xml`과 `package.json` 모두 Dependabot 또는 `mvn dependency:check`, `npm audit`을 정기 실행해 취약점 대응을 자동화하고 `ApplicationProperties.cache.ttl`을 활용해 캐시 변경 이력을 문서화합니다.
+1. 보안 헤더 강화: `SecurityConfiguration.headers`에서 HSTS, Expect-CT, Feature Policy를 명시하고, Swagger/management 노출을 프로파일별 정책이나 WAF 룰로 FMU(Flow Management Unit)합니다.
+2. 환경 일관성 확보: 프론트에서 사용하는 `SERVER_API_URL`/`SERVER_WS_URL`을 `.env`, CI/CD `VITE_*` 변수로 설정하고, 백엔드 `application.yml`/`ApplicationProperties`와 문서화하여 개발자 onboarding을 단축합니다.
+3. 자동화 및 테스트: `./mvnw -ntp verify`와 `npm run vitest-run`, `npm run lint`, `npm run prettier:check`를 CI pipeline에 연결하여 코드/설정 변경 시 즉시 검증하도록 구성합니다.
+4. 의존성/캐시 관리: `pom.xml`과 `package.json` 모두 Dependabot 또는 `mvn dependency:check`, `npm audit`을 정기 실행해 취약점 대응을 자동화하고 `ApplicationProperties.cache.ttl`을 활용해 캐시 변경 이력을 문서화합니다.
 
 ## 후속 관리 일정
 | 항목 | 담당 | 주기 | 비고 |

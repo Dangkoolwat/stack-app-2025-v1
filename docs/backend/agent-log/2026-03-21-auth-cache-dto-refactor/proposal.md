@@ -8,7 +8,7 @@
 - 장점: 단순, stale 데이터 없음
 - 단점: DB 부하 증가, 고트래픽 환경에서 병목 발생, 근본 원인 미해결
 
-### 방안 B: 캐시 전용 DTO 도입 (선택) ✅
+### 방안 B: 캐시 전용 DTO 도입 (선택) 
 
 - JPA 엔티티 대신 캐시 전용 DTO(record 또는 단순 POJO)를 설계하여 Redis 에 저장
 - `UserAuthCacheDto` (record): id, login, activated, Set<String> authorities

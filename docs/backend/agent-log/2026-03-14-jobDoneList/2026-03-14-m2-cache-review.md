@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-14
-- **Agent:** Antigravity (Google DeepMind)
-- **Task Title:** M-2 CSP unsafe-inline 제거 + CacheConfiguration 전면 재점검
-- **Goal:** 보고서 M-2 항목 코드 적용, CacheConfiguration 재점검 및 미적용 개선사항 활성화
+- Date: 2026-03-14
+- Agent: Antigravity (Google DeepMind)
+- Task Title: M-2 CSP unsafe-inline 제거 + CacheConfiguration 전면 재점검
+- Goal: 보고서 M-2 항목 코드 적용, CacheConfiguration 재점검 및 미적용 개선사항 활성화
 
 ## Context
 
@@ -18,29 +18,29 @@
 
 ### M-2: CSP script-src unsafe-inline 제거
 
-- **파일:** `application.yml` L227
-- **변경:** `script-src 'self' 'unsafe-inline' https://storage.googleapis.com` → `'unsafe-inline'` 제거
-- **유지:** `style-src 'unsafe-inline'` — Vue SFC 런타임 주입 필요 (주석으로 위험도 표기)
-- **근거:** Vite 빌드 결과물은 외부 JS 파일로 번들링되어 인라인 스크립트 불필요
+- 파일: `application.yml` L227
+- 변경: `script-src 'self' 'unsafe-inline' https://storage.googleapis.com` → `'unsafe-inline'` 제거
+- 유지: `style-src 'unsafe-inline'` — Vue SFC 런타임 주입 필요 (주석으로 위험도 표기)
+- 근거: Vite 빌드 결과물은 외부 JS 파일로 번들링되어 인라인 스크립트 불필요
 
 ### CacheConfiguration 재점검 결과 및 적용
 
-1. **M-5 해결:** `buildTTLConfig()` → `longTtlCacheConfiguration()` Bean으로 활성화
+1. M-5 해결: `buildTTLConfig()` → `longTtlCacheConfiguration()` Bean으로 활성화
    - `RedissonClient`를 인자로 받아 단일 Redisson 연결 재사용 (H-1 유지)
    - TTL: 24시간
 
-2. **캐시 TTL 세분화 적용:**
+2. 캐시 TTL 세분화 적용:
 
    | TTL | 캐시 그룹 |
    |-----|-----------|
    | 24시간 (longTTL) | Settings, CommonCode(Group/Detail), Tag(BY_ID/ALL/PREFIX) |
    | 1시간 (기본 jhipster) | User, Board, Comment, Upload, BoardTag, EmailOtpLog, Tag(POPULAR) |
 
-3. **버그 수정:** `Board.boardTags` 중복 등록 제거
+3. 버그 수정: `Board.boardTags` 중복 등록 제거
    - 기존: L166(Board 섹션)과 L177(BoardTag 섹션)에 동일한 캐시 키 중복
    - 수정: Board 섹션에만 존재, BoardTag 섹션에서 중복 제거
 
-4. **코드 정리:** 주석 및 섹션 구분 개선, `getRedissonConfig()` 위치 재정렬
+4. 코드 정리: 주석 및 섹션 구분 개선, `getRedissonConfig()` 위치 재정렬
 
 ## 수정된 파일
 

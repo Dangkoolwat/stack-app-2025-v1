@@ -4,8 +4,8 @@
 
 ### 핵심 원칙 확립
 
-"캐시를 쓰면 안 된다" → ❌ 잘못된 결론
-"JPA 엔티티를 캐시 대상으로 쓰면 안 된다" → ✅ 올바른 원칙
+"캐시를 쓰면 안 된다" →  잘못된 결론
+"JPA 엔티티를 캐시 대상으로 쓰면 안 된다" →  올바른 원칙
 
 JPA 엔티티는 Hibernate 가 `$$HibernateProxy$$xxxx` 프록시 클래스로 감싸며,
 Jackson 3 의 `DefaultTyping` 이 이 클래스명을 `@class` 에 저장한다.
@@ -81,7 +81,7 @@ DomainUserDetailsService.loadUserByUsername()
 개정 방향:
 - 금지 대상을 "JPA 엔티티 직접 캐시" 로 명확히 한정
 - 허용 대상(캐시 전용 DTO, OTP, Rate Limiting)을 명시적으로 기재
-- ⚠️ 에이전트 오판 방지 경고문 삽입
+- ️ 에이전트 오판 방지 경고문 삽입
 - 올바른/잘못된 패턴 코드 예시 추가
 
 ## 주요 코드 변경 포인트

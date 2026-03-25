@@ -11,9 +11,9 @@
 
 - API 응답 계약 변경: 없음
 - DB 스키마 변경: 없음 (Liquibase 불필요)
-- 기존 Redis 캐시 데이터 형식 변경: **있음**
+- 기존 Redis 캐시 데이터 형식 변경: 있음
   → 기존 JPA 엔티티 형태 데이터와 새 DTO 형태 데이터 공존 시 역직렬화 오류 가능
-  → **배포 전 Redis FLUSHALL 또는 Docker Redis 재시작 필수**
+  → 배포 전 Redis FLUSHALL 또는 Docker Redis 재시작 필수
 
 ## 보안 영향
 

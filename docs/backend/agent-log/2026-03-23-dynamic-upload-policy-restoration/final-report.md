@@ -5,14 +5,14 @@
 - Jackson 3 환경에서의 타입 매핑 안정성을 강화했습니다.
 
 ## 결과물
-- **변경 파일**: 
+- 변경 파일: 
     - `20251005203000_added_entity_Settings.xml`
     - `20260323173000_increase_settings_size.xml`
     - `FileTypePolicy.java`
     - `UploadService.java`
     - `SettingsResourceIT.java`
     - `README.md`
-- **검증 결과**: 
+- 검증 결과: 
     - Oracle XE 통합 테스트 통과.
     - API 응답 JSON 정합성 확인.
 

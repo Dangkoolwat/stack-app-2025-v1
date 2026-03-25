@@ -51,7 +51,7 @@
     - `Caching Rules`: 허용/금지 명확 분리, TTL 세분화, fallback 규칙 추가
 
 11. `docs/backend/Engineering_Guideline.md` 수정
-    - `5.2 Cache 변경 작업 Step 2`: 금지 판별 표 + ⚠️ 에이전트 오판 방지 경고문
+    - `5.2 Cache 변경 작업 Step 2`: 금지 판별 표 + ️ 에이전트 오판 방지 경고문
     - `5.2 Step 3`: 캐시 전용 DTO 설계 조건 + 코드 예시
     - `5.4 리뷰 체크리스트`: 7개 구체적 점검 항목으로 세분화
 

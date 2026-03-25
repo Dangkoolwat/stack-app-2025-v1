@@ -73,7 +73,7 @@ Cache 구조 변경 시 반드시 다음을 따른다.
 
 #### Step 2: 캐시 금지 대상 판별
 
-아래 조건 중 하나라도 해당하면 **그 객체 자체를 캐시하는 것은 금지**:
+아래 조건 중 하나라도 해당하면 그 객체 자체를 캐시하는 것은 금지:
 
 | 금지 대상 | 이유 |
 |-----------|------|
@@ -82,10 +82,10 @@ Cache 구조 변경 시 반드시 다음을 따른다.
 | `@Cacheable`로 Authority 컬렉션 캐시 | 동일 이유 (Hibernate Proxy 감쌈) |
 | Hibernate L2 영역과 Application 캐시 혼용 | Binary vs JSON 코덱 충돌 |
 
-> ⚠️ **에이전트 오판 방지 주의사항**
-> "인증 관련 데이터는 캐시 금지"라는 표현은 **JPA 엔티티를 직접 캐시하지 말라는 의미**입니다.
+> ️ 에이전트 오판 방지 주의사항
+> "인증 관련 데이터는 캐시 금지"라는 표현은 JPA 엔티티를 직접 캐시하지 말라는 의미입니다.
 > OTP, Rate Limiting, UserAuthCacheDto(record DTO) 같은 인증 주변 인프라는
-> 명시적 저장소 패턴(Redisson RBucket/RMapCache)으로 Redis 활용이 **허용되고 권장**됩니다.
+> 명시적 저장소 패턴(Redisson RBucket/RMapCache)으로 Redis 활용이 허용되고 권장됩니다.
 
 #### Step 3: 캐시 전용 DTO 설계 (금지 대상 우회 방법)
 
@@ -98,7 +98,7 @@ Cache 구조 변경 시 반드시 다음을 따른다.
 - `from(Entity entity)` 정적 변환 메서드를 트랜잭션 안에서 호출하여 LazyLoad 해소
 
 ```java
-// ✅ 올바른 패턴 예시
+//  올바른 패턴 예시
 public record UserAuthCacheDto(
     Long id, String login, boolean activated, Set<String> authorities
 ) {
@@ -111,7 +111,7 @@ public record UserAuthCacheDto(
     }
 }
 
-// ❌ 잘못된 패턴 (절대 금지)
+//  잘못된 패턴 (절대 금지)
 @Cacheable("users")
 public User loadUser(String login) { ... }  // JPA 엔티티 직접 캐시
 ```

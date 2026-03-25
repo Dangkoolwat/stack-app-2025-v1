@@ -39,6 +39,6 @@ up{job="stack-app"} == 0
 ```
 
 ## 3. Grafana Dashboard Tips
-- **Gauges**: Use a Gauge panel for `redis_server_used_memory_bytes`.
-- **Time Series**: Use a Time Series panel to track memory usage over time to identify leaks or spikes.
-- **Thresholds**: Set color thresholds (Green < 70%, Yellow 70-85%, Red > 85%).
+- Gauges: Use a Gauge panel for `redis_server_used_memory_bytes`.
+- Time Series: Use a Time Series panel to track memory usage over time to identify leaks or spikes.
+- Thresholds: Set color thresholds (Green < 70%, Yellow 70-85%, Red > 85%).

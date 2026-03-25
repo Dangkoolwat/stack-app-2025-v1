@@ -13,12 +13,12 @@ This plan outlines the steps to enable monitoring and alerting for Redis (Rediss
 
 #### [NEW] [RedisMonitoringConfiguration.java](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/src/main/java/com/daangcool/stack/config/RedisMonitoringConfiguration.java)
 - Create a configuration class to register Redisson metrics and health indicators.
-- **RedissonMetrics**: Connect `RedissonClient` to `MeterRegistry` to expose connection pool metrics:
+- RedissonMetrics: Connect `RedissonClient` to `MeterRegistry` to expose connection pool metrics:
     - `redisson.connection_pool.total_size`
     - `redisson.connection_pool.available_size`
     - `redisson.connection_pool.free_size`
     - `redisson.connection_pool.busy_connections`
-- **Custom RedisHealthIndicator**: Extend `AbstractHealthIndicator` to include Redis `INFO` data (like `used_memory`, `maxmemory`) in the `/management/health` endpoint.
+- Custom RedisHealthIndicator: Extend `AbstractHealthIndicator` to include Redis `INFO` data (like `used_memory`, `maxmemory`) in the `/management/health` endpoint.
 
 ---
 
@@ -26,7 +26,7 @@ This plan outlines the steps to enable monitoring and alerting for Redis (Rediss
 
 ### Automated Tests
 - Create `RedisMonitoringConfigurationTest.java` to verify that the `MeterRegistry` contains Redisson-related meters after initialization.
-- **Commands**:
+- Commands:
     ```bash
     ./mvnw test -Dtest=RedisMonitoringConfigurationTest
     ```

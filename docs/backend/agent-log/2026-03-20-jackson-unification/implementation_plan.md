@@ -30,7 +30,7 @@
 - [ ] JSON 직렬화/역직렬화 오류 여부 최종 점검
 
 > [!IMPORTANT]
-> **Annotation Package Limitation**: Jackson 3.1.0은 내부적으로 Jackson 2 어노테이션(`com.fasterxml.jackson.annotation`)을 여전히 패키지로 공유하고 있습니다. 따라서 도메인 엔티티들의 임포트 경로는 현시점에서 `com.fasterxml`을 유지하는 것이 정상 구동을 위해 필수적입니다.
+> Annotation Package Limitation: Jackson 3.1.0은 내부적으로 Jackson 2 어노테이션(`com.fasterxml.jackson.annotation`)을 여전히 패키지로 공유하고 있습니다. 따라서 도메인 엔티티들의 임포트 경로는 현시점에서 `com.fasterxml`을 유지하는 것이 정상 구동을 위해 필수적입니다.
 
 ## 6. 완료 보고
 - [ ] 에이전트 로그 및 Walkthrough 생성

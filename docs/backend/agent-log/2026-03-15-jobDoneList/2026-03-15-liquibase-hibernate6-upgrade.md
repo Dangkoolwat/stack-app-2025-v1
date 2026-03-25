@@ -37,7 +37,7 @@ Spring Boot 4.0 / Hibernate 7 환경에서 `liquibase:diff` 실행 시 엔티티
 
 ### 중요 사실 — liquibase-hibernate7 아티팩트 부재
 
-`liquibase-hibernate7`이라는 별도 Maven 아티팩트는 **존재하지 않습니다** (2026-03 기준).
+`liquibase-hibernate7`이라는 별도 Maven 아티팩트는 존재하지 않습니다 (2026-03 기준).
 Liquibase 공식 저장소는 Hibernate 6과 7을 모두 `liquibase-hibernate6` 아티팩트에서 지원하며,
 5.0.x 계열부터 Hibernate 7 호환성이 포함되었습니다.
 - 최신 릴리즈: `5.0.1` (2025-10-06)
@@ -117,16 +117,16 @@ cat src/main/resources/config/liquibase/changelog/<타임스탬프>_changelog.xm
 
 ## Risks
 
-1. **5.0.1 API 변경**: `liquibase-hibernate6 5.0.x`는 내부 API가 4.x와 다를 수 있습니다.
+1. 5.0.1 API 변경: `liquibase-hibernate6 5.0.x`는 내부 API가 4.x와 다를 수 있습니다.
    `diff` 결과에 예상치 못한 변경사항이 포함될 경우 수동 검토 후 제거 필요.
 
-2. **Spring Framework 버전 의존**: `liquibase-hibernate6 5.0.1`의 내부 Spring 의존성은
+2. Spring Framework 버전 의존: `liquibase-hibernate6 5.0.1`의 내부 Spring 의존성은
    Spring 6.1.x 계열입니다. Spring Boot 4.0은 Spring 7.x를 사용하므로 클래스 로딩 시
    버전 충돌 가능성이 있습니다. Maven Plugin classpath는 애플리케이션 classpath와 분리되어
    있어 런타임에는 영향이 없으나, `liquibase:diff` 실행 시 문제가 발생할 경우
    아래 대안을 검토하세요.
 
-3. **대안 전략 (리스크 발현 시)**:
+3. 대안 전략 (리스크 발현 시):
    - `diff` goal 비활성화 후 모든 changelog를 수동 작성
    - Liquibase CLI 도구를 별도 환경(JVM 분리)에서 실행
    - `liquibase-hibernate6 5.0.1` 호환 이슈 트래커 확인:

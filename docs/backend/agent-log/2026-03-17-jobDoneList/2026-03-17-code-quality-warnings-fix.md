@@ -45,20 +45,20 @@ opencode (big-pickle)
 
 ## Work Performed
 
-1. **RateLimitingFilterTest.java**
+1. RateLimitingFilterTest.java
    - `@SuppressWarnings("unchecked")`를 메서드 레벨에 추가하여 unchecked assignment 경고 억제
    - `(Long) i.getArgument(0)` → `i.getArgument(0)` (casting 제거, 2곳)
 
-2. **AdminRateLimitResource.java**
+2. AdminRateLimitResource.java
    - `private final Logger log` → `private static final Logger log` (인스턴스당 하나 생성 → 클래스당 하나)
 
-3. **OpenApiConfiguration.java**
+3. OpenApiConfiguration.java
    - Components에 알려진 HTTP 헤더 추가:
      - X-Forwarded-For (클라이언트 IP)
      - X-Rate-Limit-Remaining (잔여 요청 수)
      - Retry-After (재시도 대기 시간)
 
-4. **RedisTestContainer.java**
+4. RedisTestContainer.java
    - `destroy()` 메서드에 `@SuppressWarnings("deprecation")` 추가
 
 ---

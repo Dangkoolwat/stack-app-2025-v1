@@ -16,14 +16,14 @@ The WebSocket connection was failing at termination (DISCONNECT) with `AccessDen
         messages
             .simpTypeMatchers(SimpMessageType.CONNECT, SimpMessageType.DISCONNECT, SimpMessageType.UNSUBSCRIBE, SimpMessageType.OTHER).permitAll()
             .simpDestMatchers("/topic/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
-            .simpDestMatchers("/topic/**").authenticated()
+            .simpDestMatchers("/topic/").authenticated()
 // ...
 ```
 
 ## Side Effects & Risks
-- **Security Impact**: No negative security impact. These message types (`CONNECT`, `DISCONNECT`, etc.) are part of the STOMP protocol management and don't bypass security for actual business data destinations. Any `MESSAGE` or `SUBSCRIBE` to actual topics (`/topic/**`) still requires authentication.
-- **Data Flow**: Prevents unnecessary exceptions in the logs and ensures clean WebSocket session closure.
+- Security Impact: No negative security impact. These message types (`CONNECT`, `DISCONNECT`, etc.) are part of the STOMP protocol management and don't bypass security for actual business data destinations. Any `MESSAGE` or `SUBSCRIBE` to actual topics (`/topic/`) still requires authentication.
+- Data Flow: Prevents unnecessary exceptions in the logs and ensures clean WebSocket session closure.
 
 ## Verification
-- **Build**: Successfully compiled with `./mvnw compile`.
-- **Logic**: Anonymous disconnects (matching the reported log) are now covered by `permitAll()`.
+- Build: Successfully compiled with `./mvnw compile`.
+- Logic: Anonymous disconnects (matching the reported log) are now covered by `permitAll()`.

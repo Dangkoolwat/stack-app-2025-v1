@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-17
-- **Agent:** Antigravity
-- **Task Title:** NC-1 JWT Secret prod fallback 제거 및 dev/prod 시크릿 완전 분리
-- **Goal:** 2차 점검 보고서 NC-1 항목 즉시 조치 — prod JWT 시크릿이 환경변수 없이도 동작하는 문제 차단.
+- Date: 2026-03-17
+- Agent: Antigravity
+- Task Title: NC-1 JWT Secret prod fallback 제거 및 dev/prod 시크릿 완전 분리
+- Goal: 2차 점검 보고서 NC-1 항목 즉시 조치 — prod JWT 시크릿이 환경변수 없이도 동작하는 문제 차단.
 
 ## Context
 
@@ -36,7 +36,7 @@
 
 ## Security Impact
 
-- **High Positive Impact:**
+- High Positive Impact:
   - 운영 배포 시 `JWT_SECRET` 환경변수 미주입이면 앱 시작 자체가 실패 → 취약 상태로 운영되는 시나리오 원천 차단.
   - dev/prod가 동일 시크릿으로 동작했던 위험 제거.
   - dev 시크릿으로 발급된 JWT가 prod에서 검증 통과되는 공격 벡터 삭제.
@@ -50,7 +50,7 @@
 ## Risks
 
 - 운영 서버에 `JWT_SECRET` 환경변수가 이미 올바르게 설정되어 있다면 영향 없음.
-- 만약 환경변수가 없었다면 이번 배포 이후 앱이 시작되지 않음 → 이는 **의도된 안전한 실패(fail-safe)**
+- 만약 환경변수가 없었다면 이번 배포 이후 앱이 시작되지 않음 → 이는 의도된 안전한 실패(fail-safe)
 
 ## Next Suggested Tasks
 

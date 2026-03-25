@@ -96,8 +96,9 @@ When receiving a task:
 
 All agents MUST follow the Conventional Commits standard (v1.0.0).
 
-- Format: `<type>(<scope>): <short description>`
+- Format: `<type>(<scope>): <subject>`
 - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
+- Details: See [Commit Convention Guide](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/commit-convention.md)
 - Body: MUST include the Agent Name and a link to the corresponding `agent-log` path.
 - Example: `fix(security): patch transitive vulnerabilities in parent POM (see docs/backend/agent-log/2026-03-25-cve-patch/)`
 
@@ -269,4 +270,5 @@ Must check:
 ## Golden Rule
 
 "Make it correct, safe, and understandable first."
+
 - Refer to the Self-Check section for concrete checklists for each pillar.

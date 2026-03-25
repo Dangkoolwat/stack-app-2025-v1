@@ -31,9 +31,9 @@ If more than one document is relevant, use the documented priority order and do 
 
 ## Key Standards (MANDATORY)
 
-- **Formatting**: Do NOT use bold (`**`) or emojis in documentation or agent logs.
-- **Metadata**: All agent logs must include `agent`, `created_at`, and `language` in the YAML header.
-- **Commit Messages**: MUST follow Conventional Commits (enforced by `commitlint`).
+- Formatting: Do NOT use bold (`**`) or emojis in documentation or agent logs.
+- Metadata: All agent logs must include `agent`, `created_at`, and `language` in the YAML header.
+- Commit Messages: MUST follow [Conventional Commits](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/commit-convention.md) (enforced by `commitlint`).
 
 ---
 

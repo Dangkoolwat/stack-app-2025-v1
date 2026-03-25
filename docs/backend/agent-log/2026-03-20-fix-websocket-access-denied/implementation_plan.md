@@ -12,5 +12,5 @@ An `org.springframework.security.access.AccessDeniedException` was occurring dur
 2.  Ensure proper imports for `AuthoritiesConstants` and `SimpMessageType`.
 
 ## Verification Plan
-1.  **Compile Check**: Run `./mvnw compile` to ensure no syntax errors and correct constant usage.
-2.  **Logic Review**: Verify that `DISCONNECT` and `UNSUBSCRIBE` are now allowed for anonymous users, matching the log feedback where an `AnonymousAuthenticationToken` was denied.
+1.  Compile Check: Run `./mvnw compile` to ensure no syntax errors and correct constant usage.
+2.  Logic Review: Verify that `DISCONNECT` and `UNSUBSCRIBE` are now allowed for anonymous users, matching the log feedback where an `AnonymousAuthenticationToken` was denied.

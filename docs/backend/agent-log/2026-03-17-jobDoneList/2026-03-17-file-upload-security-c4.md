@@ -10,10 +10,10 @@
 - 보안 보고서(`2026-03-15-system-security-optimization-report.md`)의 C-4(Immediate) 항목 대응.
 
 ## Work Performed
-- **의존성 추가**: `pom.xml`에 Apache Tika 3.0.2 (`tika-core`) 추가.
-- **설정 확장**: `ApplicationProperties.java` 및 `application.yml`에 `allowedMimeTypes`, `allowedExtensions` 화이트리스트 정의.
-- **예외 클래스 생성**: `InvalidFileException.java` 생성 (400 Bad Request & RFC 7807 Problem Detail 대응).
-- **검증 로직 구현**: `UploadService.java`에 `validateFile` 메서드 추가 및 `saveUpload` 시작 시 호출.
+- 의존성 추가: `pom.xml`에 Apache Tika 3.0.2 (`tika-core`) 추가.
+- 설정 확장: `ApplicationProperties.java` 및 `application.yml`에 `allowedMimeTypes`, `allowedExtensions` 화이트리스트 정의.
+- 예외 클래스 생성: `InvalidFileException.java` 생성 (400 Bad Request & RFC 7807 Problem Detail 대응).
+- 검증 로직 구현: `UploadService.java`에 `validateFile` 메서드 추가 및 `saveUpload` 시작 시 호출.
     - 파일 비어있음 체크.
     - 확장자 화이트리스트 검사.
     - Tika를 이용한 실제 바이너리 콘텐츠 기반 MIME 타입 감지.
@@ -31,15 +31,15 @@
 - 업로드 파이프라인에 보안 검증 레이어 추가. 비즈니스 로직(저장) 전 단계에서 필터링 수행.
 
 ## Security Impact
-- **Malicious Upload Prevention**: 확장자 위변조(Double extension) 및 실행 파일(.exe, .sh 등) 업로드 원천 차단.
-- **Content Trust**: 클라이언트가 보내는 메타데이터가 아닌 실제 파일 바이너리를 신뢰하도록 개선.
+- Malicious Upload Prevention: 확장자 위변조(Double extension) 및 실행 파일(.exe, .sh 등) 업로드 원천 차단.
+- Content Trust: 클라이언트가 보내는 메타데이터가 아닌 실제 파일 바이너리를 신뢰하도록 개선.
 
 ## Verification
 - 코드 레벨 정적 분석 및 컴파일 확인 (Tika 라이브러리 동기화 로컬 대기 중).
 - `walkthrough.md`에 상세 구현 내용 기록.
 
 ## Risks
-- **Dependency Missing**: `mvn` 명령어가 사용자 환경에서 취소되었으므로, 실제 빌드 시 Tika 라이브러리 다운로드가 필요함.
+- Dependency Missing: `mvn` 명령어가 사용자 환경에서 취소되었으므로, 실제 빌드 시 Tika 라이브러리 다운로드가 필요함.
 
 ## Next Suggested Tasks
 - `W-7`: OTP 평문 저장 → Redis TTL 전환 (다음 우선순위 보안 항목).

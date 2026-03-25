@@ -41,7 +41,7 @@ Define where class-level comments are required and how they should be written so
 - State when future changes are expected
 - Mention only meaningful risks or cautions
 - Keep change history short and current
-- **Source code comments MUST be written in Korean** according to `AGENTS.md` to ensure deep contextual understanding for the team.
+- Source code comments MUST be written in Korean according to `AGENTS.md` to ensure deep contextual understanding for the team.
 
 ---
 

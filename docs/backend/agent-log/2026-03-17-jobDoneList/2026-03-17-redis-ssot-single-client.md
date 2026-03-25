@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-17
-- **Agent:** Codex (GPT-5.2)
-- **Task Title:** Redis 설정 단일 출처(SSOT) 및 불필요한 추가 연결 제거
-- **Goal:** Redis 서버는 필수이며(single/cluster만 차이), 캐시/락/레이트리밋 등 Redis 사용 기능이 늘어도 불필요한 Redis 연결이 증가하지 않도록 구성 정리.
+- Date: 2026-03-17
+- Agent: Codex (GPT-5.2)
+- Task Title: Redis 설정 단일 출처(SSOT) 및 불필요한 추가 연결 제거
+- Goal: Redis 서버는 필수이며(single/cluster만 차이), 캐시/락/레이트리밋 등 Redis 사용 기능이 늘어도 불필요한 Redis 연결이 증가하지 않도록 구성 정리.
 
 ## Context
 

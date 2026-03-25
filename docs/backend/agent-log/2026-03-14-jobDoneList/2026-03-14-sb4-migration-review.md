@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-14
-- **Agent:** Antigravity (Google DeepMind)
-- **Task Title:** Spring Boot 3.5 → 4.0 마이그레이션 후 최적화·성능·보안 검토
-- **Goal:** 마이그레이션 완료 상태에서 보안 취약점, 성능 병목, 최적화 기회를 전반적으로 식별하고 우선순위화된 액션 플랜 제시
+- Date: 2026-03-14
+- Agent: Antigravity (Google DeepMind)
+- Task Title: Spring Boot 3.5 → 4.0 마이그레이션 후 최적화·성능·보안 검토
+- Goal: 마이그레이션 완료 상태에서 보안 취약점, 성능 병목, 최적화 기회를 전반적으로 식별하고 우선순위화된 액션 플랜 제시
 
 ## Context
 
@@ -41,15 +41,15 @@
 ## 주요 발견 사항
 
 ### Critical
-1. **JWT Secret 동일** — dev/prod `application-*.yml` 모두 동일한 `base64-secret` 사용
-2. **DB 자격증명 하드코딩** — `application-prod.yml`, `pom.xml`에 평문 노출
-3. **`hibernate.ddl-auto: update` in prod** — Liquibase 사용 중임에도 DDL 자동화 활성
+1. JWT Secret 동일 — dev/prod `application-*.yml` 모두 동일한 `base64-secret` 사용
+2. DB 자격증명 하드코딩 — `application-prod.yml`, `pom.xml`에 평문 노출
+3. `hibernate.ddl-auto: update` in prod — Liquibase 사용 중임에도 DDL 자동화 활성
 
 ### High
-4. **Redisson 이중 생성** — `jcacheConfiguration` Bean과 `redissonClient` Bean 각각 `Redisson.create()` 호출로 두 배 Redis 연결 생성
-5. **Virtual Thread + ThreadPoolTaskExecutor 혼용** — 가상 스레드 모드에서 `AsyncConfiguration`이 플랫폼 스레드 풀 생성
-6. **파일 전체 byte[] 로드** — `UploadResource`에서 대용량 파일도 heap에 전체 로드
-7. **BearerTokenResolver URI 파라미터 허용** — JWT가 URL에 노출될 수 있음
+4. Redisson 이중 생성 — `jcacheConfiguration` Bean과 `redissonClient` Bean 각각 `Redisson.create()` 호출로 두 배 Redis 연결 생성
+5. Virtual Thread + ThreadPoolTaskExecutor 혼용 — 가상 스레드 모드에서 `AsyncConfiguration`이 플랫폼 스레드 풀 생성
+6. 파일 전체 byte[] 로드 — `UploadResource`에서 대용량 파일도 heap에 전체 로드
+7. BearerTokenResolver URI 파라미터 허용 — JWT가 URL에 노출될 수 있음
 
 ### Medium
 8. 운영 HikariCP 풀 미설정
@@ -86,11 +86,11 @@
 
 ## Next Suggested Tasks
 
-1. **Critical 3건 즉시 처리** — 환경변수/Vault 연동, prod yml 정리
-2. **Redisson 통합 리팩터** — `CacheConfiguration.java`
-3. **UploadResource 스트리밍 전환** — `StreamingResponseBody` 적용
-4. **AsyncConfiguration 가상 스레드 대응**
-5. **CSP nonce 기반 전환** — 프론트엔드 팀 협의 필요
+1. Critical 3건 즉시 처리 — 환경변수/Vault 연동, prod yml 정리
+2. Redisson 통합 리팩터 — `CacheConfiguration.java`
+3. UploadResource 스트리밍 전환 — `StreamingResponseBody` 적용
+4. AsyncConfiguration 가상 스레드 대응
+5. CSP nonce 기반 전환 — 프론트엔드 팀 협의 필요
 
 ## Notes for Future Agents
 

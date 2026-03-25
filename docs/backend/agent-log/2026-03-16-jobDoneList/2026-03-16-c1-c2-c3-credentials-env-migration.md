@@ -50,9 +50,9 @@ C-1, C-2, C-3 보안 항목 완료 확인 — DB 자격증명 / JWT 시크릿 �
 
 ## 확인된 변경 내용
 
-### C-1: 자격증명 하드코딩 해소 ✅
+### C-1: 자격증명 하드코딩 해소 
 
-`application-secret.yml` **삭제 완료** — 파일 자체가 없어졌음을 확인.
+`application-secret.yml` 삭제 완료 — 파일 자체가 없어졌음을 확인.
 
 `application-dev.yml` datasource 변경:
 ```yaml
@@ -98,7 +98,7 @@ username: ${SPRING_MAIL_USERNAME:}
 password: ${SPRING_MAIL_PASSWORD:}
 ```
 
-### C-2: JWT 시크릿 환경변수화 ✅
+### C-2: JWT 시크릿 환경변수화 
 
 dev/prod 모두 동일한 패턴으로 변경:
 ```yaml
@@ -109,7 +109,7 @@ base64-secret: OTM4MjFjMzMyODM1M2I3...  # 평문 노출
 base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5...}
 ```
 
-### C-3: prod Oracle system 계정 → 환경변수화 ✅
+### C-3: prod Oracle system 계정 → 환경변수화 
 
 위 C-1 prod 변경 내용에 포함. `system/oracle` 하드코딩 제거 완료.
 
@@ -135,7 +135,7 @@ base64-secret: ${JWT_SECRET:N2U2YTUwODQ2MjI5...}
 `liquibase:diff` / `liquibase:update` 를 Maven 플러그인으로 실행할 때만 사용되는 값입니다.
 (애플리케이션 런타임에는 영향 없음)
 
-**권장 조치:**
+권장 조치:
 - `.gitignore` 에 `~/.m2/settings.xml` 과 별도로 CI/CD 시크릿으로 주입하거나,
   Maven `settings.xml` 의 `<server>` 섹션으로 분리하는 방법 고려:
 
@@ -233,11 +233,11 @@ echo $JWT_SECRET
 
 C-1, C-2, C-3 완료. 잔여 보안 항목 다음 우선순위:
 
-1. **pom.xml Liquibase dev 자격증명** — Maven settings.xml 분리 (위 가이드 참고)
-2. **C-4**: 파일 업로드 MIME 타입 서버측 검증 (Apache Tika)
-3. **W-1**: Rate Limiting (Bucket4j) — `/api/authenticate` 등 공개 엔드포인트
-4. **W-7**: OTP 평문 저장 → Redis TTL 전환
-5. **W-8**: LoggingAspect 민감 파라미터 필터링
+1. pom.xml Liquibase dev 자격증명 — Maven settings.xml 분리 (위 가이드 참고)
+2. C-4: 파일 업로드 MIME 타입 서버측 검증 (Apache Tika)
+3. W-1: Rate Limiting (Bucket4j) — `/api/authenticate` 등 공개 엔드포인트
+4. W-7: OTP 평문 저장 → Redis TTL 전환
+5. W-8: LoggingAspect 민감 파라미터 필터링
 
 ---
 

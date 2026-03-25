@@ -13,10 +13,10 @@ Registered new icons in `config.ts`:
 
 ### 2. Menu Reordering and Styling
 Reordered items in `entities-menu.vue` and updated their icons:
-1. **Common Code Group**: `layer-group`
-2. **Common Code Detail**: `list-ul`
-3. **Tag**: `hashtag`
-4. **Board**: `file-alt`
+1. Common Code Group: `layer-group`
+2. Common Code Detail: `list-ul`
+3. Tag: `hashtag`
+4. Board: `file-alt`
 
 Added `ms-1` class to menu text for consistent spacing from icons.
 

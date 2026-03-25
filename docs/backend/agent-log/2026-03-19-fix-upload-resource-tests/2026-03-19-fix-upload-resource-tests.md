@@ -21,9 +21,9 @@ Spring Boot 4 / Jackson 3 마이그레이션 후 `UploadResourceIT` 테스트에
 2. Spring Security 업데이트에 따른 메서드 수준 권한 검사 오류. `@WithMockUser` 사용 시 `restMockMvc` 주입 단계에서 알맞은 인증 컨텍스트가 전달되지 않아 403 인증 거부가 발생.
 
 ## Work Performed
-1. **application.yml 테스트 환경 오버라이드:**
+1. application.yml 테스트 환경 오버라이드:
    `src/test/resources/config/application.yml`에 `stack.files.allowed-extensions` 및 MIME 타입을 추가하여 `.txt` 등의 테스트용 파일이 허용되도록 변경.
-2. **테스트 인증 방식 수정:**
+2. 테스트 인증 방식 수정:
    테스트 코드에서 사용되던 `@WithMockUser(authorities = {"ROLE_USER", "ROLE_ADMIN"})` 어노테이션 방식 대신 Spring Security 6+ MockMvc의 표준적인 `with(user("user").roles("USER", "ADMIN"))` `SecurityMockMvcRequestPostProcessors`를 명시적으로 `perform()` 단계에 결합하여 컨텍스트 로드 보장.
 
 ## Files Modified

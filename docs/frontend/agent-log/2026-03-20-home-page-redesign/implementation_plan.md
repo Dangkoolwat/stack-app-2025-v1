@@ -20,8 +20,8 @@ Improve button layout and redesign the Home page with conditional rendering (Pub
 
 #### [MODIFY] [home.vue](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/src/main/webapp/app/core/home/home.vue)
 - Use `v-if` to toggle between:
-  - **Public Mode (Logged-out)**: Marketing-style page using `README.md` content (cards, features, tech stack).
-  - **Admin Mode (Logged-in)**: Brief admin guide and current user information (login, roles).
+  - Public Mode (Logged-out): Marketing-style page using `README.md` content (cards, features, tech stack).
+  - Admin Mode (Logged-in): Brief admin guide and current user information (login, roles).
 
 #### [MODIFY] [home.json (ko/en)]
 - Extract all new text (Hero, Goals, Features) into i18n JSON files.

@@ -2,10 +2,10 @@
 
 ## 기본 정보
 
-- **Date:** 2026-03-17
-- **Agent:** Codex (GPT-5.2)
-- **Task Title:** Cursor 규칙 + agent-log 템플릿 정리
-- **Goal:** `AGENTS.md`의 요구사항이 Cursor 환경에서도 누락 없이 적용되도록 `.cursorrules`를 보강하고, `docs/agent-log/template.md`의 예시를 본 백엔드(Maven/Spring Boot) 기준으로 정합화한다.
+- Date: 2026-03-17
+- Agent: Codex (GPT-5.2)
+- Task Title: Cursor 규칙 + agent-log 템플릿 정리
+- Goal: `AGENTS.md`의 요구사항이 Cursor 환경에서도 누락 없이 적용되도록 `.cursorrules`를 보강하고, `docs/agent-log/template.md`의 예시를 본 백엔드(Maven/Spring Boot) 기준으로 정합화한다.
 
 ## Context
 

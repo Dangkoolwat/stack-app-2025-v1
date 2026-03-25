@@ -130,15 +130,15 @@ curl -k https://localhost:8443/management/prometheus | grep hikaricp
 
 ## Risks
 
-1. **`connection-init-sql` 실패 시 연결 생성 불가**: SQL 문법 오류 시 풀이 초기화되지 않습니다.  
+1. `connection-init-sql` 실패 시 연결 생성 불가: SQL 문법 오류 시 풀이 초기화되지 않습니다.  
    YAML 의 `>` 블록 스칼라 형식에서 줄바꿈이 공백으로 치환되므로 ALTER SESSION 구문이 한 줄로 전달됩니다.  
    Oracle 에서 `ALTER SESSION SET a=1 b=2` 형식이 지원되는지 확인이 필요합니다.  
    문제 발생 시 각 파라미터를 세미콜론으로 구분하거나 개별 ALTER SESSION 으로 분리하세요.
 
-2. **prod `connection-timeout: 10000`**: 기존 30초에서 10초로 단축됩니다.  
+2. prod `connection-timeout: 10000`: 기존 30초에서 10초로 단축됩니다.  
    DB 부하가 높은 배포 직후 시점에 일시적인 연결 실패가 발생할 수 있습니다.
 
-3. **Docker Oracle 재시작**: dev 환경에서 Oracle 컨테이너 재시작 시 기존 연결이 모두 무효화됩니다.  
+3. Docker Oracle 재시작: dev 환경에서 Oracle 컨테이너 재시작 시 기존 연결이 모두 무효화됩니다.  
    HikariCP 가 자동 복구하지만 재시작 직후 수 초간 연결 오류가 발생할 수 있습니다.
 
 ---

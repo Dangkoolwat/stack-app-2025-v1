@@ -2,7 +2,7 @@
 
 The `GlobalSettingsService.getSettings()` method throws an `IllegalStateException` because the cached value is deserialized as a `Map` instead of `SettingsDTO`. This is caused by the lack of polymorphic type information in the Redis JSON storage after the Jackson 3 migration.
 
-An exhaustive investigation (전수조사) revealed that this issue is **systemic** and potentially affects all application-level caches using the `redissonJsonClient`, including `BoardService`, `TagService`, `UploadService`, and `CommonCodeService`.
+An exhaustive investigation (전수조사) revealed that this issue is systemic and potentially affects all application-level caches using the `redissonJsonClient`, including `BoardService`, `TagService`, `UploadService`, and `CommonCodeService`.
 
 ## Proposed Changes
 

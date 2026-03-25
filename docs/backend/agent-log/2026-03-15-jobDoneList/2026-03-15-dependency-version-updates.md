@@ -24,8 +24,8 @@ Claude (Anthropic Claude Sonnet 4.6)
 
 보안 점검 리포트의 두 항목을 완료 처리합니다.
 
-- **C-5**: Spring Cloud BOM을 Spring Boot 4.0 호환 버전(`2025.1.0`)으로 업데이트
-- **W-5**: AWS SDK Java v2를 최신 버전(`2.42.13`)으로 업데이트
+- C-5: Spring Cloud BOM을 Spring Boot 4.0 호환 버전(`2025.1.0`)으로 업데이트
+- W-5: AWS SDK Java v2를 최신 버전(`2.42.13`)으로 업데이트
 
 ---
 
@@ -45,8 +45,8 @@ Claude (Anthropic Claude Sonnet 4.6)
    - `spring-cloud-dependencies.version`: `2025.1.0` (변경 완료)
    - `amazon-awssdk.version`: `2.42.13` (변경 완료)
 2. `docs/security/2026-03-15-system-security-optimization-report.md` 업데이트:
-   - C-5 항목: ~~취소선~~ 처리 + ✅ 완료 표기 + 적용 버전 명시
-   - W-5 항목: ~~취소선~~ 처리 + ✅ 완료 표기 + 적용 버전 명시
+   - C-5 항목: ~~취소선~~ 처리 +  완료 표기 + 적용 버전 명시
+   - W-5 항목: ~~취소선~~ 처리 +  완료 표기 + 적용 버전 명시
    - W-6 (commons-io), I-4 (liquibase-hibernate6) 이전 완료 항목도 동일하게 표기 정리
    - 액션 플랜 요약 테이블에 상태 컬럼 추가 및 완료 항목 반영
    - 헤더에 최종 업데이트 일자 추가
@@ -82,8 +82,8 @@ Claude (Anthropic Claude Sonnet 4.6)
 
 ## Security Impact
 
-- **AWS SDK 2.42.13**: 2.25.60 대비 다수의 보안 패치 포함 — 긍정적 영향
-- **Spring Cloud 2025.1.0**: Boot 4.0 호환으로 런타임 안정성 개선
+- AWS SDK 2.42.13: 2.25.60 대비 다수의 보안 패치 포함 — 긍정적 영향
+- Spring Cloud 2025.1.0: Boot 4.0 호환으로 런타임 안정성 개선
 
 ---
 
@@ -98,8 +98,8 @@ Claude (Anthropic Claude Sonnet 4.6)
 
 ## Risks
 
-- **Spring Cloud 2025.1.0**: Boot 4.0 호환이지만 실제 사용 중인 Spring Cloud 기능(Feign, Config 등)이 있다면 API 변경 여부를 확인해야 합니다.
-- **AWS SDK 2.42.13**: 메이저 버전 변경이 아닌 마이너 업데이트이므로 Breaking Change 위험은 낮습니다.
+- Spring Cloud 2025.1.0: Boot 4.0 호환이지만 실제 사용 중인 Spring Cloud 기능(Feign, Config 등)이 있다면 API 변경 여부를 확인해야 합니다.
+- AWS SDK 2.42.13: 메이저 버전 변경이 아닌 마이너 업데이트이므로 Breaking Change 위험은 낮습니다.
 
 ---
 

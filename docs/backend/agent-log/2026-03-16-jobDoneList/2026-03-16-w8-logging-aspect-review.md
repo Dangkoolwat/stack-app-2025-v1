@@ -98,7 +98,7 @@ public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
 | dev  | O (`@Profile("dev")`) | O (DEBUG 레벨) |
 | prod | X (빈 미생성)          | X (AOP 자체 비활성) |
 
-**운영 환경에서는 `LoggingAspect` 가 완전히 비활성화됩니다.**
+운영 환경에서는 `LoggingAspect` 가 완전히 비활성화됩니다.
 W-8 은 설계 의도대로 구현되어 있으므로 완료 처리합니다.
 
 ### dev 환경의 잔존 특성 (위험 아님)

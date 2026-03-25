@@ -37,5 +37,5 @@ Updated `login-form.component.ts` to use `router.push('/')` for a smoother trans
 ```
 
 ## Verification Results
-- **Logic Verification**: The new `hasAnyAuthority` implementation is now reactive and uses the store directly, matching the successful pattern used in `home.component.ts`.
-- **Redirection**: Using `router.push('/')` ensures the user stays in the single-page application context while showing the appropriate view (Public or Admin) based on the updated authentication state.
+- Logic Verification: The new `hasAnyAuthority` implementation is now reactive and uses the store directly, matching the successful pattern used in `home.component.ts`.
+- Redirection: Using `router.push('/')` ensures the user stays in the single-page application context while showing the appropriate view (Public or Admin) based on the updated authentication state.

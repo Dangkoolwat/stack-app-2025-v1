@@ -14,14 +14,14 @@ The application uses an Oracle Database in production, where schema changes ofte
 ## Decision
 We will not use automatic Liquibase migrations in the production environment. Instead, we follow these rules:
 
-1. **Development/Test Environments**: Automatic migration remains enabled (`spring.liquibase.enabled: true`) to ensure developers always have the latest schema.
-2. **Production Environment**: `spring.liquibase.enabled` MUST be `false`.
-3. **Migration Workflow**:
+1. Development/Test Environments: Automatic migration remains enabled (`spring.liquibase.enabled: true`) to ensure developers always have the latest schema.
+2. Production Environment: `spring.liquibase.enabled` MUST be `false`.
+3. Migration Workflow:
    - Schema changes are generated as Liquibase XML changeSets in `src/main/resources/config/liquibase/`.
    - Before production deployment, the DB administrator or the CI/CD pipeline MUST manually execute the migration using the Maven Liquibase plugin or a dedicated script.
    - Example command for manual execution: `./mvnw liquibase:update -Pprod` (with appropriate credentials).
 
 ## Consequences
-- **Positive**: Safer deployments, no startup-time locks, better integration with enterprise DBA processes.
-- **Negative**: Requires an additional manual step during the deployment process, increasing operational burden slightly.
-- **Risk**: Forgetting to run the migration before deployment will lead to JPA/Hibernate mapping errors at runtime. This should be mitigated by build/deploy scripts.
+- Positive: Safer deployments, no startup-time locks, better integration with enterprise DBA processes.
+- Negative: Requires an additional manual step during the deployment process, increasing operational burden slightly.
+- Risk: Forgetting to run the migration before deployment will lead to JPA/Hibernate mapping errors at runtime. This should be mitigated by build/deploy scripts.

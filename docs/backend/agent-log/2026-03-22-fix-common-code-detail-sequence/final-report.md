@@ -10,4 +10,4 @@
 ## 결과 및 대응법 가이드 (Results)
 - 샘플 데이터 21건의 INSERT 구문에서 `id` 컬럼을 `valueSequenceNext="common_detail_sequence_generator"`로 모두 치환했습니다.
 - `common_detail_sequence_generator`의 최초 시작값은 `1`로 정상화되었습니다.
-- **계획대로 로컬 데이터/초기화를 진행(`리셋`)해 주시면 완벽하게 적용됩니다.**
+- 계획대로 로컬 데이터/초기화를 진행(`리셋`)해 주시면 완벽하게 적용됩니다.

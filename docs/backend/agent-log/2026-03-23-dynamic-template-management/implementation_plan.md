@@ -37,18 +37,18 @@
 - 용량 입력 시 MB 단위 지원 및 서버 전송 시 Bytes 변환.
 
 ### [Component] Template Management (NEW)
-- **Backend Model**: `Settings` 엔티티 내 `global_settings` JSON에 `fileTypeTemplates` 필드 추가.
-- **Liquibase**: 초기 템플릿 데이터(이미지, PDF, 오피스 등)를 `fileTypeTemplates`에 사전 주입하여 하드코딩 제거.
-- **Frontend UI**:
+- Backend Model: `Settings` 엔티티 내 `global_settings` JSON에 `fileTypeTemplates` 필드 추가.
+- Liquibase: 초기 템플릿 데이터(이미지, PDF, 오피스 등)를 `fileTypeTemplates`에 사전 주입하여 하드코딩 제거.
+- Frontend UI:
     - "템플릿 관리" 섹션 또는 탭 추가 (CRUD 기능).
     - 기존 "Quick Add" 및 "마법 지팡이" 메뉴가 DB의 `fileTypeTemplates` 데이터를 기반으로 동작하도록 수정.
 
 ## 검증 계획
 
 ### 자동 테스트 (Automated Tests)
-- **백엔드 단위 테스트**: `SettingsTest.java`에 새 필드 직렬화/역직렬화 테스트 추가.
-- **백엔드 통합 테스트**: `GlobalSettingsServiceIT.java`에서 설정 저장 및 조회 테스트.
-- **업로드 검증 테스트**: `UploadServiceTest.java` (신규) 또는 기존 테스트 기능을 확장하여 동적 정책 매칭 로직 검증.
+- 백엔드 단위 테스트: `SettingsTest.java`에 새 필드 직렬화/역직렬화 테스트 추가.
+- 백엔드 통합 테스트: `GlobalSettingsServiceIT.java`에서 설정 저장 및 조회 테스트.
+- 업로드 검증 테스트: `UploadServiceTest.java` (신규) 또는 기존 테스트 기능을 확장하여 동적 정책 매칭 로직 검증.
     - 허용/차단 확장자/MIME 테스트.
     - 용량 초과 테스트.
     - 정책 비활성화 테스트.

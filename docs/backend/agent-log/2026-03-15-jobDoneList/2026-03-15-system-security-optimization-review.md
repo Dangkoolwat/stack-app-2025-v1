@@ -87,9 +87,9 @@ Spring Boot 3.5 → 4.0 마이그레이션이 완료된 `stack-app-2025-v1` 프�
 코드 변경은 수행되지 않았습니다. 문서화 작업만 수행.  
 향후 권고 사항 중 아래 항목은 아키텍처 영향이 있습니다.
 
-- **W-7 (OTP Redis 전환)**: `User` 도메인 컬럼 제거 → Liquibase 마이그레이션 필요
-- **W-1 (Rate Limiting)**: `SecurityConfiguration`에 새 필터 체인 요소 추가
-- **C-4 (MIME 검증)**: 업로드 서비스 레이어에 검증 로직 추가
+- W-7 (OTP Redis 전환): `User` 도메인 컬럼 제거 → Liquibase 마이그레이션 필요
+- W-1 (Rate Limiting): `SecurityConfiguration`에 새 필터 체인 요소 추가
+- C-4 (MIME 검증): 업로드 서비스 레이어에 검증 로직 추가
 
 ---
 
@@ -125,10 +125,10 @@ Spring Boot 3.5 → 4.0 마이그레이션이 완료된 `stack-app-2025-v1` 프�
 
 ## Risks
 
-1. **C-1, C-2 Git 히스토리 노출**: `git filter-repo` 실행 후 팀 전원이 force-pull 해야 함. 원격 브랜치 히스토리 rewrite 필요.
-2. **C-3 prod DB 계정 전환**: 운영 Oracle 계정 교체 시 Liquibase 실행 계정 권한도 함께 조정 필요.
-3. **W-7 OTP Redis 전환**: 기존 `otpCode`, `otpExpireDate` 컬럼 제거 시 Liquibase rollback 전략 수립 필요.
-4. **C-5 Spring Cloud 호환**: Boot 4.0 호환 Spring Cloud BOM이 아직 GA 미발표 상태. 해당 기능 사용 범위 파악 후 결정.
+1. C-1, C-2 Git 히스토리 노출: `git filter-repo` 실행 후 팀 전원이 force-pull 해야 함. 원격 브랜치 히스토리 rewrite 필요.
+2. C-3 prod DB 계정 전환: 운영 Oracle 계정 교체 시 Liquibase 실행 계정 권한도 함께 조정 필요.
+3. W-7 OTP Redis 전환: 기존 `otpCode`, `otpExpireDate` 컬럼 제거 시 Liquibase rollback 전략 수립 필요.
+4. C-5 Spring Cloud 호환: Boot 4.0 호환 Spring Cloud BOM이 아직 GA 미발표 상태. 해당 기능 사용 범위 파악 후 결정.
 
 ---
 
@@ -136,16 +136,16 @@ Spring Boot 3.5 → 4.0 마이그레이션이 완료된 `stack-app-2025-v1` 프�
 
 우선순위 순:
 
-1. **즉시** — `application-secret.yml` `.gitignore` 추가 및 Git 히스토리 정리, DB/JWT 시크릿 rotate
-2. **즉시** — `application-prod.yml` DB 자격증명 환경변수화, Oracle 전용 계정 생성
-3. **단기** — `UploadService`에 Apache Tika MIME 타입 검증 로직 추가 (C-4)
-4. **단기** — `SecurityConfiguration`에 Bucket4j Rate Limiting 필터 추가 (W-1)
-5. **단기** — `LoggingAspect` 민감 파라미터 필터링 추가 (W-8)
-6. **단기** — OTP Redis TTL 방식으로 전환, `User` 엔티티 컬럼 제거 + Liquibase 마이그레이션 (W-7)
-7. **중기** — `application-prod.yml` Actuator 노출 범위 축소 (W-3)
-8. **중기** — AWS SDK, commons-io 버전 업데이트 (W-5, W-6)
-9. **중기** — 운영 TLS 활성화 또는 Nginx Reverse Proxy TLS 종단 적용 (W-9)
-10. **중기** — Spring Cloud BOM Boot 4.0 호환 버전 업데이트 (C-5)
+1. 즉시 — `application-secret.yml` `.gitignore` 추가 및 Git 히스토리 정리, DB/JWT 시크릿 rotate
+2. 즉시 — `application-prod.yml` DB 자격증명 환경변수화, Oracle 전용 계정 생성
+3. 단기 — `UploadService`에 Apache Tika MIME 타입 검증 로직 추가 (C-4)
+4. 단기 — `SecurityConfiguration`에 Bucket4j Rate Limiting 필터 추가 (W-1)
+5. 단기 — `LoggingAspect` 민감 파라미터 필터링 추가 (W-8)
+6. 단기 — OTP Redis TTL 방식으로 전환, `User` 엔티티 컬럼 제거 + Liquibase 마이그레이션 (W-7)
+7. 중기 — `application-prod.yml` Actuator 노출 범위 축소 (W-3)
+8. 중기 — AWS SDK, commons-io 버전 업데이트 (W-5, W-6)
+9. 중기 — 운영 TLS 활성화 또는 Nginx Reverse Proxy TLS 종단 적용 (W-9)
+10. 중기 — Spring Cloud BOM Boot 4.0 호환 버전 업데이트 (C-5)
 
 ---
 

@@ -23,20 +23,20 @@ Rate Limiting 리팩토링 및 보안 강화 (2차 리뷰 조치)
 - 모니터링 엔드포인트 중 민감한 지표가 외부에 노출되어 있었습니다.
 
 ## Work Performed
-1.  **Rate Limiting 리팩토링 (NH-1)**:
+1.  Rate Limiting 리팩토링 (NH-1):
     - `RateLimitingRegistry`를 Redisson `RRateLimiter` 기반으로 재구현.
     - `pom.xml`에서 `bucket4j-core`, `bucket4j-redis` 의존성 제거.
     - `RateLimitingFilter` 및 `RateLimitingFilterTest` 최신 API에 맞춰 업데이트.
-2.  **Audit Log 신뢰성 개선 (NC-2)**:
+2.  Audit Log 신뢰성 개선 (NC-2):
     - `EmailOtpLogService`를 분리하여 `@Transactional(REQUIRES_NEW)`가 정상 작동하도록 수정.
     - 주 로직(메일 발송 등) 실패와 관계없이 감사 로그가 독립적으로 기록됨을 보장.
-3.  **보안 강화 (NH-3, NH-4)**:
-    - `EmailOtpLogService`에서 기록 시 OTP 코드를 마스킹 (`12****`) 처리.
+3.  보안 강화 (NH-3, NH-4):
+    - `EmailOtpLogService`에서 기록 시 OTP 코드를 마스킹 (`12**`) 처리.
     - `SecurityConfiguration`에서 `/management/prometheus`를 ADMIN 권한으로 제한.
-4.  **모니터링 고도화 (NH-2)**:
+4.  모니터링 고도화 (NH-2):
     - `RedisMonitoringConfiguration`에서 Single, Cluster, Sentinel 모드를 모두 지원하도록 노드 감지 로직 개선.
     - Redisson 4.3.0 `getRedisNodes` API를 사용하여 하위 호환성 및 안정성 확보.
-5.  **캐시 최적화 (NL-5)**:
+5.  캐시 최적화 (NL-5):
     - `EmailOtpLog` 엔티티에서 불필요한 Hibernate 2차 캐시 설정을 제거하여 성능 및 정합성 관리 효율을 높임.
 
 ## Files Modified
@@ -53,12 +53,12 @@ Rate Limiting 리팩토링 및 보안 강화 (2차 리뷰 조치)
 - `src/main/java/com/daangcool/stack/config/CacheConfiguration.java`
 
 ## Architecture Impact
-- **Layering**: 로깅 기능을 전담하는 `EmailOtpLogService`를 추가하여 관심사를 분리하고 트랜잭션 경계를 명확히 함.
-- **Dependency**: 외부 라이브러리(Bucket4j) 의존성을 제거하고 인프라 라이브러리(Redisson)의 공용 API를 최대한 활용.
+- Layering: 로깅 기능을 전담하는 `EmailOtpLogService`를 추가하여 관심사를 분리하고 트랜잭션 경계를 명확히 함.
+- Dependency: 외부 라이브러리(Bucket4j) 의존성을 제거하고 인프라 라이브러리(Redisson)의 공용 API를 최대한 활용.
 
 ## Security Impact
-- **Data Privacy**: 로그 내 OTP 노출 차단.
-- **Access Control**: 시스템 지표 노출 엔드포인트 보호 강화.
+- Data Privacy: 로그 내 OTP 노출 차단.
+- Access Control**: 시스템 지표 노출 엔드포인트 보호 강화.
 
 ## Verification
 - `RateLimitingFilterTest` 전체 통과 확인.

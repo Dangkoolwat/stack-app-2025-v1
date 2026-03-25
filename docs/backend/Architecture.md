@@ -97,7 +97,7 @@ Use ONLY when:
 
 ### 캐시 대상 선정 원칙 (중요)
 
-**허용 — 명시적 저장소 패턴으로 캐시 가능:**
+허용 — 명시적 저장소 패턴으로 캐시 가능:
 - 캐시 전용 DTO (record 또는 단순 POJO, 민감정보 제외)
   - 예) `UserAuthCacheDto` — id, login, activated, Set<String> authorities
   - 예) `CommonCodeCacheDto.GroupDto` — groupCode, groupName 등 단순 타입
@@ -105,7 +105,7 @@ Use ONLY when:
 - Rate Limiting 상태 (Redisson RRateLimiter)
 - 분산 Lock (Redisson RLock)
 
-**금지 — 다음은 절대 캐시 대상으로 사용 불가:**
+금지 — 다음은 절대 캐시 대상으로 사용 불가:
 - JPA 엔티티 직접 캐시 (`User`, `Authority`, `Board` 등 @Entity 클래스)
   → 이유: Hibernate가 런타임에 생성하는 `$HibernateProxy$xxxx` 클래스가
     Jackson DefaultTyping의 @class 필드에 저장되어 역직렬화 시 복원 불가
@@ -150,4 +150,4 @@ Use ONLY when:
 
 ## Golden Rule
 
-👉 "Write code someone else can safely change in 6 months."
+ "Write code someone else can safely change in 6 months."

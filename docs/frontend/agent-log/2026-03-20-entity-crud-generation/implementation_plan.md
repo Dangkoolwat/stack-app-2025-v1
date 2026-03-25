@@ -4,10 +4,10 @@
 Automate the creation of CRUD UI in the Vue 3 frontend for identified backend entities. The implementation will follow the existing project patterns (hybrid Composition/Options API) and ensure full i18n support.
 
 ## Targeted Entities
-1.  **Board** (`/api/boards`)
-2.  **Tag** (`/api/tags`)
-3.  **CommonCodeGroup** (`/api/common/groups`)
-4.  **CommonCodeDetail** (`/api/common/details`)
+1.  Board (`/api/boards`)
+2.  Tag (`/api/tags`)
+3.  CommonCodeGroup (`/api/common/groups`)
+4.  CommonCodeDetail (`/api/common/details`)
 
 ## 1. i18n Resource Creation
 Create or update JSON files in `src/main/webapp/i18n/{lang}/{entity}.json`.
@@ -15,8 +15,8 @@ Create or update JSON files in `src/main/webapp/i18n/{lang}/{entity}.json`.
 -   Languages: `ko`, `en`.
 
 ## 2. Menu & Router Registration
--   **Menu**: Append drop-down items to `src/main/webapp/app/entities/entities-menu.vue`.
--   **Router**: Register entity routes in `src/main/webapp/app/router/entities.ts`.
+-   Menu: Append drop-down items to `src/main/webapp/app/entities/entities-menu.vue`.
+-   Router: Register entity routes in `src/main/webapp/app/router/entities.ts`.
 
 ## 3. Entity Services (`.service.ts`)
 Create a service class for each entity to handle API communication using `axios`.
@@ -37,7 +37,7 @@ For each entity, generate:
 6.  Verification: Build and test manually.
 
 ## Standards
--   **Styling**: BootstrapVue.
--   **Language**: TypeScript.
--   **i18n**: No hardcoded strings; use `t$`.
--   **Naming**: Kebab-case for paths, PascalCase for components/names.
+-   Styling: BootstrapVue.
+-   Language: TypeScript.
+-   i18n: No hardcoded strings; use `t$`.
+-   Naming: Kebab-case for paths, PascalCase for components/names.

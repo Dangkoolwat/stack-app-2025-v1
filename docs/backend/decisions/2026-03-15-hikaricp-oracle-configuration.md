@@ -1,9 +1,9 @@
 # HikariCP + Oracle DB 연결 풀 설정 가이드
 
-**프로젝트:** `stack-app-2025-v1`  
-**DB:** Oracle (dev: Docker 컨테이너, prod: Oracle XE)  
-**작성일:** 2026-03-15  
-**적용 파일:** `application-dev.yml`, `application-prod.yml`
+프로젝트: `stack-app-2025-v1`  
+DB: Oracle (dev: Docker 컨테이너, prod: Oracle XE)  
+작성일: 2026-03-15  
+적용 파일: `application-dev.yml`, `application-prod.yml`
 
 ---
 
@@ -68,7 +68,7 @@ pool size = (CPU 코어 수 × 2) + 유효 스핀들 수
 | 8코어     | 8×2+1=17 | 20 |
 | 16코어    | 16×2+1=33 | 30~40 |
 
-**주의:** 여러 애플리케이션 인스턴스가 같은 Oracle DB 를 공유하는 경우:
+주의: 여러 애플리케이션 인스턴스가 같은 Oracle DB 를 공유하는 경우:
 ```
 Oracle 총 허용 세션 수 ≥ 인스턴스 수 × maximum-pool-size
 ```
@@ -87,7 +87,7 @@ SHOW PARAMETER SESSIONS;
 모니터링 도구(JMX, Micrometer, Prometheus)에서 풀을 식별하는 이름입니다.  
 환경별로 다르게 설정하면 로그 분석이 편합니다.
 
-### `auto-commit: false` ★ 중요
+### `auto-commit: false`  중요
 JPA/Hibernate 가 트랜잭션을 직접 제어하므로 반드시 `false` 입니다.  
 `true` 로 설정하면 `@Transactional` 이 제대로 동작하지 않습니다.
 
@@ -97,14 +97,14 @@ JPA/Hibernate 가 트랜잭션을 직접 제어하므로 반드시 `false` 입�
 ### `minimum-idle`
 유휴 상태로 유지할 최소 연결 수입니다.  
 - `minimum-idle < maximum-pool-size`: 동적 풀 (부하에 따라 연결 증감)  
-- `minimum-idle = maximum-pool-size`: **fixed-size 풀 (운영 권장)**
+- `minimum-idle = maximum-pool-size`: fixed-size 풀 (운영 권장)
 
 ### `connection-timeout`
 `getConnection()` 호출 후 풀에서 연결을 기다리는 최대 시간입니다.  
 초과 시 `SQLTransientConnectionException` 이 발생합니다.
 
 - 운영에서 너무 길면 (예: 30초) 요청 스레드가 쌓여 장애가 악화됩니다.
-- 운영 권장: **10초** — 빠른 장애 감지와 빠른 실패(Fail Fast)
+- 운영 권장: 10초 — 빠른 장애 감지와 빠른 실패(Fail Fast)
 
 ### `idle-timeout`
 `minimum-idle < maximum-pool-size` 일 때만 동작합니다.  
@@ -113,12 +113,12 @@ fixed-size 풀에서는 무시되지만 설정은 유지합니다.
 
 ### `max-lifetime`
 연결이 생성된 후 이 시간이 지나면 다음 획득 요청 시 폐기하고 새 연결을 생성합니다.  
-**Oracle 서버의 세션 타임아웃보다 반드시 짧게 설정해야 합니다.**  
+Oracle 서버의 세션 타임아웃보다 반드시 짧게 설정해야 합니다.  
 실제 폐기 시점은 `max-lifetime - 500ms ~ max-lifetime` 사이 무작위 값입니다 (thundering herd 방지).
 
 ### `keepalive-time`
 유휴 연결에 주기적으로 ping 을 보내 Oracle 방화벽/세션 차단을 방지합니다.  
-Oracle 환경에서는 **필수 설정**입니다.
+Oracle 환경에서는 필수 설정입니다.
 
 ping 방법 (우선순위):
 1. JDBC4 `Connection.isValid()` — ojdbc17 지원, 별도 설정 불필요
@@ -133,7 +133,7 @@ Oracle 에서는 3초로 설정합니다.
 ### `leak-detection-threshold`
 이 시간(밀리초) 이상 반환되지 않은 연결을 WARN 로그로 출력합니다.  
 값이 `0` 이면 비활성화됩니다.  
-**설정 기준:** 가장 오래 걸리는 정상 트랜잭션 시간 × 2 이상으로 설정합니다.
+설정 기준: 가장 오래 걸리는 정상 트랜잭션 시간 × 2 이상으로 설정합니다.
 
 ### `connection-init-sql`
 새 연결 생성 직후 Oracle 세션 파라미터를 고정합니다.  
@@ -148,11 +148,11 @@ ALTER SESSION SET
   NLS_SORT            = BINARY_CI     -- 운영만, 한국어 정렬 통일
 ```
 
-**NLS_DATE_FORMAT 을 설정하는 이유:**  
+NLS_DATE_FORMAT 을 설정하는 이유:  
 Oracle 기본값은 `DD-MON-RR` 이며, Hibernate 가 날짜를 문자열로 바인딩할 때  
 Oracle 클라이언트 로케일에 따라 포맷이 달라져 `ORA-01843 invalid month` 오류가 발생할 수 있습니다.
 
-**TIME_ZONE 을 설정하는 이유:**  
+TIME_ZONE 을 설정하는 이유:  
 Hibernate 의 `Instant` → `TIMESTAMP WITH TIME ZONE` 매핑 시  
 DB 세션 timezone 과 애플리케이션 timezone 이 다르면 1~9시간 차이가 발생합니다.
 
@@ -185,13 +185,13 @@ Docker 컨테이너가 재시작되면 기존 풀의 모든 연결이 즉시 무
 HikariCP 는 연결 오류 발생 시 자동으로 새 연결을 생성하지만,  
 일시적으로 `ORA-17002 I/O Exception` 또는 `Connection is closed` 오류가 발생할 수 있습니다.
 
-**해결:** 애플리케이션을 재시작하거나 잠시 기다리면 자동 복구됩니다.
+해결: 애플리케이션을 재시작하거나 잠시 기다리면 자동 복구됩니다.
 
 ### Docker 내부 네트워크에서의 keepalive
 
 Docker 내부 네트워크는 방화벽 세션 타임아웃이 없으므로  
 dev 환경의 `keepalive-time: 120000` (2분) 은 주로  
-**Oracle 컨테이너 재시작 감지** 목적으로 사용됩니다.
+Oracle 컨테이너 재시작 감지 목적으로 사용됩니다.
 
 ### Docker Compose 사용 시 URL 형식
 
@@ -258,16 +258,16 @@ GET /management/health  → 연결 풀 상태 포함
 
 ### ORA-17008: Closed Connection
 
-**원인:** 풀에 남아있는 연결이 Oracle 서버에서 이미 끊긴 상태  
-**조치:**
+원인: 풀에 남아있는 연결이 Oracle 서버에서 이미 끊긴 상태  
+조치:
 1. `keepalive-time` 을 낮춥니다 (예: 300000 → 120000)
 2. `max-lifetime` 을 Oracle 방화벽 타임아웃보다 짧게 설정합니다
 3. Oracle DBA 에게 `IDLE_TIME` 프로파일 값을 확인합니다
 
 ### SQLTransientConnectionException: Connection is not available
 
-**원인:** `connection-timeout` 초과 — 풀이 가득 찬 상태  
-**조치:**
+원인: `connection-timeout` 초과 — 풀이 가득 찬 상태  
+조치:
 1. `hikaricp_connections_active` 메트릭을 확인합니다
 2. `maximum-pool-size` 를 증가시킵니다 (Oracle 허용 범위 내)
 3. 느린 쿼리를 찾아 최적화합니다 (`hikaricp_connection_acquire_ms` 확인)
@@ -275,13 +275,13 @@ GET /management/health  → 연결 풀 상태 포함
 
 ### ORA-01843: not a valid month (날짜 오류)
 
-**원인:** `connection-init-sql` 미설정 또는 Oracle 클라이언트 NLS 불일치  
-**조치:** `connection-init-sql` 에 `NLS_DATE_FORMAT` 설정 확인
+원인: `connection-init-sql` 미설정 또는 Oracle 클라이언트 NLS 불일치  
+조치: `connection-init-sql` 에 `NLS_DATE_FORMAT` 설정 확인
 
 ### 연결 누수 (leak-detection 경고)
 
-**원인:** 트랜잭션이 완료되지 않거나 `Connection` 이 수동으로 닫히지 않음  
-**조치:**
+원인: 트랜잭션이 완료되지 않거나 `Connection` 이 수동으로 닫히지 않음  
+조치:
 1. 경고 로그에 출력되는 스택 트레이스를 분석합니다
 2. `@Transactional` 어노테이션 누락 여부를 확인합니다
 3. `try-with-resources` 또는 `JdbcTemplate` 사용 여부를 확인합니다

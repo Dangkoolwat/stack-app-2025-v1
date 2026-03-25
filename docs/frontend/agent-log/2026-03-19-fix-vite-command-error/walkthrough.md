@@ -16,7 +16,7 @@ Updated the follow files to support the HTTPS backend on port 8443:
 - [application-dev.yml](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/src/main/resources/config/application-dev.yml): Updated mail base-url default.
 
 ### 3. Frontend Dev Server Update
-Updated `vite.config.ts` and `vite.config.mts` to use **HTTPS** for the dev server:
+Updated `vite.config.ts` and `vite.config.mts` to use HTTPS for the dev server:
 - Set `server.https: true`.
 - Set `server.port: 9000` (to avoid collision with the backend on 8443).
 

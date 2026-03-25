@@ -1,7 +1,7 @@
 # Deprecation Warning 분석 및 수정 방안
 
-**작성일:** 2026-03-14  
-**대상 빌드 경고:**
+작성일: 2026-03-14  
+대상 빌드 경고:
 1. `TestUtil.java` — uses or overrides a deprecated API
 2. `InlineObject.java` (자동생성) — uses or overrides a deprecated API
 
@@ -9,7 +9,7 @@
 
 ## 1. TestUtil.java
 
-**파일:** [`src/test/java/com/daangcool/stack/web/rest/TestUtil.java`](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/src/test/java/com/daangcool/stack/web/rest/TestUtil.java)
+파일: [`src/test/java/com/daangcool/stack/web/rest/TestUtil.java`](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/src/test/java/com/daangcool/stack/web/rest/TestUtil.java)
 
 ### 원인 분석
 
@@ -28,20 +28,20 @@ public static final MediaType APPLICATION_JSON_UTF8 = new MediaType(
 );
 ```
 
-**원인:** `MediaType(String type, String subtype, Charset charset)` 생성자는  
+원인: `MediaType(String type, String subtype, Charset charset)` 생성자는  
 Spring Framework 5.2 이후 deprecated. Spring Boot 4.x (Spring 7.x) 환경에서 경고 발생.
 
-**배경:** HTTP/1.1 JSON 응답에 `charset=UTF-8`을 명시하는 것은 RFC 7159에 의해  
+배경: HTTP/1.1 JSON 응답에 `charset=UTF-8`을 명시하는 것은 RFC 7159에 의해  
 불필요하며, Spring MVC는 기본적으로 UTF-8 인코딩을 사용합니다.
 
-**수정 방안:**
+수정 방안:
 
 ```java
 // 수정 코드 — MediaType.APPLICATION_JSON 상수 직접 사용
 public static final MediaType APPLICATION_JSON_UTF8 = MediaType.APPLICATION_JSON;
 ```
 
-> **영향 범위:** `APPLICATION_JSON_UTF8`를 참조하는 모든 테스트 파일을 확인하고,  
+> 영향 범위: `APPLICATION_JSON_UTF8`를 참조하는 모든 테스트 파일을 확인하고,  
 > 실제로 `application/json;charset=UTF-8` 헤더를 명시적으로 검증하는 테스트가 있다면  
 > 해당 검증 로직도 `MediaType.APPLICATION_JSON`으로 변경 필요.
 
@@ -63,14 +63,14 @@ public static <T> T createUpdateProxyForBean(T update, T original) {
 }
 ```
 
-**원인:** `org.springframework.cglib.*`는 Spring이 내부적으로 재패키징한 CGLIB입니다.  
+원인: `org.springframework.cglib.*`는 Spring이 내부적으로 재패키징한 CGLIB입니다.  
 Spring Framework 6 / Spring Boot 3에서 AOT(Ahead-of-Time) 컴파일 지원을 위해  
 CGLIB 프록시 생성 방식이 전면 개편되었으며, `spring.cglib` 패키지는  
-**Spring 7(Boot 4) 에서 제거 대상**입니다.
+Spring 7(Boot 4) 에서 제거 대상입니다.
 
-**수정 방안 (두 가지 중 선택):**
+수정 방안 (두 가지 중 선택):
 
-**방안 A: Spring `ProxyFactory` 활용 (권장)**
+방안 A: Spring `ProxyFactory` 활용 (권장)
 
 ```java
 import org.springframework.aop.framework.ProxyFactory;
@@ -93,7 +93,7 @@ public static <T> T createUpdateProxyForBean(T update, T original) {
 }
 ```
 
-**방안 B: 테스트 로직 재설계 (비권장, 간단한 경우)**
+방안 B: 테스트 로직 재설계 (비권장, 간단한 경우)
 
 `createUpdateProxyForBean()`이 실제로 필요한지 검토. 단순 필드 머지 목적이라면  
 프록시 없이 명시적 복사 메서드(빌더, MapStruct 등)로 대체하여 프록시 의존 제거.
@@ -102,8 +102,8 @@ public static <T> T createUpdateProxyForBean(T update, T original) {
 
 ## 2. InlineObject.java (자동생성 파일)
 
-**파일:** `target/generated-sources/openapi/src/main/java/com/daangcool/stack/service/api/dto/InlineObject.java`  
-**생성 도구:** `openapi-generator-maven-plugin` 7.20.0 (generator: `spring`)
+파일: `target/generated-sources/openapi/src/main/java/com/daangcool/stack/service/api/dto/InlineObject.java`  
+생성 도구: `openapi-generator-maven-plugin` 7.20.0 (generator: `spring`)
 
 ### 원인 분석
 
@@ -116,12 +116,12 @@ public @Nullable String getTitle() { ... }
 // ... 모든 Optional 필드에 @Nullable 적용
 ```
 
-**원인:** Spring Framework 7.x에서는 자체 nullability 어노테이션(`org.springframework.lang.Nullable`) 사용을
+원인: Spring Framework 7.x에서는 자체 nullability 어노테이션(`org.springframework.lang.Nullable`) 사용을
 줄이고 JSpecify(`org.jspecify.annotations.Nullable`) 기반으로 전환하고 있습니다.
 하지만 OpenAPI Generator 7.20.0의 `spring` 제너레이터가 여전히 `org.springframework.lang.Nullable` import를
 생성하여 Spring Boot 4.x(Spring 7)에서 deprecation 경고가 발생합니다.
 
-> **참고:** `InlineObject`는 RFC 7807 ProblemDetail 응답 스키마를 나타내는  
+> 참고: `InlineObject`는 RFC 7807 ProblemDetail 응답 스키마를 나타내는  
 > 자동생성 클래스입니다. `target/` 폴더는 빌드 산출물이므로 직접 수정하면  
 > 다음 빌드 시 덮어써집니다.
 
@@ -145,7 +145,7 @@ public @Nullable String getTitle() { ... }
 #### 방안 B: OpenAPI Generator 템플릿 오버라이드로 JSpecify 적용 (단기/권장)
 
 생성 코드가 `org.springframework.lang.Nullable` import를 남기더라도,
-모델 필드/메서드의 `@Nullable` 사용을 **완전히 JSpecify로 고정**하면 deprecation warning을 제거할 수 있습니다.
+모델 필드/메서드의 `@Nullable` 사용을 완전히 JSpecify로 고정하면 deprecation warning을 제거할 수 있습니다.
 
 - 핵심 아이디어: `@Nullable`을 단순 이름이 아니라 `@org.jspecify.annotations.Nullable`로 생성되게 합니다.
 - 구현: OpenAPI generator의 `nullableAnnotation.mustache`를 프로젝트 내 템플릿으로 오버라이드합니다.
@@ -195,11 +195,11 @@ responses:
 
 | # | 파일 | deprecated 항목 | 심각도 | 권장 수정 |
 |---|------|-----------------|--------|-----------|
-| 1 | `TestUtil.java` | `MediaType` Charset 생성자 | 🟡 Low | `MediaType.APPLICATION_JSON` 상수로 교체 |
-| 2 | `TestUtil.java` | `spring.cglib.Enhancer` | 🟠 High | `ProxyFactory` 또는 테스트 로직 재설계 |
-| 3 | `InlineObject.java` | `spring.lang.Nullable` | 🟡 Low | 템플릿 오버라이드로 `@org.jspecify.annotations.Nullable` 생성 |
+| 1 | `TestUtil.java` | `MediaType` Charset 생성자 |  Low | `MediaType.APPLICATION_JSON` 상수로 교체 |
+| 2 | `TestUtil.java` | `spring.cglib.Enhancer` |  High | `ProxyFactory` 또는 테스트 로직 재설계 |
+| 3 | `InlineObject.java` | `spring.lang.Nullable` |  Low | 템플릿 오버라이드로 `@org.jspecify.annotations.Nullable` 생성 |
 
-> **우선 조치:** 
+> 우선 조치: 
 > - `TestUtil` #2 (spring.cglib)는 Spring Boot 4 정식 릴리즈(혹은 미래 마이너)에서  
 >   런타임 오류로 전환될 가능성이 있으므로 조기 대응 권장.
 > - `InlineObject` #3은 OpenAPI Generator 쪽 템플릿이 업데이트되기 전까지는

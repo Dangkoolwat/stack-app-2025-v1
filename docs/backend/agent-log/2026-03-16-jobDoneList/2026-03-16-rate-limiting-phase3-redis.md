@@ -1,23 +1,23 @@
 # Agent Work Log: Redis-based Distributed Rate Limiting (Phase 3)
 
-- **Date**: 2026-03-16
-- **Agent**: Antigravity
-- **Task Title**: Phase 3: Redis Integration and Documentation Enhancement
-- **Goal**: Transition rate limiting to a distributed architecture using Redis (Redisson) and add comprehensive Javadocs to all components.
+- Date: 2026-03-16
+- Agent: Antigravity
+- Task Title: Phase 3: Redis Integration and Documentation Enhancement
+- Goal: Transition rate limiting to a distributed architecture using Redis (Redisson) and add comprehensive Javadocs to all components.
 
 ## Context
 Phase 2 provided a robust in-memory rate limiting solution with property-based configuration and OTP support. Phase 3 aims to support horizontal scaling by utilizing Redis for bucket storage and ensuring all code is well-documented for long-term maintenance.
 
 ## Work Performed
-- **Redis Integration**:
+- Redis Integration:
   - Added `bucket4j-redis` dependency to `pom.xml`.
   - Implemented `RateLimitingConfiguration` to manage a distributed `ProxyManager` using Redisson.
   - Resolved `RedissonBasedProxyManager` type mismatch by accessing Redisson's internal `CommandAsyncExecutor`.
   - Refactored `RateLimitingRegistry` to use `ProxyManager.getProxy` for distributed bucket storage.
-- **Documentation**:
-  - Added detailed **Javadoc** (in Korean) to all rate limiting classes: `RateLimitingFilter`, `RateLimitingRegistry`, `RateLimitingConfiguration`, `TooManyRequestsException`, `RateLimitingManagementService`, and `AdminRateLimitResource`.
+- Documentation:
+  - Added detailed Javadoc (in Korean) to all rate limiting classes: `RateLimitingFilter`, `RateLimitingRegistry`, `RateLimitingConfiguration`, `TooManyRequestsException`, `RateLimitingManagementService`, and `AdminRateLimitResource`.
   - Documented architecture and configuration in `walkthrough.md`.
-- **System Hardening**:
+- System Hardening:
   - Overloaded `ProblemUtils.build` to allow generating `ProblemDetail` responses without an `HttpServletRequest` object.
   - Fixed various lint errors including deprecated methods and argument mismatches.
 

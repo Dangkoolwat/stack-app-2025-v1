@@ -1,8 +1,8 @@
 # Spring Boot 4.0 마이그레이션 검토 — 완료 작업 종합 요약
 
-**프로젝트:** `stack-app-2025-v1`  
-**기간:** 2026-03-14  
-**작업자:** Antigravity (Google DeepMind)
+프로젝트: `stack-app-2025-v1`  
+기간: 2026-03-14  
+작업자: Antigravity (Google DeepMind)
 
 ---
 
@@ -15,21 +15,21 @@ SB4 마이그레이션 검토 보고서(`2026-03-14-sb4-review-report.md`) 기�
 
 ## 완료 목록
 
-### ✅ L-3. encodeFilename User-Agent 분기 제거 (RFC 5987 단일화)
+###  L-3. encodeFilename User-Agent 분기 제거 (RFC 5987 단일화)
 
-**상태:** 완료  
-**파일:** `UploadResource.java`  
-**내용:**
+상태: 완료  
+파일: `UploadResource.java`  
+내용:
 - MSIE/Trident 분기 로직 제거
 - `encodeFilename()`, `setDispositionHeader()` 헬퍼를 RFC 5987 단일 방식으로 단순화
 - `HttpServletRequest` 파라미터 및 unused import 제거
 
 ---
 
-### ✅ H-3. 파일 다운로드 StreamingResponseBody 전환
+###  H-3. 파일 다운로드 StreamingResponseBody 전환
 
-**상태:** 완료  
-**파일:**
+상태: 완료  
+파일:
 - `StorageService.java` — `loadAsStream(String)` 추상 메서드 추가; `loadAsResource()` default 구현으로 위임 (하위 호환 유지)
 - `LocalDefaultFileStorageService.java` — `loadAsStream()` 구현 (`UrlResource.getInputStream()`)
 - `ShareFileStorageService.java` — 동일
@@ -37,15 +37,15 @@ SB4 마이그레이션 검토 보고서(`2026-03-14-sb4-review-report.md`) 기�
 - `OciFileStorageService.java` — `loadAsStream()` 구현 (`GetObjectResponse.getInputStream()`)
 - `UploadResource.java` — 3개 엔드포인트 `ResponseEntity<byte[]>` → `ResponseEntity<StreamingResponseBody>` 전환
 
-**효과:** 대용량 파일 다운로드 시 JVM 힙 전체 로드 방지 (OOM 위험 제거)
+효과: 대용량 파일 다운로드 시 JVM 힙 전체 로드 방지 (OOM 위험 제거)
 
 ---
 
-### ✅ H-4. JWT URI 쿼리 파라미터 비활성화
+###  H-4. JWT URI 쿼리 파라미터 비활성화
 
-**상태:** 완료  
-**파일:** `SecurityJwtConfiguration.java`  
-**내용:**
+상태: 완료  
+파일: `SecurityJwtConfiguration.java`  
+내용:
 
 ```java
 // 변경 전
@@ -55,16 +55,16 @@ bearerTokenResolver.setAllowUriQueryParameter(true);
 bearerTokenResolver.setAllowUriQueryParameter(false);
 ```
 
-**주의:** 기존에 URL에 `?access_token=...` 방식으로 JWT를 전달하는 클라이언트가 있다면  
+주의: 기존에 URL에 `?access_token=...` 방식으로 JWT를 전달하는 클라이언트가 있다면  
 `Authorization: Bearer` 헤더 방식으로 전환 필요.
 
 ---
 
-### ✅ M-2. CSP script-src unsafe-inline 제거
+###  M-2. CSP script-src unsafe-inline 제거
 
-**상태:** 완료  
-**파일:** `application.yml`  
-**내용:**
+상태: 완료  
+파일: `application.yml`  
+내용:
 
 ```yaml
 # 변경 전
@@ -74,16 +74,16 @@ script-src 'self' 'unsafe-inline' https://storage.googleapis.com
 script-src 'self' https://storage.googleapis.com
 ```
 
-**참고:** `style-src 'unsafe-inline'`은 Vue SFC 런타임 주입 필요로 유지.  
+참고: `style-src 'unsafe-inline'`은 Vue SFC 런타임 주입 필요로 유지.  
 완전 제거 시 프론트엔드에서 nonce 기반 CSP 구성 필요.
 
 ---
 
-### ✅ H-1 + M-5. CacheConfiguration 재점검 및 개선
+###  H-1 + M-5. CacheConfiguration 재점검 및 개선
 
-**상태:** 완료  
-**파일:** `CacheConfiguration.java`  
-**내용:**
+상태: 완료  
+파일: `CacheConfiguration.java`  
+내용:
 
 | 항목 | 내용 |
 |------|------|
@@ -91,7 +91,7 @@ script-src 'self' https://storage.googleapis.com
 | M-5 (TTL 세분화) | `buildTTLConfig()` → `longTtlCacheConfiguration` Bean으로 활성화 (24시간 TTL) |
 | 버그 수정 | `Board.boardTags` 중복 캐시 등록 제거 |
 
-**TTL 분류:**
+TTL 분류:
 
 | TTL | 대상 캐시 |
 |-----|-----------|
@@ -100,10 +100,10 @@ script-src 'self' https://storage.googleapis.com
 
 ---
 
-### ✅ 테스트 파일 업데이트
+###  테스트 파일 업데이트
 
-**상태:** 완료  
-**파일:**
+상태: 완료  
+파일:
 - `S3FileStorageServiceT.java` — `getObjectAsBytes` mock → `thenAnswer + ByteArrayInputStream` 방식  
   (H-3 인터페이스 변경에 따른 테스트 정합성 유지)
 - `OciFileStorageServiceT.java` — `loadAsResource()` → `loadAsStream()` 기반 테스트로 교체  
@@ -111,10 +111,10 @@ script-src 'self' https://storage.googleapis.com
 
 ---
 
-### ✅ Import 정리
+###  Import 정리
 
-**상태:** 완료  
-**파일:**
+상태: 완료  
+파일:
 - `LocalDefaultFileStorageService.java` — 사용하지 않는 `MalformedURLException` import 제거
 - `S3FileStorageServiceT.java` — 사용하지 않는 `GetObjectResponse`, `InputStream` import 정리
 - `OciFileStorageServiceT.java` — `InputStream` import 추가 (try-with-resources)

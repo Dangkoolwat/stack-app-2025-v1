@@ -19,7 +19,7 @@
 
 ### 1. Process Simplification
 
-**Fast Track Procedure**
+Fast Track Procedure
 
 - Implement tiered process system:
   - Tier 1 (Trivial): Direct implementation for single-file changes < 10 loc
@@ -28,7 +28,7 @@
 
 ### 2. Globalization Enhancements
 
-**Multilingual Support**
+Multilingual Support
 
 - Add language metadata to agent logs:
   ```yaml
@@ -46,12 +46,12 @@ language: en|ko
 ```
 
 ### 3. Automation Integration
-**Commit Validation**
+Commit Validation
 - Implement pre-commit hook with Conventional Commits linter
 - Add documentation generation script for knowledge items
 
 ### 4. Golden Rule Operationalization
-**Concrete Checklists**
+Concrete Checklists
 - Correctness: Unit tests passing, API contracts maintained
 - Safety: Security scan passed, no sensitive data exposure
 - Understandability: Code comments in designated language, documentation updated

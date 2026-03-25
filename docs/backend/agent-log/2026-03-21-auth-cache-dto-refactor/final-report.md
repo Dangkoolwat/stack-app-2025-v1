@@ -47,28 +47,28 @@ JPA 엔티티를 Redis 에 직접 캐시하면서 발생하던 Jackson 3 직렬�
 
 ## 후속 작업
 
-1. **배포 전 필수**: Redis 기존 캐시 초기화
+1. 배포 전 필수: Redis 기존 캐시 초기화
    ```bash
    redis-cli FLUSHALL
    # 또는
    docker compose -f src/docker/redis.yml down && docker compose -f src/docker/redis.yml up -d
    ```
 
-2. **통합 테스트 실행**:
+2. 통합 테스트 실행:
    ```bash
    mvn test -Dtest=UserAuthCacheServiceTest       # 단위 테스트
    mvn test -Dtest=DomainUserDetailsServiceIT     # 통합 테스트
    mvn test                                        # 전체
    ```
 
-3. **모니터링**: 배포 후 Redis Cache HIT 율 확인 (Prometheus/Grafana)
+3. 모니터링: 배포 후 Redis Cache HIT 율 확인 (Prometheus/Grafana)
    - `auth:user:*` 키 패턴으로 캐시 저장 여부 확인 가능
 
 ## 핵심 설계 원칙 (미래 에이전트를 위한 메모)
 
-> **"캐시를 쓰면 안 된다" ≠ "인증 관련 데이터는 캐시 금지"**
+> "캐시를 쓰면 안 된다" ≠ "인증 관련 데이터는 캐시 금지"
 >
-> 올바른 원칙: **"JPA 엔티티(@Entity)를 직접 Redis 캐시 대상으로 사용하지 말 것"**
+> 올바른 원칙: "JPA 엔티티(@Entity)를 직접 Redis 캐시 대상으로 사용하지 말 것"
 >
 > - 금지: `@Cacheable` 로 `User`, `Authority`, `Board` 등 JPA 엔티티 직접 캐시
 > - 허용: `UserAuthCacheDto` (record), OTP, Rate Limiting 등 캐시 전용 DTO/단순 타입

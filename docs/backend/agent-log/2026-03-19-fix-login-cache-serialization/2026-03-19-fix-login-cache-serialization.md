@@ -20,16 +20,16 @@ Antigravity (Google Deepmind)
 - Swagger UI가 `/v3/api-docs/springdocDefault`를 찾지 못해 API 문서가 보이지 않는 현상 발생.
 
 ## Work Performed
-1. **직렬화 문제 해결**: `UserRepository`의 캐시 어노테이션을 제거하여 Hibernate L2 캐시(이진 방식)만 사용하도록 변경. `CacheConfiguration` 정리.
-2. **Spring Boot 4 호환성 수정**:
+1. 직렬화 문제 해결: `UserRepository`의 캐시 어노테이션을 제거하여 Hibernate L2 캐시(이진 방식)만 사용하도록 변경. `CacheConfiguration` 정리.
+2. Spring Boot 4 호환성 수정:
    - `SpringImplicitNamingStrategy` 패키지 경로 수정.
    - Jackson `write-durations-as-timestamps` 속성 제거.
    - 테스트 코드 내 Jackson 패키지 Import 갱신 (`tools.jackson`).
-3. **인증 핸들러 개선**: `ExceptionTranslator`에 `AuthenticationException` 처리기를 추가하여 500 에러 대신 401 Unauthorized Problem Detail 반환.
-4. **UploadResourceIT 수정**: 파일 확장자 허용 정책 업데이트 및 MockMvc 인증 주입 방식 변경.
-5. **로그 관리**: OpenTelemetry B3 Propagator의 불필요한 `DEBUG` 로그를 `INFO` 레벨로 차단.
-6. **Swagger UI 복구**: 요청 경로 불일치 문제를 해결하기 위해 백엔드 OpenAPI 엔드포인트를 `/v3/api-docs`로 변경.
-7. **Websocket 핸드셰이크 정규화**: `STATELESS` 정책 하에서 SockJS의 `/info` 요청이 인증 문제로 차단되어 실시간 트래커가 작동하지 않던 문제를 `SecurityConfiguration` 수정을 통해 해결.
+3. 인증 핸들러 개선: `ExceptionTranslator`에 `AuthenticationException` 처리기를 추가하여 500 에러 대신 401 Unauthorized Problem Detail 반환.
+4. UploadResourceIT 수정: 파일 확장자 허용 정책 업데이트 및 MockMvc 인증 주입 방식 변경.
+5. 로그 관리: OpenTelemetry B3 Propagator의 불필요한 `DEBUG` 로그를 `INFO` 레벨로 차단.
+6. Swagger UI 복구: 요청 경로 불일치 문제를 해결하기 위해 백엔드 OpenAPI 엔드포인트를 `/v3/api-docs`로 변경.
+7. Websocket 핸드셰이크 정규화: `STATELESS` 정책 하에서 SockJS의 `/info` 요청이 인증 문제로 차단되어 실시간 트래커가 작동하지 않던 문제를 `SecurityConfiguration` 수정을 통해 해결.
 
 ## Files Modified
 - `src/main/java/com/daangcool/stack/repository/UserRepository.java`

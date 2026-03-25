@@ -18,9 +18,9 @@
 - `UserAuthCacheServiceTest.java`: 패키지 선언 변경 및 임포트 갱신
 
 ## 작업 단계
-1. **파일 물리적 이동**: `run_command`를 통해 파일을 새로운 위치로 이동.
-2. **코드 갱신**: 이동된 파일의 `package` 선언과 의존하는 파일들의 `import` 문을 순차적으로 수정.
-3. **검증**: `./mvnw test -Dtest=TechnicalStructureTest,UserAuthCacheServiceTest,DomainUserDetailsServiceIT` 실행하여 확인.
+1. 파일 물리적 이동: `run_command`를 통해 파일을 새로운 위치로 이동.
+2. 코드 갱신: 이동된 파일의 `package` 선언과 의존하는 파일들의 `import` 문을 순차적으로 수정.
+3. 검증: `./mvnw test -Dtest=TechnicalStructureTest,UserAuthCacheServiceTest,DomainUserDetailsServiceIT` 실행하여 확인.
 
 ## 가이드 준수
 - 주석 업데이트: `DomainUserDetailsService` 클래스 주석에 패키지 이동 사유(ArchUnit 준수) 기록.

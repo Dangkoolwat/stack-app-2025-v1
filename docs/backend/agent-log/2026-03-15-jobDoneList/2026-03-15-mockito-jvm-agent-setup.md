@@ -137,16 +137,16 @@ Spring Boot parent BOM(`spring-boot-starter-parent 4.0.3`)이 `mockito.version`
 
 ## Risks
 
-1. **mockito-core JAR 미존재**: 처음 `./mvnw test` 실행 전 로컬 리포지토리에
+1. mockito-core JAR 미존재: 처음 `./mvnw test` 실행 전 로컬 리포지토리에
    `mockito-core-${mockito.version}.jar`이 없으면 `FileNotFoundException`이 발생합니다.
    `./mvnw dependency:resolve -Dclassifier=` 또는 한 번 `./mvnw test`를 실행하면
    자동 다운로드됩니다.
 
-2. **@{argLine} vs ${argLine}**: JaCoCo 플러그인 사용 시 반드시 `@{argLine}` (late binding)
+2. @{argLine} vs ${argLine}: JaCoCo 플러그인 사용 시 반드시 `@{argLine}` (late binding)
    을 사용해야 합니다. `${argLine}` (early binding)을 사용하면 JaCoCo가 주입하는
    `-javaagent:jacocoagent.jar` 인수가 무시되어 커버리지 측정이 실패합니다.
 
-3. **멀티 모듈 프로젝트 확장 시**: 하위 모듈에서도 동일한 설정이 필요합니다.
+3. 멀티 모듈 프로젝트 확장 시: 하위 모듈에서도 동일한 설정이 필요합니다.
    부모 POM에 설정하면 상속됩니다.
 
 ---
