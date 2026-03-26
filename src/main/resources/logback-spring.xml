@@ -89,9 +89,12 @@
   <logger name="org.apache.tomcat.util.compat" level="INFO"/> # Java 22 compatibility check noise suppression
   <logger name="org.apache.tomcat.util.net.jsse.JSSEUtil" level="INFO"/> # SSL Ciphers Debug Log Suppress
   <logger name="org.apache.tomcat.util.net.openssl.ciphers.OpenSSLCipherConfigurationParser" level="INFO"/> # SSL Ciphers Debug Log Suppress
-  <logger name="io.opentelemetry.sdk.trace.SdkSpan" level="INFO"/> 
-  <logger name="io.opentelemetry.extension.trace.propagation" level="INFO"/> 
+  <logger name="io.opentelemetry.sdk.trace.SdkSpan" level="INFO"/>
+  <logger name="io.opentelemetry.extension.trace.propagation" level="INFO"/>
   <logger name="io.micrometer.tracing" level="INFO"/>
+
+  <!-- JHipster HeaderUtil 의 ERROR 로그 억제 (클라이언트 오류는 이미 ExceptionTranslator 에서 처리됨) -->
+  <logger name="tech.jhipster.web.util.HeaderUtil" level="WARN"/>
 
   <!-- Dev 프로파일: 콘솔만 -->
   <springProfile name="dev">

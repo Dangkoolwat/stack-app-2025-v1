@@ -1,6 +1,7 @@
 package com.daangcool.stack.aop.logging;
 
 import com.daangcool.stack.common.constant.StackAppConstants;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -82,6 +83,16 @@ public class LoggingAspect {
      */
     @AfterThrowing(pointcut = "applicationPackagePointcut() && springBeanPointcut()", throwing = "e")
     public void logAfterThrowing(JoinPoint joinPoint, Throwable e) {
+        // BadRequestAlertException 은 클라이언트 오류이므로 짧은 메시지만 로그 (스택트레이스 제외)
+        if (e instanceof BadRequestAlertException badRequest) {
+            logger(joinPoint).warn(
+                "Bad Request Alert [{}]: {}",
+                joinPoint.getSignature().getName(),
+                badRequest.getMessage()
+            );
+            return;
+        }
+
         if (env.acceptsProfiles(Profiles.of(StackAppConstants.SPRING_PROFILE_DEVELOPMENT))) {
             logger(joinPoint).error(
                 "Exception in {}() with cause = '{}' and exception = '{}'",
