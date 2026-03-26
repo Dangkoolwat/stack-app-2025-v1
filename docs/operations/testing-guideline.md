@@ -1,69 +1,79 @@
 ---
 agent: Antigravity
-created_at: 2026-03-26 (목요일)
-language: ko
+created_at: 2026-03-26 (Thursday)
+language: en
 ---
 
 # Testing Guideline Operations Guide
 
-## 목차
+## Overview
 
-1. [개요](#개요)
-2. [테스트 실행 명령](#테스트-실행-명령)
-3. [로그 확인](#로그-확인)
-4. [문제 해결](#문제-해결)
+This document establishes the standard procedures for performing tests in the modern Spring Boot 4 environment. It is mandatory for all agents and developers to follow these patterns to ensure security, performance, and data integrity.
 
 ---
 
-## 개요
+## 1. Running Tests
 
-이 문서는 에이전트 및 개발자가 로컬 및 작업 환경에서 테스트를 수행할 때 지켜야 할 표준 절차를 안내합니다. 특히 환경 변수 설정을 누락하지 않고 정확하게 반영하는 것이 중요합니다.
+Always use the `.env` file to load environment variables. This prevents configuration mismatches between local and containerized environments.
 
----
-
-## 테스트 실행 명령
-
-환경 변수가 정의된 `.env` 파일을 로드하여 테스트를 수행하기 위해 아래 명령어를 사용할 것을 강력히 권장합니다.
-
-### 표준 명령어 (Bash/Zsh)
+### Standard Command (Bash/Zsh)
 
 ```bash
-export $(xargs < .env) && ./mvnw clean test
+export $(grep -v '^#' .env | xargs) && ./mvnw test
 ```
 
-### 상세 설명
-- `xargs < .env`: `.env` 파일의 각 라인을 인자로 변환합니다.
-- `export (...)`: 변환된 인자들을 현재 쉘 세션의 환경 변수로 내보냅니다. (코멘트 `#`로 시작하는 라인이 있을 경우 오류가 발생할 수 있으므로 주의가 필요합니다.)
-- `./mvnw clean test`: 메이븐 래퍼를 사용하여 빌드 결과물을 초기화하고 테스트를 수행합니다.
-
-> [!NOTE]
-> 코멘트가 포함된 `.env` 파일을 사용하는 경우 아래와 같이 코멘트를 제외하고 로드할 수 있습니다.
-> `export $(grep -v '^#' .env | xargs) && ./mvnw clean test`
+### Key Parameters
+- `testdev`: Primary profile for local integration tests.
+- `test`: Active profile for standard CI/CD verification.
 
 ---
 
-## 로그 확인
+## 2. Spring Boot 4 Standards
 
-테스트 실패 시 상세 로그는 아래 경로에서 확인할 수 있습니다.
+### Infrastructure Patterns
+- Use the `@IntegrationTest` composite annotation for all integration tests.
+- Leverage `spring-boot-testcontainers` with `@ServiceConnection` for automatic database property injection.
+- Do NOT use legacy `spring.factories` or manual `ContextCustomizerFactory` implementations.
 
-- 유닛 테스트: `target/surefire-reports/`
-- 통합 테스트: `target/failsafe-reports/`
+### Stateless JWT Authentication
+- In stateless environments, `@WithMockUser` is deprecated for Integration Tests.
+- You MUST use token-based authentication by injecting the `Authorization` header.
+- Use `JwtAuthenticationTestUtils` to generate valid test tokens dynamically.
+
+Example:
+```java
+String token = JwtAuthenticationTestUtils.createToken(login, authorities);
+mockMvc.perform(get("/api/secure-endpoint")
+    .header("Authorization", "Bearer " + token));
+```
 
 ---
 
-## 문제 해결
+## 3. Data Integrity & Isolation
 
-### 1. 환경 변수 로드 실패
-- `.env` 파일이 루트 디렉토리에 존재하는지 확인하십시오.
-- 변수명에 공백이나 특수 문자가 포함되어 있는지 확인하십시오.
+### Database Cleanup
+- Explicitly handle database cleanup in `@BeforeEach` or `@AfterEach` if the test modifies shared entity state.
+- Use `repository.deleteAll()` or specific service methods (e.g., `userService.deleteUser(login)`) to ensure a clean slate.
 
-### 2. 테스트 DB(Oracle/Redis) 연결 오류
-- Docker(Testcontainers)가 정상적으로 실행 중인지 확인하십시오.
-- `.env` 파일의 DB 관련 접속 정보가 로컬 환경과 일치하는지 확인하십시오.
+### Rate Limiting
+- Ensure `rate-limit.enabled: false` is set in the test profile (e.g., `application-testdev.yml`) to prevent intermittent 429 errors during concurrent test execution.
 
 ---
 
-## 관련 문서
+## 4. Troubleshooting
+
+### 401 Unauthorized
+- Verify that the `Bearer` token is correctly generated and included in the header.
+- Check if the token has the required authorities for the endpoint.
+
+### 500 Internal Server Error
+- Check `ExceptionTranslator` logs.
+- Ensure custom exceptions are correctly mapped to `ProblemDetail` responses.
+- Verify that no duplicate exception classes exist in the classpath.
+
+---
+
+## Related Documents
 
 - [AGENTS.md](../../AGENTS.md)
-- [환경 변수 운영 가이드](environment-variables.md)
+- [Environment Variables Guide](environment-variables.md)
