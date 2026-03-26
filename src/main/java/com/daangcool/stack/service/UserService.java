@@ -10,6 +10,9 @@ import com.daangcool.stack.security.SecurityUtils;
 import com.daangcool.stack.service.dto.AdminUserDTO;
 import com.daangcool.stack.service.dto.UserDTO;
 import com.daangcool.stack.security.UserAuthCacheService;
+import com.daangcool.stack.common.exception.EmailAlreadyUsedException;
+import com.daangcool.stack.common.exception.InvalidPasswordException;
+import com.daangcool.stack.common.exception.LoginAlreadyUsedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -100,7 +103,7 @@ public class UserService {
             .ifPresent(existingUser -> {
                 boolean removed = removeNonActivatedUser(existingUser);
                 if (!removed) {
-                    throw new UsernameAlreadyUsedException();
+                    throw new LoginAlreadyUsedException();
                 }
             });
         userRepository

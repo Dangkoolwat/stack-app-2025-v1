@@ -100,8 +100,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         ApplicationProperties.RateLimit.Policy policy = policies.get(path);
         
-        // 현재 경로가 Rate Limiting 정책 대상이 아닐 경우 바로 다음 필터로 이동
-        if (policy == null) {
+        // Rate Limiting이 비활성화되어 있거나 현재 경로가 정책 대상이 아닐 경우 바로 다음 필터로 이동
+        if (!applicationProperties.getRateLimit().isEnabled() || policy == null) {
             filterChain.doFilter(request, response);
             return;
         }

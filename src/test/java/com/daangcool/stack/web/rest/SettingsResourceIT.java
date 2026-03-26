@@ -14,9 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.security.jwt.JwtAuthenticationTestUtils;
-import com.daangcool.stack.web.rest.TestUtil;
 import org.springframework.http.HttpHeaders;
 import java.util.Collections;
+import java.util.List;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,20 +39,30 @@ class SettingsResourceIT {
     @Autowired
     private SettingsRepository settingsRepository;
 
+    @Autowired
+    private ObjectMapper om;
+
     @Value("${jhipster.security.authentication.jwt.base64-secret}")
     private String jwtKey;
+
+    private String createToken(String login) {
+        return JwtAuthenticationTestUtils.createValidTokenForUser(jwtKey, login);
+    }
+
+    private String createTokenWithAuthorities(String login, List<String> authorities) {
+        return JwtAuthenticationTestUtils.createTokenForUser(jwtKey, login, authorities);
+    }
 
     private static final Long UPDATED_TOKEN_VALIDITY_SECONDS = 3600L;
     private static final Long UPDATED_REMEMBER_ME_SECONDS = 1209600L;
     private static final int UPDATED_MAX_ATTEMPTS = 10;
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
     void getSettings_asAdmin_shouldReturnDefaultSettingsFromDb() throws Exception {
 
 
         restSettingsMockMvc.perform(get("/api/settings")
-                .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + JwtAuthenticationTestUtils.createValidTokenForUser(jwtKey, "admin")))
+                .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + createToken("admin")))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.tokenValiditySeconds").value(86400L))
@@ -61,7 +72,6 @@ class SettingsResourceIT {
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = "ADMIN")
     void updateSettings_asAdmin_shouldUpdateSettings() throws Exception {
         // Initial state check
         long initialCount = settingsRepository.count();
@@ -78,9 +88,9 @@ class SettingsResourceIT {
         );
 
         restSettingsMockMvc.perform(put("/api/settings")
-                .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + JwtAuthenticationTestUtils.createValidTokenForUser(jwtKey, "admin"))
+                .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + createToken("admin"))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.convertObjectToJsonBytes(settingsDTO)))
+                .content(om.writeValueAsBytes(settingsDTO)))
             .andExpect(status().isOk());
 
         // Validate the changes in the database
@@ -91,11 +101,10 @@ class SettingsResourceIT {
     }
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void getSettings_asUser_shouldBeForbidden() throws Exception {
         restSettingsMockMvc.perform(get("/api/settings")
                 .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + 
-                    JwtAuthenticationTestUtils.createTokenForUser(jwtKey, "user", Collections.singletonList(AuthoritiesConstants.USER))))
+                    createTokenWithAuthorities("user", Collections.singletonList(AuthoritiesConstants.USER))))
             .andExpect(status().isForbidden());
     }
 
@@ -106,15 +115,14 @@ class SettingsResourceIT {
     }
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void updateSettings_asUser_shouldBeForbidden() throws Exception {
         SettingsDTO settingsDTO = new SettingsDTO(1800L, 2592000L, 5, "", null, null, null);
 
         restSettingsMockMvc.perform(put("/api/settings")
                 .header(HttpHeaders.AUTHORIZATION, JwtAuthenticationTestUtils.BEARER + 
-                    JwtAuthenticationTestUtils.createTokenForUser(jwtKey, "user", Collections.singletonList(AuthoritiesConstants.USER)))
+                    createTokenWithAuthorities("user", Collections.singletonList(AuthoritiesConstants.USER)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.convertObjectToJsonBytes(settingsDTO)))
+                .content(om.writeValueAsBytes(settingsDTO)))
             .andExpect(status().isForbidden());
     }
 
@@ -124,7 +132,7 @@ class SettingsResourceIT {
 
         restSettingsMockMvc.perform(put("/api/settings")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(TestUtil.convertObjectToJsonBytes(settingsDTO)))
+                .content(om.writeValueAsBytes(settingsDTO)))
             .andExpect(status().isUnauthorized());
     }
 }

@@ -1,0 +1,17 @@
+application:
+  rate-limit:
+    authenticate:
+      tokens: 1000
+      duration-minutes: 1
+    register:
+      tokens: 1000
+      duration-minutes: 1
+    reset-password-init:
+      tokens: 1000
+      duration-minutes: 1
+    otp-request:
+      tokens: 1000
+      duration-minutes: 1
+    otp-verify:
+      tokens: 1000
+      duration-minutes: 1

@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @AutoConfigureMockMvc
 @IntegrationTest
+@Transactional
 class AccountResourceIT {
 
     static final String TEST_USER_LOGIN = "test";
@@ -60,11 +61,20 @@ class AccountResourceIT {
     @Autowired
     private MockMvc restAccountMockMvc;
 
+    @org.springframework.beans.factory.annotation.Value("${jhipster.security.authentication.jwt.base64-secret}")
+    private String jwtKey;
+
     private Long numberOfUsers;
 
     @BeforeEach
-    void countUsers() {
+    void setup() {
+        userRepository.deleteAll();
+        userRepository.flush();
         numberOfUsers = userRepository.count();
+    }
+
+    private String createToken(String login) {
+        return com.daangcool.stack.security.jwt.JwtAuthenticationTestUtils.createValidTokenForUser(jwtKey, login);
     }
 
     @AfterEach
@@ -80,9 +90,10 @@ class AccountResourceIT {
     }
 
     @Test
-    @WithMockUser(TEST_USER_LOGIN)
     void testAuthenticatedUser() throws Exception {
-        restAccountMockMvc.perform(get("/api/authenticate").with(request -> request)).andExpect(status().isNoContent());
+        restAccountMockMvc.perform(get("/api/authenticate")
+            .header("Authorization", "Bearer " + createToken(TEST_USER_LOGIN)))
+            .andExpect(status().isNoContent());
     }
 
     @Test
@@ -102,7 +113,9 @@ class AccountResourceIT {
         userService.createUser(user);
 
         restAccountMockMvc
-            .perform(get("/api/account").accept(MediaType.APPLICATION_JSON))
+            .perform(get("/api/account")
+                .header("Authorization", "Bearer " + createToken(TEST_USER_LOGIN))
+                .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.login").value(TEST_USER_LOGIN))
@@ -390,8 +403,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("save-account")
     void testSaveAccount() throws Exception {
         User user = new User();
         user.setLogin("save-account");
@@ -411,7 +422,10 @@ class AccountResourceIT {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
-            .perform(post("/api/account").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(userDTO)))
+            .perform(post("/api/account")
+                .header("Authorization", "Bearer " + createToken("save-account"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(userDTO)))
             .andExpect(status().isOk());
 
         User updatedUser = userRepository.findOneWithAuthoritiesByLogin(user.getLogin()).orElse(null);
@@ -428,8 +442,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("save-invalid-email")
     void testSaveInvalidEmail() throws Exception {
         User user = new User();
         user.setLogin("save-invalid-email");
@@ -450,7 +462,10 @@ class AccountResourceIT {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
-            .perform(post("/api/account").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(userDTO)))
+            .perform(post("/api/account")
+                .header("Authorization", "Bearer " + createToken("save-existing-email"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(userDTO)))
             .andExpect(status().isBadRequest());
 
         assertThat(userRepository.findOneByEmailIgnoreCase("invalid email")).isNotPresent();
@@ -459,8 +474,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("save-existing-email")
     void testSaveExistingEmail() throws Exception {
         User user = new User();
         user.setLogin("save-existing-email");
@@ -488,7 +501,10 @@ class AccountResourceIT {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
-            .perform(post("/api/account").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(userDTO)))
+            .perform(post("/api/account")
+                .header("Authorization", "Bearer " + createToken("save-existing-email"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(userDTO)))
             .andExpect(status().isBadRequest());
 
         User updatedUser = userRepository.findOneByLogin("save-existing-email").orElseThrow();
@@ -499,8 +515,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("save-existing-email-and-login")
     void testSaveExistingEmailAndLogin() throws Exception {
         User user = new User();
         user.setLogin("save-existing-email-and-login");
@@ -520,7 +534,10 @@ class AccountResourceIT {
         userDTO.setAuthorities(Collections.singleton(AuthoritiesConstants.ADMIN));
 
         restAccountMockMvc
-            .perform(post("/api/account").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(userDTO)))
+            .perform(post("/api/account")
+                .header("Authorization", "Bearer " + createToken("save-existing-email-and-login"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsBytes(userDTO)))
             .andExpect(status().isOk());
 
         User updatedUser = userRepository.findOneByLogin("save-existing-email-and-login").orElse(null);
@@ -530,8 +547,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("change-password-wrong-existing-password")
     void testChangePasswordWrongExistingPassword() throws Exception {
         User user = new User();
         String currentPassword = RandomStringUtils.insecure().nextAlphanumeric(60);
@@ -543,6 +558,7 @@ class AccountResourceIT {
         restAccountMockMvc
             .perform(
                 post("/api/account/change-password")
+                    .header("Authorization", "Bearer " + createToken("change-password-wrong-existing-password"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsBytes(new PasswordChangeDTO("1" + currentPassword, "new password")))
             )
@@ -556,8 +572,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("change-password")
     void testChangePassword() throws Exception {
         User user = new User();
         String currentPassword = RandomStringUtils.insecure().nextAlphanumeric(60);
@@ -569,6 +583,7 @@ class AccountResourceIT {
         restAccountMockMvc
             .perform(
                 post("/api/account/change-password")
+                    .header("Authorization", "Bearer " + createToken("change-password"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsBytes(new PasswordChangeDTO(currentPassword, "new password")))
             )
@@ -581,8 +596,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("change-password-too-small")
     void testChangePasswordTooSmall() throws Exception {
         User user = new User();
         String currentPassword = RandomStringUtils.insecure().nextAlphanumeric(60);
@@ -596,6 +609,7 @@ class AccountResourceIT {
         restAccountMockMvc
             .perform(
                 post("/api/account/change-password")
+                    .header("Authorization", "Bearer " + createToken("change-password-too-small"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsBytes(new PasswordChangeDTO(currentPassword, newPassword)))
             )
@@ -608,8 +622,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("change-password-too-long")
     void testChangePasswordTooLong() throws Exception {
         User user = new User();
         String currentPassword = RandomStringUtils.insecure().nextAlphanumeric(60);
@@ -623,6 +635,7 @@ class AccountResourceIT {
         restAccountMockMvc
             .perform(
                 post("/api/account/change-password")
+                    .header("Authorization", "Bearer " + createToken("change-password-too-long"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsBytes(new PasswordChangeDTO(currentPassword, newPassword)))
             )
@@ -635,8 +648,6 @@ class AccountResourceIT {
     }
 
     @Test
-    @Transactional
-    @WithMockUser("change-password-empty")
     void testChangePasswordEmpty() throws Exception {
         User user = new User();
         String currentPassword = RandomStringUtils.insecure().nextAlphanumeric(60);
@@ -648,6 +659,7 @@ class AccountResourceIT {
         restAccountMockMvc
             .perform(
                 post("/api/account/change-password")
+                    .header("Authorization", "Bearer " + createToken("change-password-empty"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsBytes(new PasswordChangeDTO(currentPassword, "")))
             )

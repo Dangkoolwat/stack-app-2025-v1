@@ -559,6 +559,13 @@
       </exclusions>
     </dependency>
 
+    <!-- Spring Boot Testcontainers 통합 -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Testcontainers core -->
     <dependency>
       <groupId>org.testcontainers</groupId>
@@ -572,12 +579,6 @@
       </exclusions>
     </dependency>
 
-    <!-- Testcontainers JDBC -->
-    <dependency>
-      <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers-jdbc</artifactId>
-      <scope>test</scope>
-    </dependency>
 
     <!-- Testcontainers JUnit 5 -->
     <dependency>
