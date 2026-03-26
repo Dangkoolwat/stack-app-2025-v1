@@ -2,6 +2,7 @@ package com.daangcool.stack.service.board;
 
 import com.daangcool.stack.common.constant.CacheNames;
 
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.board.Upload;
@@ -415,6 +416,26 @@ public class UploadService {
     @Deprecated
     public Upload moveFileVisibility(Long id, boolean targetIsPublic) {
         return changeVisibility(id, targetIsPublic);
+    }
+
+    /**
+     * 비공개 파일 다운로드용 업로드 조회 및 권한 검증.
+     */
+    @Transactional(readOnly = true)
+    public Upload getAuthorizedPrivateUpload(Long id) {
+        Upload upload = uploadRepository.findById(id)
+            .orElseThrow(() -> new UploadNotFoundException("업로드 메타데이터를 찾을 수 없습니다. id=" + id));
+
+        if (upload.isDeleted()) {
+            throw new UploadNotFoundException("삭제된 파일입니다. id=" + id);
+        }
+
+        if (upload.isPublic()) {
+            throw new BadRequestAlertException("공개 파일은 비공개 다운로드 경로로 접근할 수 없습니다.", "upload", "upload.public");
+        }
+
+        resourceAuthorizationService.validateOwnerOrAdminByLogin(upload.getCreatedBy(), "upload", "unauthorized");
+        return upload;
     }
 
     // ---------------------------------------------------

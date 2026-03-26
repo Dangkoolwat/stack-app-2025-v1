@@ -17,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +81,12 @@ class CommentServiceT {
 
         // 캐시 관련 Mock 설정
         lenient().when(cacheManager.getCache(anyString())).thenReturn(cache);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("comment-user", "password"));
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     /**
@@ -88,7 +96,7 @@ class CommentServiceT {
     void save_ValidComment_ShouldSaveAndReturnDTO() {
         // given
         when(boardRepository.findById(anyLong())).thenReturn(Optional.of(board));
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(userRepository.findOneByLogin("comment-user")).thenReturn(Optional.of(user));
         when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(commentMapper.toDto(any(Comment.class))).thenReturn(commentDTO);
 

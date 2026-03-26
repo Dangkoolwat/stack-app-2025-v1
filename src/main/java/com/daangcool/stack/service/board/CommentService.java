@@ -75,8 +75,8 @@ public class CommentService {
     public CommentDTO save(CommentDTO dto) {
         log.debug("Request to save Comment : {}", dto);
 
-        if (dto.getBoardId() == null || dto.getUserId() == null) {
-            throw new BadRequestAlertException("게시글 ID와 작성자 ID는 필수입니다.", ENTITY_NAME, "comment.invalidParams");
+        if (dto.getBoardId() == null) {
+            throw new BadRequestAlertException("게시글 ID는 필수입니다.", ENTITY_NAME, "comment.invalidParams");
         }
         if (dto.getContent() == null || dto.getContent().isBlank()) {
             throw new BadRequestAlertException("댓글 내용은 비어 있을 수 없습니다.", ENTITY_NAME, "comment.emptyContent");
@@ -84,8 +84,8 @@ public class CommentService {
 
         Board board = boardRepository.findById(dto.getBoardId())
             .orElseThrow(() -> new EntityNotFoundException("해당 게시글을 찾을 수 없습니다. ID=" + dto.getBoardId()));
-        User user = userRepository.findById(dto.getUserId())
-            .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다. ID=" + dto.getUserId()));
+        User user = getCurrentAuthenticatedUser();
+        dto.setUserId(user.getId());
 
         Comment comment = new Comment();
         comment.setBoard(board);
@@ -367,5 +367,12 @@ public class CommentService {
         } catch (Exception e) {
             log.warn("[COMMENT CACHE] 캐시 제거 중 오류: {}", e.getMessage());
         }
+    }
+
+    private User getCurrentAuthenticatedUser() {
+        String login = com.daangcool.stack.security.SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new BadRequestAlertException("인증된 사용자를 찾을 수 없습니다.", ENTITY_NAME, "comment.unauthorized"));
+        return userRepository.findOneByLogin(login)
+            .orElseThrow(() -> new EntityNotFoundException("해당 사용자를 찾을 수 없습니다. login=" + login));
     }
 }

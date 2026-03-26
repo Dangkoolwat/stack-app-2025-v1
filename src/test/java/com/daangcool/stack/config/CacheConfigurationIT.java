@@ -66,6 +66,7 @@ class CacheConfigurationIT {
             mock(com.daangcool.stack.repository.board.TagRepository.class),
             mock(com.daangcool.stack.repository.board.BoardTagRepository.class),
             mock(com.daangcool.stack.repository.board.CommentRepository.class),
+            mock(com.daangcool.stack.service.board.UploadService.class),
             mock(com.daangcool.stack.security.ResourceAuthorizationService.class)
         );
 

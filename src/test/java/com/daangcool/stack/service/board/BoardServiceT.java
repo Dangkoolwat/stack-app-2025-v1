@@ -19,6 +19,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +56,8 @@ class BoardServiceT {
     @Mock
     private com.daangcool.stack.repository.board.CommentRepository commentRepository;
     @Mock
+    private UploadService uploadService;
+    @Mock
     private com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
 
     @InjectMocks
@@ -84,6 +88,12 @@ class BoardServiceT {
 
         // 캐시 관련 Mock 설정 (NullPointerException 방지)
         lenient().when(cacheManager.getCache(anyString())).thenReturn(cache);
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("testuser", "password"));
+    }
+
+    @org.junit.jupiter.api.AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     /**
@@ -92,7 +102,7 @@ class BoardServiceT {
     @Test
     void save_ValidBoard_ShouldSaveAndReturnDTO() {
         // given
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(userRepository.findOneByLogin("testuser")).thenReturn(Optional.of(user));
         when(boardMapper.toEntity(any(BoardDTO.class))).thenReturn(board);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardMapper.toDto(any(Board.class))).thenReturn(boardDTO);
@@ -113,12 +123,12 @@ class BoardServiceT {
     @Test
     void save_UserNotFound_ShouldThrowException() {
         // given
-        when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+        when(userRepository.findOneByLogin("testuser")).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> boardService.save(boardDTO))
             .isInstanceOf(EntityNotFoundException.class)
-            .hasMessageContaining("작성자를 찾을 수 없습니다");
+            .hasMessageContaining("사용자를 찾을 수 없습니다");
     }
 
     /**
@@ -128,6 +138,7 @@ class BoardServiceT {
     void save_NoTitle_ShouldThrowException() {
         // given
         boardDTO.setTitle(""); // 제목을 비웁니다.
+        when(userRepository.findOneByLogin("testuser")).thenReturn(Optional.of(user));
 
         // when & then
         assertThatThrownBy(() -> boardService.save(boardDTO))

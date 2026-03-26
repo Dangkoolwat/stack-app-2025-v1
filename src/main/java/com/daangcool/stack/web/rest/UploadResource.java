@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -204,18 +205,7 @@ public class UploadResource {
     @GetMapping("/private/{id}/download")
     public ResponseEntity<StreamingResponseBody> downloadPrivateFile(@PathVariable Long id) {
         try {
-            Upload upload = uploadService.findById(id)
-                .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
-
-            if (upload.isDeleted()) {
-                throw new FileNotFoundException("삭제된 파일입니다: " + id);
-            }
-
-            if (upload.isPublic()) {
-                // 공개 파일을 비공개 엔드포인트로 접근 — 400 Bad Request
-                log.warn("[PRIVATE DOWNLOAD] Attempted to download public file via private endpoint (id={})", id);
-                return ResponseEntity.badRequest().build();
-            }
+            Upload upload = uploadService.getAuthorizedPrivateUpload(id);
 
             String encodedFilename = encodeFilename(upload.getSourceFilename());
             HttpHeaders headers = new HttpHeaders();
@@ -236,9 +226,15 @@ public class UploadResource {
 
             return ResponseEntity.ok().headers(headers).body(body);
 
-        } catch (FileNotFoundException e) {
+        } catch (com.daangcool.stack.common.exception.UploadNotFoundException e) {
             log.warn("[PRIVATE DOWNLOAD] File not found: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (com.daangcool.stack.common.exception.BadRequestAlertException e) {
+            log.warn("[PRIVATE DOWNLOAD] Invalid request: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (AccessDeniedException e) {
+            log.warn("[PRIVATE DOWNLOAD] Access denied: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         } catch (Exception e) {
             log.error("[PRIVATE DOWNLOAD] Error occurred (id={})", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

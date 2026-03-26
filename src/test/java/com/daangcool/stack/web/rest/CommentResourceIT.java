@@ -61,6 +61,7 @@ class CommentResourceIT {
     private EntityManager entityManager;
 
     private User user;
+    private User otherUser;
     private Board board;
     private Comment comment;
     private CommonCodeDetail boardType;
@@ -98,8 +99,19 @@ class CommentResourceIT {
         userToSave.setCredentialsNonExpired(true);
         userRepository.saveAndFlush(userToSave);
 
+        User otherUserToSave = new User();
+        otherUserToSave.setLogin("comment_other_user");
+        otherUserToSave.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
+        otherUserToSave.setActivated(true);
+        otherUserToSave.setEnabled(true);
+        otherUserToSave.setAccountNonExpired(true);
+        otherUserToSave.setAccountNonLocked(true);
+        otherUserToSave.setCredentialsNonExpired(true);
+        userRepository.saveAndFlush(otherUserToSave);
+
         entityManager.clear();
         this.user = userRepository.findOneByLogin("comment_user").get();
+        this.otherUser = userRepository.findOneByLogin("comment_other_user").get();
 
         Board boardToSave = new Board();
         boardToSave.setTitle("댓글 테스트 게시글");
@@ -131,6 +143,29 @@ class CommentResourceIT {
             .andExpect(status().isCreated());
 
         assertThat(commentRepository.count()).isEqualTo(databaseSizeBeforeCreate + 1);
+    }
+
+    @Test
+    @Transactional
+    void createComment_ShouldIgnoreRequestedUserIdAndUseAuthenticatedUser() throws Exception {
+        CommentDTO commentDTO = new CommentDTO();
+        commentDTO.setBoardId(board.getId());
+        commentDTO.setUserId(otherUser.getId());
+        commentDTO.setContent("위조 댓글입니다.");
+
+        restMockMvc.perform(post("/api/comments")
+                .with(user(user.getLogin()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(om.writeValueAsString(commentDTO)))
+            .andExpect(status().isCreated());
+
+        Comment savedComment = commentRepository.findAllByBoard_IdOrderByIdAsc(board.getId()).stream()
+            .filter(candidate -> "위조 댓글입니다.".equals(candidate.getContent()))
+            .findFirst()
+            .orElseThrow();
+
+        assertThat(savedComment.getUser().getId()).isEqualTo(user.getId());
+        assertThat(savedComment.getUser().getId()).isNotEqualTo(otherUser.getId());
     }
 
     @Test
@@ -169,8 +204,15 @@ class CommentResourceIT {
                 .with(user(user.getLogin()))) // Authenticate the request
             .andExpect(status().isNoContent());
 
-        // After soft delete, the comment should no longer be found by the default findById method
-        assertThat(commentRepository.findById(comment.getId())).isEmpty();
+        entityManager.flush();
+        entityManager.clear();
+
+        Comment deletedComment = (Comment) entityManager
+            .createNativeQuery("SELECT * FROM STACK_COMMENT WHERE ID = ?", Comment.class)
+            .setParameter(1, comment.getId())
+            .getSingleResult();
+
+        assertThat(deletedComment.isDeleted()).isTrue();
     }
 
     @Test

@@ -10,8 +10,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 import static org.hamcrest.Matchers.containsString;
@@ -41,15 +46,17 @@ class UploadResourceIT {
     private Upload publicUpload;
     private Upload privateUpload;
     private MockMultipartFile multipartFile;
+    private byte[] imageBytes;
 
     @BeforeEach
     void setUp() {
         // 테스트에 사용할 가짜 파일을 생성합니다.
+        imageBytes = new byte[] {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 'H', 'e', 'l', 'l', 'o'};
         multipartFile = new MockMultipartFile(
             "file",
-            "hello.txt",
-            "text/plain",
-            "Hello, World!".getBytes()
+            "hello.png",
+            "image/png",
+            imageBytes
         );
 
         // 테스트 실행 전, 데이터베이스를 초기화합니다.
@@ -63,12 +70,16 @@ class UploadResourceIT {
     @AfterEach
     void tearDown() {
         // 테스트 실행 후, 생성된 파일을 물리적으로 삭제하여 정리합니다.
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken("admin", "password", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+        );
         if (publicUpload != null) {
             uploadService.hardDelete(publicUpload.getId());
         }
         if (privateUpload != null) {
             uploadService.hardDelete(privateUpload.getId());
         }
+        SecurityContextHolder.clearContext();
     }
 
     /**
@@ -80,9 +91,9 @@ class UploadResourceIT {
     void downloadPublicFile_Success() throws Exception {
         restMockMvc.perform(get("/api/uploads/{id}/download", publicUpload.getId()))
             .andExpect(status().isOk())
-            .andExpect(header().string("Content-Type", "text/plain"))
-            .andExpect(header().string("Content-Disposition", "attachment; filename*=UTF-8''hello.txt"))
-            .andExpect(content().string("Hello, World!"));
+            .andExpect(header().string("Content-Type", "image/png"))
+            .andExpect(header().string("Content-Disposition", "attachment; filename*=UTF-8''hello.png"))
+            .andExpect(content().bytes(imageBytes));
     }
 
     /**
@@ -104,10 +115,26 @@ class UploadResourceIT {
     @Transactional
     void downloadPrivateFile_WithAuth_ShouldSucceed() throws Exception {
         restMockMvc.perform(get("/api/uploads/private/{id}/download", privateUpload.getId())
-                .with(user("user").roles("USER", "ADMIN")))
+                .with(user("user").roles("USER")))
             .andExpect(status().isOk())
-            .andExpect(header().string("Content-Type", "text/plain"))
-            .andExpect(content().string("Hello, World!"));
+            .andExpect(header().string("Content-Type", "image/png"));
+    }
+
+    @Test
+    @Transactional
+    void downloadPrivateFile_WithOtherUser_ShouldBeForbidden() throws Exception {
+        restMockMvc.perform(get("/api/uploads/private/{id}/download", privateUpload.getId())
+                .with(user("other-user").roles("USER")))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    void downloadPrivateFile_WithAdmin_ShouldSucceed() throws Exception {
+        restMockMvc.perform(get("/api/uploads/private/{id}/download", privateUpload.getId())
+                .with(user("admin").roles("ADMIN")))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Content-Type", "image/png"));
     }
 
     /**
@@ -130,9 +157,9 @@ class UploadResourceIT {
     void previewPublicFile_ShouldReturnInline() throws Exception {
         restMockMvc.perform(get("/api/uploads/{id}/preview", publicUpload.getId()))
             .andExpect(status().isOk())
-            .andExpect(header().string("Content-Type", "text/plain"))
+            .andExpect(header().string("Content-Type", "image/png"))
             .andExpect(header().string("Content-Disposition", containsString("inline; filename*=UTF-8''")))
-            .andExpect(content().string("Hello, World!"));
+            .andExpect(content().bytes(imageBytes));
     }
     /**
      * 파일 업로드 테스트 (POST /api/uploads)
@@ -148,7 +175,7 @@ class UploadResourceIT {
             .andExpect(status().isCreated())
             .andExpect(header().exists("Location"))
             .andExpect(jsonPath("$.id").exists())
-            .andExpect(jsonPath("$.sourceFilename").value("hello.txt"));
+            .andExpect(jsonPath("$.sourceFilename").value("hello.png"));
     }
 
     /**

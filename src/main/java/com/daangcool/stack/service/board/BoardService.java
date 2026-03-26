@@ -5,6 +5,9 @@ import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.common.exception.EntityNotFoundException;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
+import com.daangcool.stack.domain.board.BoardTag;
+import com.daangcool.stack.domain.board.Comment;
+import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.service.dto.BoardDTO;
@@ -60,6 +63,7 @@ public class BoardService {
     private final com.daangcool.stack.repository.board.TagRepository tagRepository;
     private final com.daangcool.stack.repository.board.BoardTagRepository boardTagRepository;
     private final com.daangcool.stack.repository.board.CommentRepository commentRepository;
+    private final UploadService uploadService;
     private final ResourceAuthorizationService resourceAuthorizationService;
 
     public BoardService(BoardRepository boardRepository,
@@ -70,6 +74,7 @@ public class BoardService {
                         com.daangcool.stack.repository.board.TagRepository tagRepository,
                         com.daangcool.stack.repository.board.BoardTagRepository boardTagRepository,
                         com.daangcool.stack.repository.board.CommentRepository commentRepository,
+                        UploadService uploadService,
                         ResourceAuthorizationService resourceAuthorizationService) {
         this.boardRepository = boardRepository;
         this.userRepository = userRepository;
@@ -79,6 +84,7 @@ public class BoardService {
         this.tagRepository = tagRepository;
         this.boardTagRepository = boardTagRepository;
         this.commentRepository = commentRepository;
+        this.uploadService = uploadService;
         this.resourceAuthorizationService = resourceAuthorizationService;
     }
 
@@ -86,22 +92,13 @@ public class BoardService {
     /** 게시글 등록 */
     public BoardDTO save(BoardDTO dto) {
         log.debug("Request to save Board : {}", dto);
-
-        if (dto.getUserId() == null) {
-            String login = com.daangcool.stack.security.SecurityUtils.getCurrentUserLogin()
-                .orElseThrow(() -> new BadRequestAlertException("인증된 사용자를 찾을 수 없습니다.", ENTITY_NAME, "board.unauthorized"));
-            User user = userRepository.findOneByLogin(login)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + login));
-            dto.setUserId(user.getId());
-        }
+        User currentUser = getCurrentAuthenticatedUser();
+        dto.setUserId(currentUser.getId());
 
         validateBoard(dto);
 
-        User user = userRepository.findById(dto.getUserId())
-            .orElseThrow(() -> new EntityNotFoundException("작성자를 찾을 수 없습니다. ID=" + dto.getUserId()));
-
         Board board = boardMapper.toEntity(dto);
-        board.setUser(user);
+        board.setUser(currentUser);
         Board saved = boardRepository.save(board);
         
         syncTags(saved, dto.getTags());
@@ -260,12 +257,19 @@ public class BoardService {
         log.debug("Request to soft delete Board : {}", id);
         Board before = boardRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("삭제할 게시글을 찾을 수 없습니다. ID=" + id));
+        List<BoardTag> activeBoardTags = boardTagRepository.findAllByBoard_IdOrderByIdAsc(id);
 
         // [SEC] 작성자 또는 관리자만 삭제 가능
         resourceAuthorizationService.validateOwnerOrAdminByLogin(before.getUser().getLogin(), ENTITY_NAME, "unauthorized");
 
         if (boardRepository.softDelete(id, reason) == 0)
             throw new EntityNotFoundException("삭제할 게시글을 찾을 수 없습니다. ID=" + id);
+
+        for (BoardTag boardTag : activeBoardTags) {
+            if (boardTag.getTag() != null && boardTag.getTag().getId() != null) {
+                tagRepository.decreaseUsage(boardTag.getTag().getId());
+            }
+        }
 
         // [CASCADE] 관련 엔티티 논리 삭제 (Aggregate Lifecycle)
         boardTagRepository.softDeleteAllByBoardId(id, reason);
@@ -274,7 +278,7 @@ public class BoardService {
 
         log.info("[BOARD DELETE] Soft deleted Board ID={} and all its descendants (Tags, Comments, Uploads)", id);
 
-        clearBoardCaches(before);
+        clearAggregateCaches(before);
     }
 
     // -----------------------------------------------------
@@ -398,12 +402,42 @@ public class BoardService {
     public void restore(Long id) {
         Board board = boardRepository.findByIdIncludingDeleted(id)
             .orElseThrow(() -> new EntityNotFoundException("복구할 게시글을 찾을 수 없습니다. ID=" + id));
+        List<BoardTag> boardTags = boardTagRepository.findAllByBoard_IdOrderByIdAsc(id);
+        List<Comment> comments = commentRepository.findAllByBoard_IdOrderByIdAsc(id);
+        List<Upload> uploads = uploadRepository.findAllByBoard_IdOrderByIdAsc(id);
 
         board.setDeleted(false);
         board.setDescription(null);
         Board saved = boardRepository.save(board);
 
-        clearBoardCaches(saved);
+        for (BoardTag boardTag : boardTags) {
+            if (boardTag.isDeleted()) {
+                boardTag.setDeleted(false);
+                boardTag.setDescription(null);
+                if (boardTag.getTag() != null && boardTag.getTag().getId() != null) {
+                    tagRepository.increaseUsage(boardTag.getTag().getId());
+                }
+            }
+        }
+        boardTagRepository.saveAll(boardTags);
+
+        for (Comment comment : comments) {
+            if (comment.isDeleted()) {
+                comment.setDeleted(false);
+                comment.setDescription(null);
+            }
+        }
+        commentRepository.saveAll(comments);
+
+        for (Upload upload : uploads) {
+            if (upload.isDeleted()) {
+                upload.setDeleted(false);
+                upload.setDescription(null);
+            }
+        }
+        uploadRepository.saveAll(uploads);
+
+        clearAggregateCaches(saved);
     }
 
     /** 게시글 영구 삭제 (Hard Delete). */
@@ -411,9 +445,26 @@ public class BoardService {
     public void hardDelete(Long id) {
         Board board = boardRepository.findByIdIncludingDeleted(id)
             .orElseThrow(() -> new EntityNotFoundException("삭제할 게시글을 찾을 수 없습니다. ID=" + id));
+        List<BoardTag> boardTags = boardTagRepository.findAllByBoard_IdOrderByIdAsc(id);
+        List<Comment> comments = commentRepository.findAllByBoard_IdOrderByIdAsc(id);
+        List<Upload> uploads = uploadRepository.findAllByBoard_IdOrderByIdAsc(id);
+
+        for (BoardTag boardTag : boardTags) {
+            if (!boardTag.isDeleted() && boardTag.getTag() != null && boardTag.getTag().getId() != null) {
+                tagRepository.decreaseUsage(boardTag.getTag().getId());
+            }
+        }
+
+        commentRepository.deleteAll(comments);
+
+        for (Upload upload : uploads) {
+            uploadService.hardDelete(upload.getId());
+        }
+
+        boardTagRepository.deleteAll(boardTags);
 
         boardRepository.delete(board);
-        clearBoardCaches(board);
+        clearAggregateCaches(board);
     }
 
     // -----------------------------------------------------
@@ -463,6 +514,33 @@ public class BoardService {
     private void cacheIfPresent(String cacheName, Object key, Object value) {
         Optional.ofNullable(cacheManager.getCache(cacheName))
             .ifPresent(cache -> cache.put(key, value));
+    }
+
+    private User getCurrentAuthenticatedUser() {
+        String login = com.daangcool.stack.security.SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new BadRequestAlertException("인증된 사용자를 찾을 수 없습니다.", ENTITY_NAME, "board.unauthorized"));
+        return userRepository.findOneByLogin(login)
+            .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + login));
+    }
+
+    private void clearAggregateCaches(Board board) {
+        clearBoardCaches(board);
+        clearCache(
+            CacheNames.COMMENT_BY_ID,
+            CacheNames.COMMENT_BY_BOARD,
+            CacheNames.COMMENT_SEARCH,
+            CacheNames.COMMENT_COUNT_BY_BOARD,
+            CacheNames.COMMENT_COUNT_BY_USER,
+            CacheNames.COMMENT_STATS,
+            CacheNames.TAG_BY_ID,
+            CacheNames.TAG_ALL,
+            CacheNames.TAG_PREFIX,
+            CacheNames.TAG_POPULAR,
+            CacheNames.UPLOAD_BY_ID,
+            CacheNames.UPLOAD_BY_BOARD,
+            CacheNames.UPLOAD_STATS,
+            CacheNames.UPLOAD_ALL
+        );
     }
 
     private void clearCache(String... names) {
