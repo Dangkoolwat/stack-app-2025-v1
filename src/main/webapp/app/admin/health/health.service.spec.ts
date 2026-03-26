@@ -91,6 +91,13 @@ describe('Health Service', () => {
           status: 'UP',
         },
         {
+          name: 'system',
+          status: 'DOWN',
+          details: {
+            status: 'DOWN',
+          },
+        },
+        {
           name: 'system.subsystem1',
           status: 'UP',
           details: {

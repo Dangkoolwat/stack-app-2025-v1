@@ -46,8 +46,11 @@ export default class HealthService {
     for (const key in healthObject) {
       if (Object.hasOwn(healthObject, key)) {
         const value = healthObject[key];
-        if (key === 'status' || key === 'error') {
+        if (key === 'error') {
           healthData[key] = value;
+        } else if (key === 'status') {
+          healthData[key] = value;
+          // status 는 별도로 처리
         } else {
           if (!this.isHealthObject(value)) {
             details[key] = value;
@@ -55,6 +58,13 @@ export default class HealthService {
           }
         }
       }
+    }
+
+    // status 만 있는 경우 (livenessState, readinessState 등) details 에 추가하여 눈 아이콘 표시
+    // error 가 있을 때는 status 를 details 에 추가하지 않음
+    if (!hasDetails && healthData.status && !healthData.error) {
+      details['status'] = healthData.status;
+      hasDetails = true;
     }
 
     // Add the details
@@ -74,7 +84,12 @@ export default class HealthService {
       if (Object.hasOwn(data, key)) {
         const value = data[key];
         if (this.isHealthObject(value)) {
-          if (this.hasSubSystem(value)) {
+          // details 가 있으면 리프 노드로 처리 (서브시스템이 아닌 최종 항목)
+          if (value.details) {
+            this.addHealthObject(result, true, value, this.getModuleName(path, key));
+          } else if (this.hasSubSystem(value)) {
+            // 서브시스템이 있으면 중첩 처리
+            // error 가 있더라도 서브시스템이 있으면 함께 처리
             this.addHealthObject(result, false, value, this.getModuleName(path, key));
             this.flattenHealthData(result, this.getModuleName(path, key), value);
           } else {
