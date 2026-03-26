@@ -1,9 +1,10 @@
 package com.daangcool.stack.service;
 
+import com.daangcool.stack.common.constant.CacheNames;
+import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.domain.Settings;
 import com.daangcool.stack.repository.SettingsRepository;
 import com.daangcool.stack.service.dto.SettingsDTO;
-import com.daangcool.stack.common.exception.BadRequestAlertException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import tech.jhipster.config.JHipsterProperties;
 
 import java.util.Optional;
 
@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -30,9 +31,6 @@ class GlobalSettingsServiceT {
 
     @Mock
     private SettingsRepository settingsRepository;
-
-    @Mock
-    private JHipsterProperties jHipsterProperties; // 현재 테스트에서는 사용되지 않지만, 의존성이므로 Mock으로 생성
 
     @Mock
     private CacheManager cacheManager;
@@ -54,19 +52,16 @@ class GlobalSettingsServiceT {
         settings.setTokenValiditySeconds(3600L);
         settings.setTokenValiditySecondsForRememberMe(7200L);
         settings.setLoginMaxFailureAttempts(5);
+        settings.setGlobalSettings("{\"tokenValiditySeconds\": 3600}");
 
-        settingsDTO = new SettingsDTO(
-            settings.getTokenValiditySeconds(),
-            settings.getTokenValiditySecondsForRememberMe(),
-            settings.getLoginMaxFailureAttempts(),
-            "Description",
-            null,
-            null,
-            null
-        );
+        settingsDTO = new SettingsDTO();
+        settingsDTO.setTokenValiditySeconds(3600L);
+        settingsDTO.setTokenValiditySecondsForRememberMe(7200L);
+        settingsDTO.setLoginMaxFailureAttempts(5);
+        settingsDTO.setDescription("Test Description");
 
         // 캐시 관련 Mock 설정
-        lenient().when(cacheManager.getCache(GlobalSettingsService.SETTING_CACHE)).thenReturn(cache);
+        lenient().when(cacheManager.getCache(CacheNames.SETTINGS)).thenReturn(cache);
     }
 
     /**
@@ -120,7 +115,11 @@ class GlobalSettingsServiceT {
         // given
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
 
-        SettingsDTO updateRequest = new SettingsDTO(86400L, 2592000L, 10, "Updated", null, null, null);
+        SettingsDTO updateRequest = new SettingsDTO();
+        updateRequest.setTokenValiditySeconds(86400L);
+        updateRequest.setTokenValiditySecondsForRememberMe(2592000L);
+        updateRequest.setLoginMaxFailureAttempts(10);
+        updateRequest.setDescription("Updated");
 
         // when
         globalSettingsService.updateSettings(updateRequest);
@@ -145,7 +144,8 @@ class GlobalSettingsServiceT {
     void updateSettings_InvalidData_ShouldThrowException() {
         // given
         when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
-        SettingsDTO invalidDTO = new SettingsDTO(0L, 7200L, 5, "Invalid", null, null, null);
+        SettingsDTO invalidDTO = new SettingsDTO();
+        invalidDTO.setTokenValiditySeconds(0L);
 
         // when & then
         assertThatThrownBy(() -> globalSettingsService.updateSettings(invalidDTO))

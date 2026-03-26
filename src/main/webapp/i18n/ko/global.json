@@ -139,6 +139,10 @@
     "idnull": "Invalid ID",
     "idinvalid": "Invalid Id",
     "idnotfound": "ID cannot be found",
+    "groupexists": "이미 존재하는 그룹 코드입니다.",
+    "groupdeleted": "이미 사용된 후 삭제된 그룹 코드이므로 재사용할 수 없습니다.",
+    "codeexists": "이미 존재하는 코드입니다.",
+    "codedeleted": "이미 사용된 후 삭제된 코드이므로 재사용할 수 없습니다. 다른 코드를 입력해 주세요.",
     "file": {
       "could.not.extract": "Could not extract file",
       "not.image": "File was expected to be an image but was found to be \"{ fileType }\""

@@ -1,6 +1,6 @@
 package com.daangcool.stack.service;
 
-import com.daangcool.stack.common.constant.Constants;
+import com.daangcool.stack.common.constant.CacheNames;
 import com.daangcool.stack.domain.Settings;
 
 import com.daangcool.stack.repository.SettingsRepository;
@@ -35,9 +35,6 @@ public class GlobalSettingsService {
     // Settings는 항상 단일 레코드로 존재 (ID=1)
     private static final Long SETTINGS_ID = 1L;
 
-    // CacheConfiguration에 등록된 캐시 이름과 동일해야 함
-    public static final String SETTING_CACHE = "SETTING_CACHE";
-
     private final SettingsRepository settingsRepository;
     private final JHipsterProperties jHipsterProperties;
     private final CacheManager cacheManager;
@@ -57,7 +54,7 @@ public class GlobalSettingsService {
      */
     @Transactional(readOnly = true)
     public SettingsDTO getSettings() {
-        Cache cache = cacheManager.getCache(SETTING_CACHE);
+        Cache cache = cacheManager.getCache(CacheNames.SETTINGS);
         if (cache != null) {
             SettingsDTO cached = cache.get(SETTINGS_ID, SettingsDTO.class);
             if (cached != null) {
@@ -157,7 +154,7 @@ public class GlobalSettingsService {
     public int getLoginMaxFailureAttempts() {
         return settingsRepository.findById(SETTINGS_ID)
             .map(Settings::getLoginMaxFailureAttempts)
-            .orElse(Constants.MAX_ATTEMPT);
+            .orElse(com.daangcool.stack.common.constant.Constants.MAX_ATTEMPT);
     }
 
     /**
@@ -167,7 +164,7 @@ public class GlobalSettingsService {
      * - 잘못된 캐시 데이터나 긴급 수정 상황에 대비하기 위한 보조 메서드입니다.
      */
     public void clearSettingsCache() {
-        Cache cache = cacheManager.getCache(SETTING_CACHE);
+        Cache cache = cacheManager.getCache(CacheNames.SETTINGS);
         if (cache != null) {
             log.info("[SETTINGS CACHE] Evicting cache for ID={}", SETTINGS_ID);
             cache.evict(SETTINGS_ID);

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.daangcool.stack.common.constant.CacheNames.*;
+
 @Service
 @Transactional
 public class CommonCodeService {
@@ -33,13 +35,6 @@ public class CommonCodeService {
     private static final String ERR_CODE_EXISTS = "codeexists";
     private static final String ERR_NOT_FOUND = "notfound";
 
-    // --- Custom Cache Names ---
-    // Redis Cache Configuration (CacheConfiguration.java)에 이 이름을 추가해야 합니다.
-    public static final String COMMON_GROUP_CACHE = "commonGroups";
-    public static final String COMMON_GROUP_LIST_CACHE = "commonGroupList";
-    public static final String COMMON_DETAIL_CACHE = "commonDetails";
-    public static final String COMMON_DETAIL_LIST_BY_GROUP_CACHE = "commonDetailsByGroup";
-
     public CommonCodeService(
         CommonCodeGroupRepository groupRepository,
         CommonCodeDetailRepository detailRepository,
@@ -54,34 +49,37 @@ public class CommonCodeService {
 
     private void clearGroupCaches(String groupCode) {
         // 단일 그룹 조회 캐시 제거
-        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUP_CACHE)).evictIfPresent(groupCode);
+        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUPS)).evictIfPresent(groupCode);
         // 전체 그룹 리스트 캐시 제거 (새 데이터 생성/수정/삭제 시 리스트 전체 갱신)
-        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUP_LIST_CACHE)).clear();
+        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUP_LIST)).clear();
         LOG.debug("Cleared caches for CommonCodeGroup: {}", groupCode);
     }
 
     private void clearDetailCaches(Long detailId, String groupCode) {
         // 단일 상세 코드 조회 캐시 제거
-        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAIL_CACHE)).evictIfPresent(detailId);
+        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAILS)).evictIfPresent(detailId);
         // 특정 그룹의 상세 코드 리스트 캐시 제거 (GroupCode를 키로 사용)
-        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAIL_LIST_BY_GROUP_CACHE)).evictIfPresent(groupCode);
+        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAILS_BY_GROUP)).evictIfPresent(groupCode);
         LOG.debug("Cleared caches for CommonCodeDetail ID: {}, Group: {}", detailId, groupCode);
     }
 
     // --- CommonCodeGroup Operations ---
 
     public CommonCodeGroup createGroup(CommonCodeGroup group) {
-        if (group.getGroupCode() == null || group.getGroupCode().isBlank()) {
-            throw new BadRequestAlertException("Group code must be provided", ENTITY_GROUP, "codenull");
-        }
-        if (groupRepository.existsByGroupCode(group.getGroupCode())) {
-            throw new BadRequestAlertException("A CommonCodeGroup with this code already exists", ENTITY_GROUP, ERR_CODE_EXISTS);
-        }
+        // 그룹 코드 중복 체크 (삭제된 항목 포함)
+        groupRepository.findById(group.getGroupCode()).ifPresent(existing -> {
+            if (existing.isDeleted()) {
+                throw new BadRequestAlertException("This group code was previously used and is deleted. It cannot be reused.", ENTITY_GROUP, "groupdeleted");
+            } else {
+                throw new BadRequestAlertException("A CommonCodeGroup with this code already exists", ENTITY_GROUP, "groupexists");
+            }
+        });
+
         group.setDeleted(false);
         LOG.debug("Creating CommonCodeGroup: {}", group);
-        CommonCodeGroup savedGroup = groupRepository.save(group);
-        clearGroupCaches(savedGroup.getGroupCode()); // 캐시 제거
-        return savedGroup;
+        CommonCodeGroup saved = groupRepository.save(group);
+        clearGroupCaches(saved.getGroupCode());
+        return saved;
     }
 
     public Optional<CommonCodeGroup> updateGroup(CommonCodeGroup updatedGroup) {
@@ -106,7 +104,7 @@ public class CommonCodeService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<CommonCodeGroup> findAllGroups() {
-        Cache cache = cacheManager.getCache(COMMON_GROUP_LIST_CACHE);
+        Cache cache = cacheManager.getCache(COMMON_GROUP_LIST);
         if (cache != null) {
             // DTO 리스트로 저장 → Hibernate Proxy / LazyLoad 문제 없음
             List<CommonCodeCacheDto.GroupDto> cached =
@@ -128,7 +126,7 @@ public class CommonCodeService {
 
     @Transactional(readOnly = true)
     public Optional<CommonCodeGroup> findGroup(String groupCode) {
-        Cache cache = cacheManager.getCache(COMMON_GROUP_CACHE);
+        Cache cache = cacheManager.getCache(COMMON_GROUPS);
         if (cache != null) {
             CommonCodeCacheDto.GroupDto cached =
                 cache.get(groupCode, CommonCodeCacheDto.GroupDto.class);
@@ -171,9 +169,15 @@ public class CommonCodeService {
             .findOneByGroupCodeAndDeletedIsFalse(detail.getGroup().getGroupCode())
             .orElseThrow(() -> new BadRequestAlertException("CommonCodeGroup not found", ENTITY_GROUP, ERR_NOT_FOUND));
 
-        if (detailRepository.existsByGroupGroupCodeAndCode(group.getGroupCode(), detail.getCode())) {
-            throw new BadRequestAlertException("A CommonCodeDetail with this code already exists in the group", ENTITY_DETAIL, ERR_CODE_EXISTS);
-        }
+        // 상세 코드 중복 체크 (삭제된 항목 포함)
+        detailRepository.findOneByGroupGroupCodeAndCode(group.getGroupCode(), detail.getCode())
+            .ifPresent(existing -> {
+                if (existing.isDeleted()) {
+                    throw new BadRequestAlertException("This code was previously used and is deleted. It cannot be reused.", ENTITY_DETAIL, "codedeleted");
+                } else {
+                    throw new BadRequestAlertException("A CommonCodeDetail with this code already exists in the group", ENTITY_DETAIL, ERR_CODE_EXISTS);
+                }
+            });
 
         detail.setGroup(group);
         detail.setDeleted(false);
@@ -192,10 +196,16 @@ public class CommonCodeService {
             .findById(updatedDetail.getId())
             .filter(detail -> !detail.isDeleted())
             .map(existingDetail -> {
-                if (!existingDetail.getCode().equals(updatedDetail.getCode()) &&
-                    detailRepository.existsByGroupGroupCodeAndCode(existingDetail.getGroup().getGroupCode(), updatedDetail.getCode()))
-                {
-                    throw new BadRequestAlertException("The new code already exists in the group", ENTITY_DETAIL, ERR_CODE_EXISTS);
+                // 상용 코드(Code) 변경 시 중복 체크
+                if (!existingDetail.getCode().equals(updatedDetail.getCode())) {
+                    detailRepository.findOneByGroupGroupCodeAndCode(existingDetail.getGroup().getGroupCode(), updatedDetail.getCode())
+                        .ifPresent(other -> {
+                            if (other.isDeleted()) {
+                                throw new BadRequestAlertException("The new code was previously used and is deleted. It cannot be reused.", ENTITY_DETAIL, "codedeleted");
+                            } else {
+                                throw new BadRequestAlertException("The new code already exists in the group", ENTITY_DETAIL, ERR_CODE_EXISTS);
+                            }
+                        });
                 }
 
                 // Update logic
@@ -218,7 +228,7 @@ public class CommonCodeService {
 
     @Transactional(readOnly = true)
     public Optional<CommonCodeDetail> findDetail(Long id) {
-        Cache cache = cacheManager.getCache(COMMON_DETAIL_CACHE);
+        Cache cache = cacheManager.getCache(COMMON_DETAILS);
         if (cache != null) {
             CommonCodeCacheDto.DetailDto cached =
                 cache.get(id, CommonCodeCacheDto.DetailDto.class);
@@ -238,7 +248,7 @@ public class CommonCodeService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<CommonCodeDetail> findAllDetailsByGroup(String groupCode) {
-        Cache cache = cacheManager.getCache(COMMON_DETAIL_LIST_BY_GROUP_CACHE);
+        Cache cache = cacheManager.getCache(COMMON_DETAILS_BY_GROUP);
         if (cache != null) {
             List<CommonCodeCacheDto.DetailDto> cached =
                 (List<CommonCodeCacheDto.DetailDto>) cache.get(groupCode, List.class);

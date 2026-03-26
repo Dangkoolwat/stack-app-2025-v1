@@ -18,4 +18,7 @@ public interface CommonCodeDetailRepository extends JpaRepository<CommonCodeDeta
 
     // 그룹 내 코드 중복 체크 (삭제된 것도 포함)
     boolean existsByGroupGroupCodeAndCode(String groupCode, String code);
+
+    // 그룹 내 코드 존재 여부 확인 (삭제 여부 상관없이 단일 조회)
+    Optional<CommonCodeDetail> findOneByGroupGroupCodeAndCode(String groupCode, String code);
 }

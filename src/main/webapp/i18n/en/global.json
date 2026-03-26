@@ -139,6 +139,10 @@
     "idnull": "Invalid ID",
     "idinvalid": "Invalid ID",
     "idnotfound": "ID cannot be found",
+    "groupexists": "This group code already exists.",
+    "groupdeleted": "This group code was previously used and deleted. It cannot be reused.",
+    "codeexists": "This code already exists.",
+    "codedeleted": "This code was previously used and deleted. It cannot be reused. Please enter a different code.",
     "file": {
       "could.not.extract": "Could not extract file",
       "not.image": "File was expected to be an image but was found to be \"{ fileType }\""

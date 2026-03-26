@@ -25,7 +25,9 @@ import static org.mockito.Mockito.when;
 class CommonCodeServiceT {
 
     @Mock
-    private CommonCodeGroupRepository commonCodeGroupRepository;
+    private CommonCodeGroupRepository groupRepository;
+    @Mock
+    private com.daangcool.stack.repository.common.CommonCodeDetailRepository detailRepository;
     @Mock
     private org.springframework.cache.CacheManager cacheManager;
     @Mock
@@ -34,34 +36,61 @@ class CommonCodeServiceT {
     @InjectMocks
     private CommonCodeService commonCodeService;
 
-    private CommonCodeGroup commonCodeGroup;
+    private CommonCodeGroup testGroup;
 
     @BeforeEach
     void setUp() {
-        // 캐시 관련 Mock 설정 (NullPointerException 방지)
         org.mockito.Mockito.lenient().when(cacheManager.getCache(org.mockito.ArgumentMatchers.anyString())).thenReturn(cache);
 
-        // 모든 테스트 전에 공통적으로 사용할 테스트 데이터 설정
-        commonCodeGroup = new CommonCodeGroup();
-        commonCodeGroup.setGroupCode("TEST_GROUP");
-        commonCodeGroup.setGroupName("테스트 그룹");
+        testGroup = new CommonCodeGroup();
+        testGroup.setGroupCode("TEST_GROUP");
+        testGroup.setGroupName("테스트 그룹");
+        testGroup.setDeleted(false);
     }
 
-    /**
-     * 서비스 테스트: groupCode로 조회
-     * - 레포지토리가 특정 groupCode에 대해 CommonCodeGroup 객체를 반환하도록 설정
-     * - 서비스의 findGroup 메소드가 예상대로 동작하는지 확인
-     */
     @Test
     void whenFindGroup_thenReturnsGroup() {
-        // given
-        when(commonCodeGroupRepository.findOneByGroupCodeAndDeletedIsFalse(anyString())).thenReturn(Optional.of(commonCodeGroup));
+        when(groupRepository.findOneByGroupCodeAndDeletedIsFalse("TEST_GROUP")).thenReturn(Optional.of(testGroup));
 
-        // when
         Optional<CommonCodeGroup> found = commonCodeService.findGroup("TEST_GROUP");
 
-        // then
         assertThat(found).isPresent();
         assertThat(found.get().getGroupCode()).isEqualTo("TEST_GROUP");
+    }
+
+    @Test
+    void whenCreateGroupWithExistingDeletedCode_thenThrowsGroupDeletedException() {
+        CommonCodeGroup deletedGroup = new CommonCodeGroup();
+        deletedGroup.setGroupCode("DELETED_GROUP");
+        deletedGroup.setDeleted(true);
+
+        when(groupRepository.findById("DELETED_GROUP")).thenReturn(Optional.of(deletedGroup));
+
+        CommonCodeGroup newGroup = new CommonCodeGroup();
+        newGroup.setGroupCode("DELETED_GROUP");
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> commonCodeService.createGroup(newGroup))
+            .isInstanceOf(com.daangcool.stack.common.exception.BadRequestAlertException.class)
+            .hasFieldOrPropertyWithValue("errorKey", "groupdeleted");
+    }
+
+    @Test
+    void whenCreateDetailWithExistingDeletedCode_thenThrowsCodeDeletedException() {
+        when(groupRepository.findOneByGroupCodeAndDeletedIsFalse("TEST_GROUP")).thenReturn(Optional.of(testGroup));
+
+        com.daangcool.stack.domain.common.CommonCodeDetail deletedDetail = new com.daangcool.stack.domain.common.CommonCodeDetail();
+        deletedDetail.setCode("DELETED_CODE");
+        deletedDetail.setDeleted(true);
+
+        when(detailRepository.findOneByGroupGroupCodeAndCode("TEST_GROUP", "DELETED_CODE"))
+            .thenReturn(Optional.of(deletedDetail));
+
+        com.daangcool.stack.domain.common.CommonCodeDetail newDetail = new com.daangcool.stack.domain.common.CommonCodeDetail();
+        newDetail.setCode("DELETED_CODE");
+        newDetail.setGroup(testGroup);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> commonCodeService.createDetail(newDetail))
+            .isInstanceOf(com.daangcool.stack.common.exception.BadRequestAlertException.class)
+            .hasFieldOrPropertyWithValue("errorKey", "codedeleted");
     }
 }
