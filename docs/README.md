@@ -43,9 +43,12 @@ If more than one document is relevant, use the documented priority order and do 
 docs/
   backend/
   frontend/
+  analysis/
+  knowledge/
   standards/
   workflow/
   operations/
+  release-notes/
 ```
 
 ---

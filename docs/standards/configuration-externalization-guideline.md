@@ -9,10 +9,11 @@ This document applies when adding new configuration, removing hardcoded values, 
 
 ## Mandatory Rules
 
-- MUST NOT hardcode secrets in source code or checked-in configuration files.
+For security rules (secrets, `.env` handling, production environment variables), refer to [Environment Variables Guideline](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/environment-variables-guideline.md).
+
+Additional implementation rules:
+
 - MUST externalize deploy-time and environment-specific values.
-- MUST keep `.env.sample` aligned with every required local environment variable.
-- MUST use OS environment variables or a secret manager in production.
 - MUST use structured configuration binding for grouped backend settings.
 - MUST treat frontend environment variables as public values.
 

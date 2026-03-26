@@ -126,7 +126,7 @@ spring:
 - 운영 환경: `minimum-idle: -1` (고정 풀)
 - 누수 감지: `leak-detection-threshold: 60000` (60 초)
 
-#### ️ [검토] OpenTelemetry 설정 상태 확인 필요
+####  [검토] OpenTelemetry 설정 상태 확인 필요
 현재 상태:
 ```yaml
 management:
@@ -140,7 +140,7 @@ management:
 - 프로덕션 환경에서 OTLP export 활성화 여부 검토
 - Prometheus 와 이중 수집 여부 확인
 
-#### ️ [권장] GraalVM Native Image 지원 여부
+####  [권장] GraalVM Native Image 지원 여부
 현재 상태:
 - Native Image 관련 의존성 (`spring-boot-starter-native`) 없음
 - GraalVM 빌드 설정 파일 부재
@@ -185,8 +185,8 @@ String csp = String.format(
 
 평가:
 -  nonce 기반 스크립트 실행 제한
-- ️ `unsafe-inline` (style-src) - Vue/CSS-in-JS 런타임 주입에 필요 (주석으로 명시됨)
-- ️ `unsafe-eval` (script-src) - 개발 도구 의존성 제거 필요
+-  `unsafe-inline` (style-src) - Vue/CSS-in-JS 런타임 주입에 필요 (주석으로 명시됨)
+-  `unsafe-eval` (script-src) - 개발 도구 의존성 제거 필요
 
 권장 사항:
 - `unsafe-eval` 제거를 위한 Vite 빌드 설정 검토
@@ -365,7 +365,7 @@ application:
 
 분석:
 -  Access Token 유효기간보다 짧게 설정 (좋은 관행)
-- ️ Redis 장애 시 Fallback 동작은 구현됨
+-  Redis 장애 시 Fallback 동작은 구현됨
 
 권장 사항:
 1. 캐시 계층화:

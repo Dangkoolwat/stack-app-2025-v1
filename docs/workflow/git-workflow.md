@@ -74,24 +74,9 @@ A completed non-trivial change SHOULD include:
 
 ---
 
-## Agent-log Location and Required Files
+## Agent-log
 
-Create logs under:
-
-```text
-docs/{backend|frontend}/agent-log/YYYY-MM-DD-task-name/
-```
-
-Required files:
-
-- `problem-analysis.md`
-- `proposal.md`
-- `self-check.md`
-- `implementation-plan.md`
-- `walkthrough.md`
-- `final-report.md`
-
-`agent-log` contents MUST be written in Korean according to `AGENTS.md`.
+Refer to `AGENTS.md` for the authoritative agent-log rules, including location, required files, metadata format, and language policy.
 
 ---
 
@@ -107,29 +92,20 @@ Confirm at least the following:
 - OpenAPI impact is checked
 - rollback feasibility is reviewed
 
-### Recommended commit message format
+### Commit message format
 
-```text
-type: short summary
-```
+All commits MUST follow the [Commit Convention Guide](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/commit-convention.md).
+
+Format: `<type>(<scope>): <description>`
 
 Examples:
 
 ```text
-feat: improve user query performance and add agent log
-fix: remove auth cache and redesign TTL policy
-refactor: simplify order query flow and update docs
-docs: update workflow and review rules
+feat(board): improve user query performance and add agent log
+fix(cache): remove auth cache and redesign TTL policy
+refactor(order): simplify order query flow and update docs
+docs(workflow): update workflow and review rules
 ```
-
-Recommended types:
-
-- `feat`
-- `fix`
-- `refactor`
-- `docs`
-- `chore`
-- `test`
 
 ---
 

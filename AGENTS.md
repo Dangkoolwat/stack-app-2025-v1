@@ -30,6 +30,7 @@ docs/
   standards/
   workflow/
   operations/
+  release-notes/
 
 ### Folder Roles
 
@@ -107,6 +108,12 @@ All agents MUST follow the Conventional Commits standard (v1.0.0).
 
 ## Knowledge Management (KI) (MANDATORY)
 
+### Search First
+
+Before creating a new KI, agents MUST search `docs/knowledge/` for existing items on the same topic. If a relevant KI exists, update it instead of creating a duplicate.
+
+### Creation Rule
+
 When a task involves complex troubleshooting, non-obvious logic, or critical architectural decisions:
 
 - Action: Agents MUST create a Knowledge Item (KI).
@@ -126,6 +133,7 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
   - Recommended for full validation including `*IT`: `export $(xargs < .env) && ./mvnw clean verify`
 - [ ] API contracts maintained
 - [ ] Architecture compliance
+- [ ] Cross-cutting consistency verified (no partial pattern migration remains)
 
 ### Safety
 
@@ -289,13 +297,51 @@ Required when changing:
 - security
 - dependencies
 - API contracts
+- shared constants, enums, or utility classes
+- cross-cutting patterns (annotations, base classes, interfaces)
 
-Must check:
+Must perform:
 
-- affected systems
-- rollback
-- performance
-- security
+- codebase-wide search for all usages of the changed pattern
+- list all affected files in the implementation plan
+- verify zero remaining old-pattern usages after implementation
+- check affected systems for rollback safety
+- verify no performance regression
+- verify no security regression
+
+---
+
+## Consistency Sweep Rule (MANDATORY)
+
+IF the task involves any of the following:
+
+- adding, renaming, or moving a constant, enum, or shared class
+- changing a method signature in a service interface
+- modifying cache names, config keys, or annotation values
+- renaming a DTO field or changing its type
+- changing import paths after package restructuring
+
+THEN the agent MUST:
+
+1. Run: `grep -rn "OLD_PATTERN" src/ --include="*.java"` (or equivalent)
+2. List every affected file in the implementation plan
+3. Apply the change to ALL files, not only the ones in the immediate task scope
+4. Run the same grep again to verify zero remaining matches
+5. If any old-pattern usages remain, the task is INCOMPLETE
+
+### Known Failure Patterns (DO NOT REPEAT)
+
+- CacheNames constant class was created but only BoardService was updated. Other services continued using string literals, causing NPE.
+- ResourceAuthorizationService was introduced but only applied to BoardService. Other services had no authorization checks.
+- DTO field was renamed in the service layer but test fixtures still used the old field name, causing compile errors.
+
+### Self-Check Verification
+
+```text
+- [ ] grep -rn "OLD_PATTERN" src/ --include="*.java" returns zero results
+- [ ] All affected files are listed in implementation-plan.md
+- [ ] Verification command and result recorded in self-check.md
+```
 
 ---
 
@@ -304,3 +350,4 @@ Must check:
 "Make it correct, safe, and understandable first."
 
 - Refer to the Self-Check section for concrete checklists for each pillar.
+- Refer to the Consistency Sweep Rule to prevent partial pattern migration.
