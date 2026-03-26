@@ -102,9 +102,11 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     /**
      * 이메일 중복 (400 Bad Request)
+     * 클라이언트 오류이므로 WARN 레벨로 짧은 메시지만 로깅합니다.
      */
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ProblemDetail handleEmailAlreadyUsed(EmailAlreadyUsedException ex, HttpServletRequest request) {
+        log.warn("Email Already Used: {} - URI={}", ex.getMessage(), request.getRequestURI());
         return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.EMAIL_ALREADY_USED_TYPE.toString(),
@@ -116,9 +118,11 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     /**
      * 로그인 중복 (400 Bad Request)
+     * 클라이언트 오류이므로 WARN 레벨로 짧은 메시지만 로깅합니다.
      */
     @ExceptionHandler(LoginAlreadyUsedException.class)
     public ProblemDetail handleLoginAlreadyUsed(LoginAlreadyUsedException ex, HttpServletRequest request) {
+        log.warn("Login Already Used: {} - URI={}", ex.getMessage(), request.getRequestURI());
         return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.LOGIN_ALREADY_USED_TYPE.toString(),
@@ -130,9 +134,11 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     /**
      * 잘못된 비밀번호 (400 Bad Request)
+     * 클라이언트 오류이므로 WARN 레벨로 짧은 메시지만 로깅합니다.
      */
     @ExceptionHandler(InvalidPasswordException.class)
     public ProblemDetail handleInvalidPassword(InvalidPasswordException ex, HttpServletRequest request) {
+        log.warn("Invalid Password: {} - URI={}", ex.getMessage(), request.getRequestURI());
         return ProblemUtils.build(
             HttpStatus.BAD_REQUEST,
             ErrorConstants.INVALID_PASSWORD_TYPE.toString(),
@@ -199,9 +205,17 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     /**
      * BadRequestAlertException (서비스/리소스 단위 유효성 실패)
      * JHipster HeaderUtil 을 사용하여 프론트엔드가 오류 메시지를 표시할 수 있도록 헤더를 추가합니다.
+     * 클라이언트 오류이므로 WARN 레벨로 짧은 메시지만 로깅합니다.
      */
     @ExceptionHandler(BadRequestAlertException.class)
     public ResponseEntity<ProblemDetail> handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
+        // 클라이언트 오류 - WARN 레벨로 짧은 메시지만 로깅 (스택트레이스 없음)
+        log.warn("Bad Request Alert [{}]: {} - entity={}, errorKey={}",
+            request.getRequestURI(),
+            ex.getMessage(),
+            ex.getEntityName(),
+            ex.getErrorKey());
+
         var problem = ex.toProblemDetail(request.getRequestURI());
         problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         problem.setProperty("path", request.getRequestURI());
