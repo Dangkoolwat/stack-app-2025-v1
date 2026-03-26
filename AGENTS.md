@@ -122,6 +122,7 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 
 - [ ] Requirements addressed
 - [ ] Unit/Integration tests passing
+  - Recommended: `export $(xargs < .env) && ./mvnw clean test`
 - [ ] API contracts maintained
 - [ ] Architecture compliance
 
@@ -236,6 +237,7 @@ final-report.md:
 ### Operations
 
 - docs/operations/environment-variables.md
+- docs/operations/testing-guideline.md
 
 ---
 

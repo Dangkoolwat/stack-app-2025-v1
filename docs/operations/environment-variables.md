@@ -93,3 +93,4 @@ If repository-specific run commands are not clearly documented, agents MUST:
 - `docs/standards/environment-variables-guideline.md`
 - `docs/standards/configuration-externalization-guideline.md`
 - `docs/workflow/ci-automation-rules.md`
+- `docs/operations/testing-guideline.md`
