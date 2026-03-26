@@ -1,5 +1,7 @@
 package com.daangcool.stack.service.board;
 
+import com.daangcool.stack.common.constant.CacheNames;
+
 
 import com.daangcool.stack.domain.board.Board;
 import com.daangcool.stack.domain.board.BoardTag;
@@ -41,15 +43,8 @@ public class BoardTagService {
     private static final String ENTITY_NAME = "boardTag";
 
     // -----------------------------------------------
-    // 캐시 이름 상수 (Board, Tag 양쪽의 주요 캐시 포함)
+    // 캐시 (CacheNames 사용)
     // -----------------------------------------------
-    public static final String CACHE_BOARD_BY_ID = "BOARD_BY_ID";
-    public static final String CACHE_BOARD_PAGE = "BOARD_PAGE";
-    public static final String CACHE_BOARD_SEARCH = "BOARD_SEARCH";
-    public static final String CACHE_BOARD_NOTICE_LIST = "BOARD_NOTICE_LIST";
-    public static final String CACHE_TAG_BY_ID = "TAG_BY_ID";
-    public static final String CACHE_TAG_ALL = "TAG_ALL";
-    public static final String CACHE_TAG_POPULAR = "TAG_POPULAR";
 
     private final BoardTagRepository boardTagRepository;
     private final BoardRepository boardRepository;
@@ -79,16 +74,16 @@ public class BoardTagService {
         try {
             if (bt.getBoard() != null) {
                 Long boardId = bt.getBoard().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_BY_ID)).evictIfPresent(boardId);
-                Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_PAGE)).clear();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_SEARCH)).clear();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_NOTICE_LIST)).clear();
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_BY_ID)).evictIfPresent(boardId);
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_PAGE)).clear();
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_SEARCH)).clear();
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_NOTICES)).clear();
             }
             if (bt.getTag() != null) {
                 Long tagId = bt.getTag().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_BY_ID)).evictIfPresent(tagId);
-                Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_ALL)).clear();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_POPULAR)).clear();
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_BY_ID)).evictIfPresent(tagId);
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_ALL)).clear();
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_POPULAR)).clear();
             }
             log.debug("[BOARD_TAG CACHE] Cleared related caches for boardId={} / tagId={}",
                 bt.getBoard() != null ? bt.getBoard().getId() : null,
@@ -196,13 +191,13 @@ public class BoardTagService {
     /** 모든 관련 캐시를 강제로 초기화 */
     public void clearAllCaches() {
         try {
-            Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_BY_ID)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_PAGE)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_SEARCH)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_BOARD_NOTICE_LIST)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_BY_ID)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_ALL)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_TAG_POPULAR)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_BY_ID)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_PAGE)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_SEARCH)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.BOARD_NOTICES)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_BY_ID)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_ALL)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.TAG_POPULAR)).clear();
             log.info("[BOARD_TAG CACHE] 모든 관련 캐시를 초기화했습니다.");
         } catch (Exception e) {
             log.warn("[BOARD_TAG CACHE] 캐시 초기화 중 오류: {}", e.getMessage());

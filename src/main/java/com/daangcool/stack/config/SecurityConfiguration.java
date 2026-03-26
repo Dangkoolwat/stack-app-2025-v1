@@ -118,7 +118,9 @@ public class SecurityConfiguration {
 
                     .requestMatchers("/api/**").authenticated()
                     .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getWebsocket()).permitAll()
+                    // 121: 헬스 체크는 공개 (ApplicationProperties에서 /management/health 등만 포함되도록 수정됨)
                     .requestMatchers(applicationProperties.getSecurity().getPublicPaths().getManagement()).permitAll()
+                    // 122, 123: 나머지 관리 API는 관리자 전용
                     .requestMatchers("/management/prometheus").hasAuthority(AuthoritiesConstants.ADMIN)
                     .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
 

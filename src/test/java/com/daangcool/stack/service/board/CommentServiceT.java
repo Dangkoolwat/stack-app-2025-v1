@@ -45,6 +45,8 @@ class CommentServiceT {
     private CacheManager cacheManager;
     @Mock
     private Cache cache;
+    @Mock
+    private com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
 
     @InjectMocks
     private CommentService commentService;

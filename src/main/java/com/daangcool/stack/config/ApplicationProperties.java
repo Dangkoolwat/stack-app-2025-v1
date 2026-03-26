@@ -133,7 +133,7 @@ public class ApplicationProperties {
             private String[] i18n = {"/i18n/**"};
             private String[] swagger = {"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"};
             private String[] websocket = {"/websocket/**"};
-            private String[] management = {"/management/**"};
+            private String[] management = {"/management/health", "/management/health/**"};
         }
     }
 

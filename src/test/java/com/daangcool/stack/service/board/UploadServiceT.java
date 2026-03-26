@@ -64,6 +64,8 @@ class UploadServiceT {
 
     @Mock
     private Tika tika;
+    @Mock
+    private com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
 
     @InjectMocks
     private UploadService uploadService;

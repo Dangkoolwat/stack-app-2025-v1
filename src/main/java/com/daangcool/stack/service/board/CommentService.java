@@ -1,5 +1,7 @@
 package com.daangcool.stack.service.board;
 
+import static com.daangcool.stack.common.constant.CacheNames.*;
+
 import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.User;
 import com.daangcool.stack.domain.board.Board;
@@ -41,33 +43,30 @@ public class CommentService {
     private static final String ENTITY_NAME = "comment";
 
     // -----------------------------------------------------
-    // 캐시 이름 상수
+    // 캐시 (CacheNames 사용)
     // -----------------------------------------------------
-    public static final String CACHE_COMMENT_BY_ID = "COMMENT_BY_ID";
-    public static final String CACHE_COMMENT_BY_BOARD = "COMMENT_BY_BOARD";
-    public static final String CACHE_COMMENT_SEARCH = "COMMENT_SEARCH";
-    public static final String CACHE_COMMENT_COUNT_BY_BOARD = "COMMENT_COUNT_BY_BOARD";
-    public static final String CACHE_COMMENT_COUNT_BY_USER = "COMMENT_COUNT_BY_USER";
-    public static final String CACHE_COMMENT_STATS = "CACHE_COMMENT_STATS";
 
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final CommentMapper commentMapper;
     private final CacheManager cacheManager;
+    private final com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
 
     public CommentService(
         CommentRepository commentRepository,
         BoardRepository boardRepository,
         UserRepository userRepository,
         CommentMapper commentMapper,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService
     ) {
         this.commentRepository = commentRepository;
         this.boardRepository = boardRepository;
         this.userRepository = userRepository;
         this.commentMapper = commentMapper;
         this.cacheManager = cacheManager;
+        this.resourceAuthorizationService = resourceAuthorizationService;
     }
 
     // -----------------------------------------------------
@@ -96,7 +95,7 @@ public class CommentService {
         Comment saved = commentRepository.save(comment);
         clearCommentCaches(saved);
 
-        Cache byId = cacheManager.getCache(CACHE_COMMENT_BY_ID);
+        Cache byId = cacheManager.getCache(COMMENT_BY_ID);
         if (byId != null) byId.put(saved.getId(), commentMapper.toDto(saved));
 
         return commentMapper.toDto(saved);
@@ -111,7 +110,7 @@ public class CommentService {
         log.debug("Request to get all Comments for Board : {}", boardId);
         String key = "board:" + boardId;
 
-        Cache byBoard = cacheManager.getCache(CACHE_COMMENT_BY_BOARD);
+        Cache byBoard = cacheManager.getCache(COMMENT_BY_BOARD);
         if (byBoard != null) {
             List<CommentDTO> cached = (List<CommentDTO>) byBoard.get(key, List.class);
             if (cached != null) {
@@ -135,7 +134,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public Optional<CommentDTO> findOne(Long id) {
         log.debug("Request to get Comment : {}", id);
-        Cache byId = cacheManager.getCache(CACHE_COMMENT_BY_ID);
+        Cache byId = cacheManager.getCache(COMMENT_BY_ID);
         if (byId != null) {
             CommentDTO cached = byId.get(id, CommentDTO.class);
             if (cached != null) {
@@ -164,6 +163,9 @@ public class CommentService {
         Comment comment = commentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("수정할 댓글을 찾을 수 없습니다. ID=" + id));
 
+        // [SEC] 작성자 또는 관리자만 수정 가능
+        resourceAuthorizationService.validateOwnerOrAdminByLogin(comment.getUser().getLogin(), ENTITY_NAME, "unauthorized");
+
         if (comment.isDeleted()) {
             throw new BadRequestAlertException("삭제된 댓글은 수정할 수 없습니다.", ENTITY_NAME, "comment.deleted");
         }
@@ -186,6 +188,9 @@ public class CommentService {
         log.debug("Request to soft delete Comment : {}", id);
         Comment before = commentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("삭제할 댓글을 찾을 수 없습니다. ID=" + id));
+
+        // [SEC] 작성자 또는 관리자만 삭제 가능
+        resourceAuthorizationService.validateOwnerOrAdminByLogin(before.getUser().getLogin(), ENTITY_NAME, "unauthorized");
 
         int updated = commentRepository.softDelete(id, reason);
         if (updated == 0) {
@@ -216,7 +221,7 @@ public class CommentService {
         log.debug("Request to search Comments by keyword: {}", keyword);
         String key = "q:" + (keyword == null ? "" : keyword.toLowerCase()) + ":p:" + page + ":s:" + size;
 
-        Cache search = cacheManager.getCache(CACHE_COMMENT_SEARCH);
+        Cache search = cacheManager.getCache(COMMENT_SEARCH);
         if (search != null) {
             Page<CommentDTO> cached = (Page<CommentDTO>) search.get(key, Page.class);
             if (cached != null) {
@@ -239,7 +244,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public long countByBoard(Long boardId) {
         String key = "board:" + boardId;
-        Cache cnt = cacheManager.getCache(CACHE_COMMENT_COUNT_BY_BOARD);
+        Cache cnt = cacheManager.getCache(COMMENT_COUNT_BY_BOARD);
         if (cnt != null) {
             Long cached = cnt.get(key, Long.class);
             if (cached != null) return cached;
@@ -255,7 +260,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public long countByUser(Long userId) {
         String key = "user:" + userId;
-        Cache cnt = cacheManager.getCache(CACHE_COMMENT_COUNT_BY_USER);
+        Cache cnt = cacheManager.getCache(COMMENT_COUNT_BY_USER);
         if (cnt != null) {
             Long cached = cnt.get(key, Long.class);
             if (cached != null) return cached;
@@ -328,9 +333,9 @@ public class CommentService {
     // -----------------------------------------------------
     public void clearAllCommentCaches() {
         try {
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_ID)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_BOARD)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_STATS)).clear();
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_BY_ID)).clear();
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_BY_BOARD)).clear();
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_STATS)).clear();
             log.info("[COMMENT CACHE] 모든 댓글 관련 캐시를 초기화했습니다.");
         } catch (Exception e) {
             log.warn("[COMMENT CACHE] 캐시 초기화 중 오류: {}", e.getMessage());
@@ -343,18 +348,18 @@ public class CommentService {
     private void clearCommentCaches(Comment comment) {
         if (comment == null) return;
         try {
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_ID)).evictIfPresent(comment.getId());
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_BY_ID)).evictIfPresent(comment.getId());
             if (comment.getBoard() != null) {
                 Long boardId = comment.getBoard().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_BY_BOARD)).evictIfPresent("board:" + boardId);
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_BOARD)).evictIfPresent("board:" + boardId);
+                Objects.requireNonNull(cacheManager.getCache(COMMENT_BY_BOARD)).evictIfPresent("board:" + boardId);
+                Objects.requireNonNull(cacheManager.getCache(COMMENT_COUNT_BY_BOARD)).evictIfPresent("board:" + boardId);
             }
             if (comment.getUser() != null) {
                 Long userId = comment.getUser().getId();
-                Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_COUNT_BY_USER)).evictIfPresent("user:" + userId);
+                Objects.requireNonNull(cacheManager.getCache(COMMENT_COUNT_BY_USER)).evictIfPresent("user:" + userId);
             }
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_SEARCH)).clear();
-            Objects.requireNonNull(cacheManager.getCache(CACHE_COMMENT_STATS)).clear();
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_SEARCH)).clear();
+            Objects.requireNonNull(cacheManager.getCache(COMMENT_STATS)).clear();
             log.debug("[COMMENT CACHE] Cleared caches for commentId={} / boardId={} / userId={}",
                 comment.getId(),
                 comment.getBoard() != null ? comment.getBoard().getId() : null,

@@ -45,6 +45,16 @@ class BoardServiceT {
     private CacheManager cacheManager;
     @Mock
     private Cache cache;
+    @Mock
+    private com.daangcool.stack.repository.board.UploadRepository uploadRepository;
+    @Mock
+    private com.daangcool.stack.repository.board.TagRepository tagRepository;
+    @Mock
+    private com.daangcool.stack.repository.board.BoardTagRepository boardTagRepository;
+    @Mock
+    private com.daangcool.stack.repository.board.CommentRepository commentRepository;
+    @Mock
+    private com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
 
     @InjectMocks
     private BoardService boardService;
@@ -150,7 +160,7 @@ class BoardServiceT {
     @Test
     void findOne_ShouldReturnDTO() {
         // given
-        when(boardRepository.findById(anyLong())).thenReturn(Optional.of(board));
+        when(boardRepository.findByIdWithDetails(anyLong())).thenReturn(Optional.of(board));
         when(boardMapper.toDto(any(Board.class))).thenReturn(boardDTO);
 
         // when
@@ -169,8 +179,10 @@ class BoardServiceT {
         // given
         BoardDTO updateRequest = new BoardDTO();
         updateRequest.setTitle("수정된 제목");
+        updateRequest.setTags(List.of("tag1"));
 
-        when(boardRepository.findById(anyLong())).thenReturn(Optional.of(board));
+        when(boardRepository.findByIdWithDetails(anyLong())).thenReturn(Optional.of(board));
+        when(tagRepository.findByNameIgnoreCase(anyString())).thenReturn(Optional.of(new com.daangcool.stack.domain.board.Tag()));
         when(boardRepository.save(any(Board.class))).thenAnswer(i -> i.getArgument(0)); // 저장 메소드가 받은 인자를 그대로 반환
         when(boardMapper.toDto(any(Board.class))).thenAnswer(i -> {
             Board b = i.getArgument(0);
@@ -196,12 +208,14 @@ class BoardServiceT {
     void delete_ShouldCallSoftDelete() {
         // given
         when(boardRepository.findById(anyLong())).thenReturn(Optional.of(board));
-        when(boardRepository.softDelete(anyLong(), any())).thenReturn(1);
-
+        when(boardRepository.softDelete(anyLong(), anyString())).thenReturn(1);
         // when
         boardService.delete(1L, "테스트 삭제");
 
         // then
         verify(boardRepository, times(1)).softDelete(1L, "테스트 삭제");
+        verify(boardTagRepository, times(1)).softDeleteAllByBoardId(1L, "테스트 삭제");
+        verify(commentRepository, times(1)).softDeleteAllByBoardId(1L, "테스트 삭제");
+        verify(uploadRepository, times(1)).softDeleteAllByBoardId(1L, "테스트 삭제");
     }
 }

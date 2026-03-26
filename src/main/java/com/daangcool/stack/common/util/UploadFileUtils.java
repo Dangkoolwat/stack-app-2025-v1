@@ -177,15 +177,19 @@ public class UploadFileUtils {
 
         // 파일명과 storageKey, dateFolder 추출
         // relativePathWithoutWebPrefix: /public/NOTICE/2025/10/file.ext
-        String[] parts = relativePathWithoutWebPrefix.split(File.separator);
-        if (parts.length < 4) { // parts[0] is empty string if starts with /, parts[1]=public/private, parts[2]=storageKey, parts[3]=yyyy, parts[4]=MM, parts[5]=filename
-             parts = relativePathWithoutWebPrefix.substring(1).split(File.separator);
+        // relativePathWithoutWebPrefix: /public/NOTICE/2026/03/file.ext
+        // split("/") gives ["", "public", "NOTICE", "2026", "03", "file.ext"]
+        String[] parts = relativePathWithoutWebPrefix.split("/");
+        int offset = (parts[0].isEmpty()) ? 1 : 0;
+
+        if (parts.length - offset < 5) {
+            throw new IOException("Invalid file path format: " + relativePathWithoutWebPrefix);
         }
 
-        String currentScopeDir = parts[0]; // public or private
-        String storageKey = parts[1];
-        String dateFolder = parts[2] + File.separator + parts[3]; // yyyy/MM
-        String filename = parts[4];
+        String currentScopeDir = parts[offset]; // public or private
+        String storageKey = parts[offset + 1];
+        String dateFolder = parts[offset + 2] + File.separator + parts[offset + 3]; // yyyy/MM
+        String filename = parts[offset + 4];
 
         // 대상 스코프 디렉토리 (public 또는 private)
         String targetScopeDir = targetBaseDir.contains("private") ? "private" : "public";

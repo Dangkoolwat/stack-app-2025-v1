@@ -1,5 +1,7 @@
 package com.daangcool.stack.service.board;
 
+import com.daangcool.stack.common.constant.CacheNames;
+
 import com.daangcool.stack.config.ApplicationProperties;
 import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.board.Upload;
@@ -59,16 +61,16 @@ public class UploadService {
 
     private static final Logger log = LoggerFactory.getLogger(UploadService.class);
 
-    public static final String CACHE_UPLOAD_BY_ID = "UPLOAD_BY_ID";
-    public static final String CACHE_UPLOAD_BY_BOARD = "UPLOAD_BY_BOARD";
-    public static final String CACHE_UPLOAD_STATS = "UPLOAD_STATS";
-    public static final String CACHE_UPLOAD_ALL = "UPLOAD_ALL";
+    // -----------------------------------------------------
+    // 캐시 (CacheNames 사용)
+    // -----------------------------------------------------
 
     private final UploadRepository uploadRepository;
     private final StorageService storageService;
     private final ApplicationProperties fileStorageProperties;
     private final GlobalSettingsService globalSettingsService;
     private final CacheManager cacheManager;
+    private final com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService;
     private final Tika tika = new Tika();
 
     public UploadService(
@@ -76,13 +78,15 @@ public class UploadService {
         StorageService storageService,
         ApplicationProperties fileStorageProperties,
         GlobalSettingsService globalSettingsService,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        com.daangcool.stack.security.ResourceAuthorizationService resourceAuthorizationService
     ) {
         this.uploadRepository = uploadRepository;
         this.storageService = storageService;
         this.fileStorageProperties = fileStorageProperties;
         this.globalSettingsService = globalSettingsService;
         this.cacheManager = cacheManager;
+        this.resourceAuthorizationService = resourceAuthorizationService;
     }
 
     /**
@@ -120,6 +124,9 @@ public class UploadService {
     /** 논리 삭제 (Soft Delete) */
     public void softDelete(Long id, String reason) {
         uploadRepository.findById(id).ifPresentOrElse(upload -> {
+            // [SEC] 작성자 또는 관리자만 삭제 가능
+            resourceAuthorizationService.validateOwnerOrAdminByLogin(upload.getCreatedBy(), "upload", "unauthorized");
+
             upload.setDeleted(true);
             upload.setDescription(reason);
             uploadRepository.save(upload);
@@ -135,6 +142,9 @@ public class UploadService {
     public void hardDelete(Long id) {
         Upload upload = uploadRepository.findById(id)
             .orElseThrow(() -> new UploadNotFoundException("업로드 메타데이터를 찾을 수 없습니다. id=" + id));
+
+        // [SEC] 작성자 또는 관리자만 삭제 가능
+        resourceAuthorizationService.validateOwnerOrAdminByLogin(upload.getCreatedBy(), "upload", "unauthorized");
 
         try {
             storageService.delete(upload.getFilePath());
@@ -300,6 +310,9 @@ public class UploadService {
         Upload upload = uploadRepository.findById(id)
             .orElseThrow(() -> new UploadNotFoundException("업로드 메타데이터를 찾을 수 없습니다. id=" + id));
 
+        // [SEC] 작성자 또는 관리자만 가시성 변경 가능
+        resourceAuthorizationService.validateOwnerOrAdminByLogin(upload.getCreatedBy(), "upload", "unauthorized");
+
         if (upload.isPublic() == targetIsPublic) {
             return upload;
         }
@@ -347,7 +360,7 @@ public class UploadService {
      */
     @Transactional(readOnly = true)
     public Optional<Upload> findById(Long id) {
-        Cache cache = cacheManager.getCache(CACHE_UPLOAD_BY_ID);
+        Cache cache = cacheManager.getCache(CacheNames.UPLOAD_BY_ID);
         if (cache != null) {
             UploadDTO cached = cache.get(id, UploadDTO.class);
             if (cached != null) {
@@ -369,7 +382,7 @@ public class UploadService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<Upload> findAllByBoard(Long boardId) {
-        Cache cache = cacheManager.getCache(CACHE_UPLOAD_BY_BOARD);
+        Cache cache = cacheManager.getCache(CacheNames.UPLOAD_BY_BOARD);
         if (cache != null) {
             List<UploadDTO> cached = (List<UploadDTO>) cache.get(boardId, List.class);
             if (cached != null) {
@@ -431,12 +444,12 @@ public class UploadService {
     private void clearUploadCaches(Upload upload) {
         if (upload == null) return;
         try {
-            Objects.requireNonNull(cacheManager.getCache(CACHE_UPLOAD_BY_ID)).evictIfPresent(upload.getId());
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.UPLOAD_BY_ID)).evictIfPresent(upload.getId());
             if (upload.getBoard() != null) {
-                Objects.requireNonNull(cacheManager.getCache(CACHE_UPLOAD_BY_BOARD))
+                Objects.requireNonNull(cacheManager.getCache(CacheNames.UPLOAD_BY_BOARD))
                     .evictIfPresent(upload.getBoard().getId());
             }
-            Objects.requireNonNull(cacheManager.getCache(CACHE_UPLOAD_STATS)).clear();
+            Objects.requireNonNull(cacheManager.getCache(CacheNames.UPLOAD_STATS)).clear();
         } catch (Exception e) {
             log.warn("[UPLOAD CACHE] 캐시 제거 중 오류: {}", e.getMessage());
         }

@@ -21,31 +21,7 @@ import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.CreatedExpiryPolicy;
 import java.util.concurrent.TimeUnit;
 
-import static com.daangcool.stack.service.GlobalSettingsService.SETTING_CACHE;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_BY_ID;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_COUNT_BY_USER;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_COUNT_TOTAL;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_NOTICE_LIST;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_PAGE;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_SEARCH;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_BY_BOARD;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_BY_ID;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_COUNT_BY_BOARD;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_COUNT_BY_USER;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_SEARCH;
-import static com.daangcool.stack.service.board.CommentService.CACHE_COMMENT_STATS;
-import static com.daangcool.stack.service.board.TagService.CACHE_TAG_ALL;
-import static com.daangcool.stack.service.board.TagService.CACHE_TAG_BY_ID;
-import static com.daangcool.stack.service.board.TagService.CACHE_TAG_POPULAR;
-import static com.daangcool.stack.service.board.TagService.CACHE_TAG_PREFIX;
-import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_ALL;
-import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_BY_BOARD;
-import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_BY_ID;
-import static com.daangcool.stack.service.board.UploadService.CACHE_UPLOAD_STATS;
-import static com.daangcool.stack.service.common.CommonCodeService.COMMON_DETAIL_CACHE;
-import static com.daangcool.stack.service.common.CommonCodeService.COMMON_DETAIL_LIST_BY_GROUP_CACHE;
-import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_CACHE;
-import static com.daangcool.stack.service.common.CommonCodeService.COMMON_GROUP_LIST_CACHE;
+import static com.daangcool.stack.common.constant.CacheNames.*;
 
 
 /**
@@ -170,50 +146,50 @@ public class CacheConfiguration {
         return cm -> {
             // A. 전역 설정 및 공통 코드 (Long TTL)
             createCache(cm, com.daangcool.stack.domain.Settings.class.getName(), hibernateLongConfig);
-            createCache(cm, SETTING_CACHE, applicationLongConfig);
+            createCache(cm, SETTINGS, applicationLongConfig);
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName(), hibernateLongConfig);
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeDetail.class.getName(), hibernateLongConfig);
             createCache(cm, com.daangcool.stack.domain.common.CommonCodeGroup.class.getName() + ".details", hibernateLongConfig);
-            createCache(cm, COMMON_GROUP_CACHE, applicationLongConfig);
-            createCache(cm, COMMON_GROUP_LIST_CACHE, applicationLongConfig);
-            createCache(cm, COMMON_DETAIL_CACHE, applicationLongConfig);
-            createCache(cm, COMMON_DETAIL_LIST_BY_GROUP_CACHE, applicationLongConfig);
+            createCache(cm, COMMON_GROUPS, applicationLongConfig);
+            createCache(cm, COMMON_GROUP_LIST, applicationLongConfig);
+            createCache(cm, COMMON_DETAILS, applicationLongConfig);
+            createCache(cm, COMMON_DETAILS_BY_GROUP, applicationLongConfig);
 
             // B. 게시판 (Board) 서비스 캐시
             createCache(cm, com.daangcool.stack.domain.board.Board.class.getName(), hibernateDefaultConfig);
             createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".comments", hibernateDefaultConfig);
             createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".attachments", hibernateDefaultConfig);
             createCache(cm, com.daangcool.stack.domain.board.Board.class.getName() + ".boardTags", hibernateDefaultConfig);
-            createCache(cm, CACHE_BOARD_BY_ID, applicationDefaultConfig);
-            createCache(cm, CACHE_BOARD_PAGE, applicationDefaultConfig);
-            createCache(cm, CACHE_BOARD_SEARCH, applicationDefaultConfig);
-            createCache(cm, CACHE_BOARD_NOTICE_LIST, applicationDefaultConfig);
-            createCache(cm, CACHE_BOARD_COUNT_TOTAL, applicationDefaultConfig);
-            createCache(cm, CACHE_BOARD_COUNT_BY_USER, applicationDefaultConfig);
+            createCache(cm, BOARD_BY_ID, applicationDefaultConfig);
+            createCache(cm, BOARD_PAGE, applicationDefaultConfig);
+            createCache(cm, BOARD_SEARCH, applicationDefaultConfig);
+            createCache(cm, BOARD_NOTICES, applicationDefaultConfig);
+            createCache(cm, BOARD_COUNT_TOTAL, applicationDefaultConfig);
+            createCache(cm, BOARD_COUNT_BY_USER, applicationDefaultConfig);
 
             // C. 댓글 (Comment) 서비스 캐시
             createCache(cm, com.daangcool.stack.domain.board.Comment.class.getName(), hibernateDefaultConfig);
-            createCache(cm, CACHE_COMMENT_BY_ID, applicationDefaultConfig);
-            createCache(cm, CACHE_COMMENT_BY_BOARD, applicationDefaultConfig);
-            createCache(cm, CACHE_COMMENT_SEARCH, applicationDefaultConfig);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_BOARD, applicationDefaultConfig);
-            createCache(cm, CACHE_COMMENT_COUNT_BY_USER, applicationDefaultConfig);
-            createCache(cm, CACHE_COMMENT_STATS, applicationDefaultConfig);
+            createCache(cm, COMMENT_BY_ID, applicationDefaultConfig);
+            createCache(cm, COMMENT_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, COMMENT_SEARCH, applicationDefaultConfig);
+            createCache(cm, COMMENT_COUNT_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, COMMENT_COUNT_BY_USER, applicationDefaultConfig);
+            createCache(cm, COMMENT_STATS, applicationDefaultConfig);
 
             // D. 태그 (Tag) 서비스 캐시
             createCache(cm, com.daangcool.stack.domain.board.Tag.class.getName(), hibernateLongConfig);
             createCache(cm, com.daangcool.stack.domain.board.BoardTag.class.getName(), hibernateDefaultConfig);
-            createCache(cm, CACHE_TAG_BY_ID, applicationLongConfig);
-            createCache(cm, CACHE_TAG_ALL, applicationLongConfig);
-            createCache(cm, CACHE_TAG_PREFIX, applicationLongConfig);
-            createCache(cm, CACHE_TAG_POPULAR, applicationDefaultConfig);
+            createCache(cm, TAG_BY_ID, applicationLongConfig);
+            createCache(cm, TAG_ALL, applicationLongConfig);
+            createCache(cm, TAG_PREFIX, applicationLongConfig);
+            createCache(cm, TAG_POPULAR, applicationDefaultConfig);
 
             // E. 업로드 (Upload) 서비스 캐시
             createCache(cm, com.daangcool.stack.domain.board.Upload.class.getName(), hibernateDefaultConfig);
-            createCache(cm, CACHE_UPLOAD_BY_ID, applicationDefaultConfig);
-            createCache(cm, CACHE_UPLOAD_BY_BOARD, applicationDefaultConfig);
-            createCache(cm, CACHE_UPLOAD_ALL, applicationDefaultConfig);
-            createCache(cm, CACHE_UPLOAD_STATS, applicationDefaultConfig);
+            createCache(cm, UPLOAD_BY_ID, applicationDefaultConfig);
+            createCache(cm, UPLOAD_BY_BOARD, applicationDefaultConfig);
+            createCache(cm, UPLOAD_ALL, applicationDefaultConfig);
+            createCache(cm, UPLOAD_STATS, applicationDefaultConfig);
 
             // F. 하이버네이트 기본 시스템 캐시
             createCache(cm, "default-update-timestamps-region", hibernateDefaultConfig);

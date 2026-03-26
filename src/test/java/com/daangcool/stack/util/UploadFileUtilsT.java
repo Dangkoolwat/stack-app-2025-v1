@@ -27,26 +27,31 @@ class UploadFileUtilsT {
             "sample-content".getBytes()
         );
 
-        String webPath = UploadFileUtils.fileSave(tempDir.toString(), "NOTICE", multipartFile, true);
+        // Use tempDir.resolve("uploads") as rootPath to match resolveFromWebPath logic
+        Path uploadsDir = tempDir.resolve("uploads");
+        Files.createDirectories(uploadsDir);
+
+        String webPath = UploadFileUtils.fileSave(uploadsDir.toString(), "NOTICE", multipartFile, true);
 
         assertThat(webPath).startsWith("/uploads/public/NOTICE/");
 
         Path storedFile = resolveFromWebPath(webPath);
-        assertTrue(Files.exists(storedFile), "Stored file should exist");
+        assertTrue(Files.exists(storedFile), "Stored file should exist at: " + storedFile);
         assertThat(Files.readString(storedFile)).isEqualTo("sample-content");
     }
 
     @Test
     void deleteFileRemovesStoredFileAndDirectories() throws IOException {
+        // Alignment: rootLocation(tempDir) + relativePath(/public/NOTICE/...)
         Path noticeDir = tempDir
-            .resolve("uploads")
             .resolve("public")
             .resolve("NOTICE");
         Files.createDirectories(noticeDir);
         Path storedFile = noticeDir.resolve("to-delete.txt");
         Files.writeString(storedFile, "delete-me");
 
-        boolean deleted = UploadFileUtils.deleteFile(tempDir.toString(), "uploads/public/NOTICE/to-delete.txt", "/uploads");
+        // rootLocation is tempDir, storageFilePath starts with webPrefix
+        boolean deleted = UploadFileUtils.deleteFile(tempDir.toString(), "/uploads/public/NOTICE/to-delete.txt", "/uploads");
 
         assertTrue(deleted, "deleteFile should return true when deletion succeeds");
         assertFalse(Files.exists(storedFile), "Stored file should be removed");
@@ -57,7 +62,7 @@ class UploadFileUtilsT {
     void moveFileBetweenScopesMovesFileAndReturnsNewWebPath() throws IOException {
         LocalDate today = LocalDate.now();
         Path dateDir = tempDir
-            .resolve("uploads")
+            // Alignment: rootPath(tempDir) + scope(public) + ...
             .resolve("public")
             .resolve("NOTICE")
             .resolve(String.valueOf(today.getYear()))
@@ -72,12 +77,19 @@ class UploadFileUtilsT {
             today.getMonthValue()
         );
 
+        // rootPath is tempDir, targetBaseDir is /uploads/private
         String newWebPath = UploadFileUtils.moveFileBetweenScopes(tempDir.toString(), currentWebPath, "/uploads/private");
 
         assertThat(newWebPath).isEqualTo(currentWebPath.replace("/uploads/public", "/uploads/private"));
 
-        Path newLocation = resolveFromWebPath(newWebPath);
-        assertTrue(Files.exists(newLocation), "File should exist in new location");
+        Path newLocation = tempDir
+            .resolve("private")
+            .resolve("NOTICE")
+            .resolve(String.valueOf(today.getYear()))
+            .resolve(String.format("%02d", today.getMonthValue()))
+            .resolve("scope-change.txt");
+            
+        assertTrue(Files.exists(newLocation), "File should exist in new location: " + newLocation);
         assertFalse(Files.exists(storedFile), "Original file should no longer exist");
     }
 

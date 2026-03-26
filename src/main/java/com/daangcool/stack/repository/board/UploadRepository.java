@@ -81,6 +81,13 @@ public interface UploadRepository extends JpaRepository<Upload, Long>, JpaSpecif
     int softDelete(@Param("id") Long id, @Param("reason") String reason);
 
     /**
+     * 특정 게시글의 모든 첨부파일을 논리 삭제합니다.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Upload u SET u.deleted = true, u.description = :reason WHERE u.board.id = :boardId AND u.deleted = false")
+    void softDeleteAllByBoardId(@Param("boardId") Long boardId, @Param("reason") String reason);
+
+    /**
      * 다운로드 횟수 증가 (직접 UPDATE 실행)
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)

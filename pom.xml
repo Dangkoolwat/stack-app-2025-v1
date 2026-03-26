@@ -679,6 +679,10 @@
             <exclude>**/*IT*</exclude>
             <exclude>**/*IntTest*</exclude>
           </excludes>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*T.java</include>
+          </includes>
           <systemPropertyVariables>
             <java.util.logging.config.file>src/test/resources/logback.xml</java.util.logging.config.file>
           </systemPropertyVariables>

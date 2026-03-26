@@ -26,6 +26,10 @@ class CommonCodeServiceT {
 
     @Mock
     private CommonCodeGroupRepository commonCodeGroupRepository;
+    @Mock
+    private org.springframework.cache.CacheManager cacheManager;
+    @Mock
+    private org.springframework.cache.Cache cache;
 
     @InjectMocks
     private CommonCodeService commonCodeService;
@@ -34,6 +38,9 @@ class CommonCodeServiceT {
 
     @BeforeEach
     void setUp() {
+        // 캐시 관련 Mock 설정 (NullPointerException 방지)
+        org.mockito.Mockito.lenient().when(cacheManager.getCache(org.mockito.ArgumentMatchers.anyString())).thenReturn(cache);
+
         // 모든 테스트 전에 공통적으로 사용할 테스트 데이터 설정
         commonCodeGroup = new CommonCodeGroup();
         commonCodeGroup.setGroupCode("TEST_GROUP");

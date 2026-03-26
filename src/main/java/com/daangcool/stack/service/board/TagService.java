@@ -1,5 +1,6 @@
 package com.daangcool.stack.service.board;
 
+import com.daangcool.stack.common.constant.CacheNames;
 import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.domain.board.Tag;
@@ -46,12 +47,8 @@ public class TagService {
     private final CacheManager cacheManager;
 
     // ------------------------------------------------------
-    // 캐시 이름 상수 (CacheConfiguration의 이름과 일치해야 함)
+    // 캐시 (CacheNames 사용)
     // ------------------------------------------------------
-    public static final String CACHE_TAG_BY_ID = "TAG_BY_ID";
-    public static final String CACHE_TAG_ALL = "TAG_ALL";
-    public static final String CACHE_TAG_PREFIX = "TAG_PREFIX";
-    public static final String CACHE_TAG_POPULAR = "TAG_POPULAR";
 
     public TagService(TagRepository tagRepository, TagMapper tagMapper, CacheManager cacheManager) {
         this.tagRepository = tagRepository;
@@ -63,9 +60,9 @@ public class TagService {
     /** 캐시 초기화 유틸리티 */
     private void clearTagCaches(Tag tag) {
         try {
-            Optional.ofNullable(cacheManager.getCache(CACHE_TAG_BY_ID))
+            Optional.ofNullable(cacheManager.getCache(CacheNames.TAG_BY_ID))
                 .ifPresent(c -> c.evictIfPresent(tag.getId()));
-            Arrays.asList(CACHE_TAG_ALL, CACHE_TAG_PREFIX, CACHE_TAG_POPULAR)
+            Arrays.asList(CacheNames.TAG_ALL, CacheNames.TAG_PREFIX, CacheNames.TAG_POPULAR)
                 .forEach(name -> Optional.ofNullable(cacheManager.getCache(name))
                     .ifPresent(Cache::clear));
             log.debug("[TAG CACHE] Cleared caches for tag id={}", tag.getId());
@@ -76,7 +73,7 @@ public class TagService {
 
     /** 모든 태그 관련 캐시 전체 초기화 */
     public void clearAllTagCaches() {
-        List.of(CACHE_TAG_BY_ID, CACHE_TAG_ALL, CACHE_TAG_PREFIX, CACHE_TAG_POPULAR)
+        List.of(CacheNames.TAG_BY_ID, CacheNames.TAG_ALL, CacheNames.TAG_PREFIX, CacheNames.TAG_POPULAR)
             .forEach(name -> Optional.ofNullable(cacheManager.getCache(name))
                 .ifPresent(cache -> {
                     log.debug("[TAG CACHE] Clearing cache: {}", name);
@@ -109,7 +106,7 @@ public class TagService {
 
         clearTagCaches(savedTag);
 
-        Optional.ofNullable(cacheManager.getCache(CACHE_TAG_BY_ID))
+        Optional.ofNullable(cacheManager.getCache(CacheNames.TAG_BY_ID))
             .ifPresent(cache -> cache.put(savedTag.getId(), tagMapper.toDto(savedTag)));
 
         return tagMapper.toDto(savedTag);
@@ -120,7 +117,7 @@ public class TagService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<TagDTO> findAll() {
-        Cache cache = cacheManager.getCache(CACHE_TAG_ALL);
+        Cache cache = cacheManager.getCache(CacheNames.TAG_ALL);
         if (cache != null) {
             List<TagDTO> cached = (List<TagDTO>) cache.get("all", List.class);
             if (cached != null) {
@@ -143,7 +140,7 @@ public class TagService {
     /** 단건 조회 (캐시 활용) */
     @Transactional(readOnly = true)
     public Optional<TagDTO> findOne(Long id) {
-        Cache cache = cacheManager.getCache(CACHE_TAG_BY_ID);
+        Cache cache = cacheManager.getCache(CacheNames.TAG_BY_ID);
         if (cache != null) {
             TagDTO cached = cache.get(id, TagDTO.class);
             if (cached != null) {
@@ -157,7 +154,7 @@ public class TagService {
             .map(tagMapper::toDto);
 
         dtoOpt.ifPresent(dto ->
-            Optional.ofNullable(cacheManager.getCache(CACHE_TAG_BY_ID))
+            Optional.ofNullable(cacheManager.getCache(CacheNames.TAG_BY_ID))
                 .ifPresent(c -> c.put(id, dto))
         );
 
@@ -213,7 +210,7 @@ public class TagService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<TagDTO> searchByPrefix(String prefix, int limit) {
-        Cache cache = cacheManager.getCache(CACHE_TAG_PREFIX);
+        Cache cache = cacheManager.getCache(CacheNames.TAG_PREFIX);
         String key = prefix.toLowerCase();
         if (cache != null) {
             List<TagDTO> cached = (List<TagDTO>) cache.get(key, List.class);
@@ -237,7 +234,7 @@ public class TagService {
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
     public List<TagDTO> findPopularTags(int limit) {
-        Cache cache = cacheManager.getCache(CACHE_TAG_POPULAR);
+        Cache cache = cacheManager.getCache(CacheNames.TAG_POPULAR);
         if (cache != null) {
             List<TagDTO> cached = (List<TagDTO>) cache.get("popular", List.class);
             if (cached != null) {

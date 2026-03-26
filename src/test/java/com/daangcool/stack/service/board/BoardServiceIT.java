@@ -15,15 +15,16 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @IntegrationTest
 @Transactional
+@WithMockUser(username = "test_user")
 class BoardServiceIT {
 
     @Autowired
@@ -57,7 +58,7 @@ class BoardServiceIT {
         entityManager.flush();
 
         user = new User();
-        user.setLogin("test_user_" + RandomStringUtils.insecure().nextAlphanumeric(5));
+        user.setLogin("test_user");
         user.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
         user.setActivated(true);
         user.setEnabled(true);

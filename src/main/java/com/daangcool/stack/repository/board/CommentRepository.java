@@ -102,6 +102,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, JpaSpec
     int softDelete(@Param("id") Long id, @Param("reason") String reason);
 
     /**
+     * 특정 게시글의 모든 댓글을 논리 삭제합니다.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Comment c SET c.deleted = true, c.description = :reason WHERE c.board.id = :boardId AND c.deleted = false")
+    void softDeleteAllByBoardId(@Param("boardId") Long boardId, @Param("reason") String reason);
+
+    /**
      * 대댓글 수(replyCount) 갱신
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)

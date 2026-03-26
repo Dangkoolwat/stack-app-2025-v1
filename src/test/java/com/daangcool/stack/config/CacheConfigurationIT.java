@@ -21,8 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Optional;
 
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_BY_ID;
-import static com.daangcool.stack.service.board.BoardService.CACHE_BOARD_PAGE;
+import com.daangcool.stack.common.constant.CacheNames;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -53,8 +52,8 @@ class CacheConfigurationIT {
     void setUp() {
         cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(List.of(
-            new ConcurrentMapCache(CACHE_BOARD_BY_ID),
-            new ConcurrentMapCache(CACHE_BOARD_PAGE)
+            new ConcurrentMapCache(CacheNames.BOARD_BY_ID),
+            new ConcurrentMapCache(CacheNames.BOARD_PAGE)
         ));
         cacheManager.initializeCaches();
 
@@ -65,14 +64,20 @@ class CacheConfigurationIT {
             cacheManager,
             mock(com.daangcool.stack.repository.board.UploadRepository.class),
             mock(com.daangcool.stack.repository.board.TagRepository.class),
-            mock(com.daangcool.stack.repository.board.BoardTagRepository.class)
+            mock(com.daangcool.stack.repository.board.BoardTagRepository.class),
+            mock(com.daangcool.stack.repository.board.CommentRepository.class),
+            mock(com.daangcool.stack.security.ResourceAuthorizationService.class)
         );
 
         board = new Board();
         board.setId(1L);
         board.setTitle("Cache Test Board");
-
+        com.daangcool.stack.domain.User user = new com.daangcool.stack.domain.User();
+        user.setId(1L);
+        board.setUser(user);
+        
         lenient().when(boardRepository.findById(1L)).thenReturn(Optional.of(board));
+        lenient().when(boardRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(board));
         lenient().when(boardMapper.toDto(any(Board.class))).thenAnswer(inv -> {
             var b = (Board) inv.getArgument(0);
             var dto = new BoardDTO();
@@ -87,14 +92,14 @@ class CacheConfigurationIT {
     void findOne_ShouldUseCacheOnSecondCall() {
         // 첫 번째 호출 → Repository 접근
         boardService.findOne(1L);
-        verify(boardRepository, times(1)).findById(1L);
+        verify(boardRepository, times(1)).findByIdWithDetails(1L);
 
         // 두 번째 호출 → 캐시 사용
         boardService.findOne(1L);
-        verify(boardRepository, times(1)).findById(1L); // DB 재호출 없음
+        verify(boardRepository, times(1)).findByIdWithDetails(1L); // DB 재호출 없음
 
         // 캐시에 값이 저장되었는지 검증
-        Cache cache = cacheManager.getCache(CACHE_BOARD_BY_ID);
+        Cache cache = cacheManager.getCache(CacheNames.BOARD_BY_ID);
         assertThat(cache).isNotNull();
         assertThat(cache.get(1L)).isNotNull();
     }
@@ -118,7 +123,7 @@ class CacheConfigurationIT {
         boardService.findAll(0, 10);
         verify(boardRepository, times(1)).findAllActive(any(PageRequest.class));
 
-        Cache cache = cacheManager.getCache(CACHE_BOARD_PAGE);
+        Cache cache = cacheManager.getCache(CacheNames.BOARD_PAGE);
         assertThat(cache).isNotNull();
         assertThat(cache.get("page:0:size:10")).isNotNull();
     }
@@ -127,7 +132,7 @@ class CacheConfigurationIT {
     void clearBoardCaches_ShouldEvictEntries() {
         // 캐시 채우기
         boardService.findOne(1L);
-        Cache cache = cacheManager.getCache(CACHE_BOARD_BY_ID);
+        Cache cache = cacheManager.getCache(CacheNames.BOARD_BY_ID);
         assertThat(cache.get(1L)).isNotNull();
 
         // 삭제 시 캐시 클리어 로직 호출됨
