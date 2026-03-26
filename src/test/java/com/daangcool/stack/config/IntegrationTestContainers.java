@@ -14,19 +14,19 @@ import org.testcontainers.utility.DockerImageName;
  */
 public interface IntegrationTestContainers {
 
+    DockerImageName oracleImage = DockerImageName.parse("gvenzl/oracle-free:23-slim-faststart")
+        .asCompatibleSubstituteFor("gvenzl/oracle-xe");
+
     @Container
     @ServiceConnection
-    OracleContainer oracle = new OracleContainer(DockerImageName.parse("gvenzl/oracle-xe:21-slim-faststart"))
-        .withDatabaseName("ORCLTEST")
+    OracleContainer oracle = new OracleContainer(oracleImage)
         .withPassword("oracle")
         .withEnv("ORACLE_PASSWORD", "oracle")
-        .withStartupTimeout(Duration.ofSeconds(300))
-        .withReuse(true);
+        .withStartupTimeout(Duration.ofSeconds(300));
 
     @Container
     GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:8.0.0"))
-        .withExposedPorts(6379)
-        .withReuse(true);
+        .withExposedPorts(6379);
 
     @DynamicPropertySource
     static void redisProperties(DynamicPropertyRegistry registry) {
