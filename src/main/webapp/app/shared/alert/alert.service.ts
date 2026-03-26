@@ -60,7 +60,14 @@ export default class AlertService {
         break;
 
       case 400: {
-        const message = getMessageFromHeaders(headers);
+        // Axios 는 헤더를 소문자로 변환하므로, 모든 키를 소문자로 확인
+        const normalizedHeaders: Record<string, any> = {};
+        if (headers) {
+          Object.keys(headers).forEach(key => {
+            normalizedHeaders[key.toLowerCase()] = headers[key];
+          });
+        }
+        const message = getMessageFromHeaders(normalizedHeaders);
         if (message.errorKey && message.param) {
           errorMessage = this.i18n.t(message.errorKey!, { entityName: this.i18n.t(`global.menu.entities.${message.param!}`) }).toString();
         } else if (message.errorKey) {
