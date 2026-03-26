@@ -690,6 +690,32 @@
         </configuration>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <argLine>${argLine} -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar -XX:+EnableDynamicAgentLoading</argLine>
+          <runOrder>alphabetical</runOrder>
+          <includes>
+            <include>**/*IT.java</include>
+            <include>**/*IT*.java</include>
+            <include>**/*IntTest.java</include>
+            <include>**/*IntTest*.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <java.util.logging.config.file>src/test/resources/logback.xml</java.util.logging.config.file>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <!-- Spring Boot 실행 jar 재패키징 -->
       <plugin>
         <groupId>org.springframework.boot</groupId>

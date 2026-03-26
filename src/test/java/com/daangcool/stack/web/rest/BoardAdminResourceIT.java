@@ -9,16 +9,21 @@ import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
+import com.daangcool.stack.security.AuthoritiesConstants;
+import com.daangcool.stack.security.jwt.JwtAuthenticationTestUtils;
 import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -51,9 +56,17 @@ class BoardAdminResourceIT {
     @Autowired
     private EntityManager entityManager;
 
+    @Value("${jhipster.security.authentication.jwt.base64-secret}")
+    private String jwtKey;
+
     private Board activeBoard;
     private Board deletedBoard;
     private CommonCodeDetail noticeBoardType;
+
+    private String bearerToken(String login, String authority) {
+        return JwtAuthenticationTestUtils.BEARER
+            + JwtAuthenticationTestUtils.createTokenForUser(jwtKey, login, Collections.singletonList(authority));
+    }
 
     @BeforeEach
     public void initTest() {
@@ -109,9 +122,9 @@ class BoardAdminResourceIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void getDeletedBoards_AsAdmin_ShouldReturnDeletedBoards() throws Exception {
-        restMockMvc.perform(get("/api/admin/boards/deleted"))
+        restMockMvc.perform(get("/api/admin/boards/deleted")
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].title").value(hasItem("삭제된 게시글")))
@@ -120,17 +133,17 @@ class BoardAdminResourceIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_USER")
     void getDeletedBoards_AsUser_ShouldBeForbidden() throws Exception {
-        restMockMvc.perform(get("/api/admin/boards/deleted"))
+        restMockMvc.perform(get("/api/admin/boards/deleted")
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-user", AuthoritiesConstants.USER)))
             .andExpect(status().isForbidden());
     }
 
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void restoreBoard_AsAdmin_ShouldRestoreBoard() throws Exception {
-        restMockMvc.perform(put("/api/admin/boards/restore/{id}", deletedBoard.getId()))
+        restMockMvc.perform(put("/api/admin/boards/restore/{id}", deletedBoard.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isOk());
 
         Board restoredBoard = boardRepository.findById(deletedBoard.getId()).get();
@@ -139,9 +152,9 @@ class BoardAdminResourceIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void hardDeleteBoard_AsAdmin_ShouldDeletePermanently() throws Exception {
-        restMockMvc.perform(delete("/api/admin/boards/hard-delete/{id}", activeBoard.getId()))
+        restMockMvc.perform(delete("/api/admin/boards/hard-delete/{id}", activeBoard.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isNoContent());
 
         assertThat(boardRepository.findById(activeBoard.getId())).isEmpty();
@@ -149,15 +162,16 @@ class BoardAdminResourceIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void toggleNotice_AsAdmin_ShouldChangeNoticeStatus() throws Exception {
-        restMockMvc.perform(patch("/api/admin/boards/{id}/notice?notice=true", activeBoard.getId()))
+        restMockMvc.perform(patch("/api/admin/boards/{id}/notice?notice=true", activeBoard.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isOk());
 
         Board noticeBoard = boardRepository.findById(activeBoard.getId()).get();
         assertThat(noticeBoard.isNotice()).isTrue();
 
-        restMockMvc.perform(patch("/api/admin/boards/{id}/notice?notice=false", activeBoard.getId()))
+        restMockMvc.perform(patch("/api/admin/boards/{id}/notice?notice=false", activeBoard.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("board-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isOk());
 
         Board normalBoard = boardRepository.findById(activeBoard.getId()).get();

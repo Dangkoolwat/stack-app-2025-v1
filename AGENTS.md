@@ -122,7 +122,8 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 
 - [ ] Requirements addressed
 - [ ] Unit/Integration tests passing
-  - Recommended: `export $(xargs < .env) && ./mvnw clean test`
+  - Recommended for unit/non-IT validation: `export $(xargs < .env) && ./mvnw clean test`
+  - Recommended for full validation including `*IT`: `export $(xargs < .env) && ./mvnw clean verify`
 - [ ] API contracts maintained
 - [ ] Architecture compliance
 

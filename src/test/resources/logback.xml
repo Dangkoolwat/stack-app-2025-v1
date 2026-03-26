@@ -50,6 +50,4 @@
     <logger name="org.hibernate.SQL" level="DEBUG"/>
     <logger name="com.daangcool.stack" level="DEBUG"/>
     <logger name="sun.net.www.protocol.http.HttpURLConnection" level="WARN"/>
-    <logger name="com.daangcool.stack.config.RedisTestContainer" level="WARN"/>
-
 </configuration>

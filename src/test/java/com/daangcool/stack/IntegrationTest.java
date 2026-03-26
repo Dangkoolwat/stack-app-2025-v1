@@ -21,17 +21,18 @@ import org.springframework.test.context.ActiveProfiles;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(
+    classes = {
+        StackApp.class,
+        JacksonConfiguration.class,
+        AsyncSyncConfiguration.class,
+        LiquibaseTestConfiguration.class,
+        TestcontainersConfiguration.class,
+    },
     properties = {
         "jhipster.security.authentication.jwt.base64-secret=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "jhipster.security.authentication.jwt.token-validity-in-seconds=60000",
     }
 )
-@org.springframework.context.annotation.Import({
-    JacksonConfiguration.class,
-    AsyncSyncConfiguration.class,
-    LiquibaseTestConfiguration.class,
-    TestcontainersConfiguration.class
-})
 @ActiveProfiles({"testdev", "test"})
 public @interface IntegrationTest {
 }

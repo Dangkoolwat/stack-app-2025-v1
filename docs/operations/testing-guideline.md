@@ -16,11 +16,20 @@ This document establishes the standard procedures for performing tests in the mo
 
 Always use the `.env` file to load environment variables. This prevents configuration mismatches between local and containerized environments.
 
-### Standard Command (Bash/Zsh)
+### Standard Commands (Bash/Zsh)
 
 ```bash
 export $(grep -v '^#' .env | xargs) && ./mvnw test
 ```
+
+```bash
+export $(grep -v '^#' .env | xargs) && ./mvnw verify
+```
+
+### Command Roles
+
+- `./mvnw test`: unit tests and non-`*IT` test classes validated by Surefire
+- `./mvnw verify`: full verification including `*IT` / `*IntTest` classes via Failsafe
 
 ### Key Parameters
 - `testdev`: Primary profile for local integration tests.
@@ -39,6 +48,7 @@ export $(grep -v '^#' .env | xargs) && ./mvnw test
 - In stateless environments, `@WithMockUser` is deprecated for Integration Tests.
 - You MUST use token-based authentication by injecting the `Authorization` header.
 - Use `JwtAuthenticationTestUtils` to generate valid test tokens dynamically.
+- Existing legacy tests may still contain `@WithMockUser`. When modifying security-sensitive integration tests, convert them to Bearer-token-based verification first.
 
 Example:
 ```java

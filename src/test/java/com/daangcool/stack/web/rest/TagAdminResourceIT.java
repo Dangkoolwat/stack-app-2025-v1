@@ -1,16 +1,21 @@
 package com.daangcool.stack.web.rest;
 
 import com.daangcool.stack.IntegrationTest;
+import com.daangcool.stack.security.AuthoritiesConstants;
+import com.daangcool.stack.security.jwt.JwtAuthenticationTestUtils;
 import com.daangcool.stack.service.softdelete.SoftDeleteScope;
 import com.daangcool.stack.domain.board.Tag;
 import com.daangcool.stack.repository.board.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -31,8 +36,16 @@ class TagAdminResourceIT {
     @Autowired
     private MockMvc restMockMvc;
 
+    @Value("${jhipster.security.authentication.jwt.base64-secret}")
+    private String jwtKey;
+
     private Tag activeTag;
     private Tag deletedTag;
+
+    private String bearerToken(String login, String authority) {
+        return JwtAuthenticationTestUtils.BEARER
+            + JwtAuthenticationTestUtils.createTokenForUser(jwtKey, login, Collections.singletonList(authority));
+    }
 
     @BeforeEach
     public void initTest() {
@@ -56,10 +69,10 @@ class TagAdminResourceIT {
      */
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void deleteTag_AsAdmin_ShouldSoftDeleteTag() throws Exception {
         // when & then
-        restMockMvc.perform(delete("/api/admin/tags/{id}", activeTag.getId()))
+        restMockMvc.perform(delete("/api/admin/tags/{id}", activeTag.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("tag-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isNoContent());
 
         // 삭제된 태그의 isDeleted 플래그가 true인지 확인합니다.
@@ -75,9 +88,9 @@ class TagAdminResourceIT {
      */
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_USER")
     void deleteTag_AsUser_ShouldBeForbidden() throws Exception {
-        restMockMvc.perform(delete("/api/admin/tags/{id}", activeTag.getId()))
+        restMockMvc.perform(delete("/api/admin/tags/{id}", activeTag.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("tag-user", AuthoritiesConstants.USER)))
             .andExpect(status().isForbidden());
     }
 
@@ -87,10 +100,10 @@ class TagAdminResourceIT {
      */
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_ADMIN")
     void undeleteTag_AsAdmin_ShouldRestoreTag() throws Exception {
         // when & then
-        restMockMvc.perform(patch("/api/admin/tags/{id}/undelete", deletedTag.getId()))
+        restMockMvc.perform(patch("/api/admin/tags/{id}/undelete", deletedTag.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("tag-admin", AuthoritiesConstants.ADMIN)))
             .andExpect(status().isOk());
 
         // 복구된 태그의 isDeleted 플래그가 false인지 확인합니다.
@@ -104,9 +117,9 @@ class TagAdminResourceIT {
      */
     @Test
     @Transactional
-    @WithMockUser(authorities = "ROLE_USER")
     void undeleteTag_AsUser_ShouldBeForbidden() throws Exception {
-        restMockMvc.perform(patch("/api/admin/tags/{id}/undelete", deletedTag.getId()))
+        restMockMvc.perform(patch("/api/admin/tags/{id}/undelete", deletedTag.getId())
+                .header(HttpHeaders.AUTHORIZATION, bearerToken("tag-user", AuthoritiesConstants.USER)))
             .andExpect(status().isForbidden());
     }
 }
