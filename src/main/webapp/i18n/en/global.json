@@ -136,13 +136,39 @@
     "userexists": "Login name already used!",
     "emailexists": "Email is already in use!",
     "idexists": "A new { entityName } cannot already have an ID",
-    "idnull": "Invalid ID",
+    "idnull": "ID must not be null",
     "idinvalid": "Invalid ID",
     "idnotfound": "ID cannot be found",
     "groupexists": "This group code already exists.",
     "groupdeleted": "This group code was previously used and deleted. It cannot be reused.",
     "codeexists": "This code already exists.",
     "codedeleted": "This code was previously used and deleted. It cannot be reused. Please enter a different code.",
+    "groupcodenull": "Group code is required.",
+    "codenull": "Group code must not be null.",
+    "notfound": "Entity not found or already deleted.",
+    "board": {
+      "deleted": "Deleted board cannot be modified.",
+      "emptyTitle": "Board title cannot be empty.",
+      "emptyContent": "Board content cannot be empty.",
+      "noAuthor": "Author information is required."
+    },
+    "boardTag": {
+      "exists": "Tag already linked to board."
+    },
+    "comment": {
+      "invalidParams": "Board ID is required.",
+      "emptyContent": "Comment content cannot be empty.",
+      "deleted": "Deleted comment cannot be modified."
+    },
+    "tag": {
+      "emptyName": "Tag name cannot be empty."
+    },
+    "settings": {
+      "invalid.token": "Token validity must be greater than zero."
+    },
+    "upload": {
+      "public": "Public file cannot be accessed via private download path."
+    },
     "file": {
       "could.not.extract": "Could not extract file",
       "not.image": "File was expected to be an image but was found to be \"{ fileType }\""

@@ -40,4 +40,16 @@ public class BadRequestAlertException extends RuntimeException {
         problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         return problem;
     }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public String getErrorKey() {
+        return errorKey;
+    }
+
+    public URI getType() {
+        return type;
+    }
 }

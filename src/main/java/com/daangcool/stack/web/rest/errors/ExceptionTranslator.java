@@ -6,6 +6,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,6 +16,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import com.daangcool.stack.common.constant.ErrorConstants;
+import tech.jhipster.web.util.HeaderUtil;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +34,9 @@ import java.util.stream.Collectors;
 public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ExceptionTranslator.class);
+
+    @Value("${jhipster.clientApp.name}")
+    private String applicationName;
 
     /**
      * @Valid 유효성 검증 실패 (400 Bad Request)
@@ -144,7 +149,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ProblemDetail handleEntityNotFound(EntityNotFoundException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
-            HttpStatus.NOT_FOUND, 
+            HttpStatus.NOT_FOUND,
             ex.getMessage() != null ? ex.getMessage() : "Entity Not Found"
         );
         pd.setTitle("Resource Not Found");
@@ -159,7 +164,7 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
     public ProblemDetail handleValidation(jakarta.validation.ConstraintViolationException ex) {
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(
-            HttpStatus.BAD_REQUEST, 
+            HttpStatus.BAD_REQUEST,
             "Validation failed"
         );
         pd.setProperty("violations", ex.getConstraintViolations()
@@ -193,13 +198,28 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
 
     /**
      * BadRequestAlertException (서비스/리소스 단위 유효성 실패)
+     * JHipster HeaderUtil 을 사용하여 프론트엔드가 오류 메시지를 표시할 수 있도록 헤더를 추가합니다.
      */
     @ExceptionHandler(BadRequestAlertException.class)
-    public ProblemDetail handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
+    public ResponseEntity<ProblemDetail> handleBadRequestAlert(BadRequestAlertException ex, HttpServletRequest request) {
         var problem = ex.toProblemDetail(request.getRequestURI());
         problem.setProperty("timestamp", java.time.OffsetDateTime.now().toString());
         problem.setProperty("path", request.getRequestURI());
-        return problem;
+
+        // JHipster HeaderUtil 을 사용하여 오류 헤더 생성
+        // X-stackapp-error: errorKey, X-stackapp-params: entityName
+        HttpHeaders headers = HeaderUtil.createFailureAlert(
+            applicationName,
+            true,  // enableTranslation = true (i18n 키 사용)
+            ex.getEntityName(),
+            ex.getErrorKey(),
+            ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .headers(headers)
+            .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+            .body(problem);
     }
 
     /**

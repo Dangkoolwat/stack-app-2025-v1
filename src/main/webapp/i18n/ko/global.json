@@ -135,14 +135,40 @@
     "Size": "Field { fieldName } does not meet min/max size requirements!",
     "userexists": "Login name already used!",
     "emailexists": "Email is already in use!",
-    "idexists": "A new { entityName } cannot already have an ID",
-    "idnull": "Invalid ID",
+    "idexists": "새 { entityName } 엔티티에 ID 가 있을 수 없습니다",
+    "idnull": "ID 가 null 일 수 없습니다",
     "idinvalid": "Invalid Id",
     "idnotfound": "ID cannot be found",
     "groupexists": "이미 존재하는 그룹 코드입니다.",
     "groupdeleted": "이미 사용된 후 삭제된 그룹 코드이므로 재사용할 수 없습니다.",
     "codeexists": "이미 존재하는 코드입니다.",
     "codedeleted": "이미 사용된 후 삭제된 코드이므로 재사용할 수 없습니다. 다른 코드를 입력해 주세요.",
+    "groupcodenull": "그룹 코드는 필수입니다.",
+    "codenull": "그룹 코드는 null 일 수 없습니다.",
+    "notfound": "엔티티를 찾을 수 없거나 이미 삭제되었습니다.",
+    "board": {
+      "deleted": "삭제된 게시글은 수정할 수 없습니다.",
+      "emptyTitle": "게시글 제목은 비어 있을 수 없습니다.",
+      "emptyContent": "게시글 내용은 비어 있을 수 없습니다.",
+      "noAuthor": "작성자 정보가 필요합니다."
+    },
+    "boardTag": {
+      "exists": "이미 게시글에 연결된 태그입니다."
+    },
+    "comment": {
+      "invalidParams": "게시글 ID 는 필수입니다.",
+      "emptyContent": "댓글 내용은 비어 있을 수 없습니다.",
+      "deleted": "삭제된 댓글은 수정할 수 없습니다."
+    },
+    "tag": {
+      "emptyName": "태그 이름은 비어 있을 수 없습니다."
+    },
+    "settings": {
+      "invalid.token": "토큰 유효 기간은 0 보다 커야 합니다."
+    },
+    "upload": {
+      "public": "공개 파일은 비공개 다운로드 경로로 접근할 수 없습니다."
+    },
     "file": {
       "could.not.extract": "Could not extract file",
       "not.image": "File was expected to be an image but was found to be \"{ fileType }\""
