@@ -8,61 +8,76 @@ language: en
 
 ## Summary
 
-Fixed the issue where the eye icon was not appearing for "Liveness state" and "Application Readiness state" items on the `/admin/health` page, preventing users from viewing their status information.
+Fixed the issue where the eye icon was not appearing for "Liveness state" and "Application Readiness state" items on the `/admin/health` page.
+
+Also fixed the issue where database and disk space details were displayed as raw JSON instead of formatted tables.
 
 ## Root Cause
 
-The `livenessState` and `readinessState` health indicators from Spring Boot's availability state only contain a `status` field (e.g., `ACCEPTING_TRAFFIC`, `REFUSING_TRAFFIC`) without any additional `details` or `error` fields.
+### Issue 1: No Eye Icon for Liveness/Readiness States
 
-The original code only displayed the eye icon when `health.details || health.error` existed:
+The `livenessState` and `readinessState` health indicators from Spring Boot's availability state only contain a `status` field (e.g., `ACCEPTING_TRAFFIC`, `REFUSING_TRAFFIC`) without any additional `details`.
 
-```vue
-<a class="hand" @click="showHealth(health)" v-if="health.details || health.error">
+The original code only displayed the eye icon when `health.details || health.error` existed, so these state indicators never showed the eye icon.
+
+### Issue 2: JSON Display Instead of Table
+
+The backend returns health data in this format:
+```json
+{
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "Oracle",
+        "validationQuery": "SELECT 1"
+      }
+    }
+  }
+}
 ```
 
-Since these state indicators had no `details`, the condition was always false, and the eye icon never appeared.
+The `addHealthObject` method was treating the `details` key as a regular property, causing incorrect structure that led to JSON being displayed in the modal.
 
 ## Changes Made
 
-### 1. `src/main/webapp/app/admin/health/health.service.ts`
+### `src/main/webapp/app/admin/health/health.service.ts`
 
-Modified the `addHealthObject` method to include `status` in `details` when it's the only available information:
+Modified the `addHealthObject` method to:
+1. Unpack the `details` key from backend response and merge its contents
+2. Store details in the correct nested structure: `details: { details: {...} }`
+3. Include `status` in details when it's the only available information (for livenessState/readinessState)
 
 ```typescript
-// status 만 있는 경우 (livenessState, readinessState 등) details 에 추가하여 눈 아이콘 표시
-// error 가 있을 때는 status 를 details 에 추가하지 않음
+} else if (key === 'details' && typeof value === 'object') {
+  // details 키의 값은 그대로 details 에 병합 (백엔드 응답 구조 처리)
+  for (const detailKey in value) {
+    if (Object.hasOwn(value, detailKey)) {
+      details[detailKey] = value[detailKey];
+      hasDetails = true;
+    }
+  }
+}
+
+// details 가 있으면 details.details 구조로 저장
+if (hasDetails) {
+  healthData.details = { details };
+}
+
+// status 만 있는 경우 (livenessState, readinessState 등) 눈 아이콘 표시를 위해 details 추가
 if (!hasDetails && healthData.status && !healthData.error) {
-  details['status'] = healthData.status;
-  hasDetails = true;
+  healthData.details = { details: { status: healthData.status } };
 }
 ```
 
-Also fixed the `flattenHealthData` method to properly handle systems with both errors and subsystems:
+Also modified `flattenHealthData` to properly handle systems with existing details.
 
-```typescript
-if (value.details) {
-  this.addHealthObject(result, true, value, this.getModuleName(path, key));
-} else if (this.hasSubSystem(value)) {
-  // 서브시스템이 있으면 중첩 처리
-  // error 가 있더라도 서브시스템이 있으면 함께 처리
-  this.addHealthObject(result, false, value, this.getModuleName(path, key));
-  this.flattenHealthData(result, this.getModuleName(path, key), value);
-}
-```
+### `src/main/webapp/app/admin/health/health-modal.vue`
 
-### 2. `src/main/webapp/app/admin/health/health-modal.vue`
-
-Fixed the template to correctly iterate over `currentHealth.details` instead of `currentHealth.details.details`:
-
+The template correctly iterates over `currentHealth.details.details`:
 ```vue
-<tr v-for="(item, index) in currentHealth.details" :key="index">
+<tr v-for="(item, index) in currentHealth.details.details" :key="index">
 ```
-
-### 3. `src/main/webapp/app/admin/health/health.service.spec.ts`
-
-Updated test expectations to match the new behavior where:
-- Items with only `status` (no error, no other details) now have `details: { status: '...' }`
-- Items with `error` do not have `status` added to details (the error triggers the eye icon)
 
 ## Test Results
 
@@ -76,13 +91,16 @@ All 18 health-related tests pass:
 ### Before
 - Liveness state: No eye icon, status information not viewable
 - Application Readiness state: No eye icon, status information not viewable
+- Database/Disk space: Details shown as raw JSON string
 
 ### After
-- Liveness state: Eye icon appears, clicking shows status (e.g., `ACCEPTING_TRAFFIC`)
-- Application Readiness state: Eye icon appears, clicking shows status (e.g., `ACCEPTING_TRAFFIC`)
+- Liveness state: Eye icon appears, clicking shows status in table format
+- Application Readiness state: Eye icon appears, clicking shows status in table format
+- Database: Shows formatted table with database name, validation query, etc.
+- Disk space: Shows formatted table with total, free, and threshold information
 
 ## Files Modified
 
 1. `src/main/webapp/app/admin/health/health.service.ts`
-2. `src/main/webapp/app/admin/health/health-modal.vue`
-3. `src/main/webapp/app/admin/health/health.service.spec.ts`
+2. `src/main/webapp/app/admin/health/health-modal.vue` (already correct)
+3. `src/main/webapp/app/admin/health/health.service.spec.ts` (already updated)
