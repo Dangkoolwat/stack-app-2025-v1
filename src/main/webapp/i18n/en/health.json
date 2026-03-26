@@ -17,7 +17,8 @@
       "livenessState": "Liveness state",
       "readinessState": "Readiness state",
       "ping": "Application",
-      "db": "Database"
+      "db": "Database",
+      "redis": "Redis"
     },
     "table": {
       "service": "Service name",

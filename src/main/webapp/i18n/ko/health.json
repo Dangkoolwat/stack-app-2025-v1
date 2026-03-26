@@ -17,7 +17,8 @@
       "livenessState": "Liveness state",
       "readinessState": "Readiness state",
       "ping": "Application",
-      "db": "데이터베이스"
+      "db": "데이터베이스",
+      "redis": "Redis"
     },
     "table": {
       "service": "서비스 이름",
