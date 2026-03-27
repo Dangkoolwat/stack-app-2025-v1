@@ -71,7 +71,7 @@
     <!-- Apache Modules -->
     <!-- ========================================================= -->
     <commons-lang3.version>3.19.0</commons-lang3.version>
-    <commons-io.version>2.18.0</commons-io.version>
+    <commons-io.version>2.20.0</commons-io.version>
     <tika.version>3.2.3</tika.version>
 
     <!-- ========================================================= -->
@@ -81,6 +81,7 @@
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
     <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+    <git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
 
     <!-- ========================================================= -->
     <!-- Frontend -->
@@ -333,6 +334,11 @@
           <artifactId>commons-text</artifactId>
           <groupId>org.apache.commons</groupId>
         </exclusion>
+        <!-- 프로젝트 레벨 commons-io 2.20.0 사용 (DependencyConvergence) -->
+        <exclusion>
+          <artifactId>commons-io</artifactId>
+          <groupId>commons-io</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -410,6 +416,13 @@
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
       <artifactId>jackson-module-jaxb-annotations</artifactId>
+      <exclusions>
+        <!-- liquibase-core의 jaxb-api:2.3.1과 충돌 방지 (DependencyConvergence) -->
+        <exclusion>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- HPPC collection 직렬화 -->
@@ -662,6 +675,69 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+      </plugin>
+
+      <!-- 빌드 환경 제약 조건 강제 (JHipster 9 표준) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-versions</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <message>Maven 3.9.0 이상이 필요합니다.</message>
+                  <version>[3.9.0,)</version>
+                </requireMavenVersion>
+                <requireJavaVersion>
+                  <message>Java 21 이상이 필요합니다.</message>
+                  <version>[21,)</version>
+                </requireJavaVersion>
+              </rules>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-dependencyConvergence</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <DependencyConvergence/>
+              </rules>
+              <fail>false</fail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Git 커밋 정보를 git.properties에 기록 (Actuator /info 연동) -->
+      <plugin>
+        <groupId>io.github.git-commit-id</groupId>
+        <artifactId>git-commit-id-maven-plugin</artifactId>
+        <version>${git-commit-id-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>revision</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <failOnNoGitDirectory>false</failOnNoGitDirectory>
+          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+          <generateGitPropertiesFile>true</generateGitPropertiesFile>
+          <includeOnlyProperties>
+            <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+            <includeOnlyProperty>^git.commit.id.describe$</includeOnlyProperty>
+            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+            <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+          </includeOnlyProperties>
+        </configuration>
       </plugin>
 
       <!-- maven-surefire-plugin: Mockito JVM Agent 정식 등록.
