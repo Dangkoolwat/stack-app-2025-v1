@@ -1,61 +1,109 @@
-# Commit Convention Guide
-
-This project follows the Conventional Commits standard (v1.0.0). Automated validation is performed via `commitlint` and `Husky`.
-
-## Message Format
-
-```text
-<type>(<optional scope>): <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### 1. Type (MANDATORY)
-
-Must be one of the following:
-
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation only changes
-- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- `refactor`: A code change that neither fixes a bug nor adds a feature
-- `perf`: A code change that improves performance
-- `test`: Adding missing tests or correcting existing tests
-- `build`: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
-- `ci`: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
-- `chore`: Other changes that don't modify src or test files
-
-### 2. Scope (OPTIONAL)
-
-Provides additional contextual information.
-
-- Example: `feat(auth): ...`, `fix(api): ...`
-
-### 3. Description (MANDATORY)
-
-A concise summary of the change.
-
-- MUST have a space after the colon.
-- MUST NOT start with a hyphen or special character.
-- MUST NOT be empty.
-
+---
+author: opencode
+created_at: 2026-03-27 (토요일)
+language: mixed
 ---
 
-## Common Mistakes
+# Commit Convention Guide
 
-> [!WARNING]
-> These will cause the commit to fail:
+## 1. Commit Types
 
-- Invalid: `- feat: add login` (Leading hyphen)
-- Invalid: `feat:add login` (Missing space after colon)
-- Invalid: `feat: add login` (Incorrect format - if hyphen is included accidentally)
-- Invalid: `add login` (Missing type)
-- Invalid: `feat add login` (Missing colon)
+| Type       | Description                                          | Example                                     |
+| ---------- | ---------------------------------------------------- | ------------------------------------------- |
+| `feat`     | New feature implementation                           | `feat(server): add user creation API`       |
+| `fix`      | Bug fix                                              | `fix(auth): resolve token expiration issue` |
+| `docs`     | Documentation update                                 | `docs(readme): update project description`  |
+| `refactor` | Code structure improvement (no functionality change) | `refactor(ui): improve form layout`         |
+| `perf`     | Performance improvement                              | `perf(db): optimize query index`            |
+| `test`     | Test code addition/modification                      | `test(auth): add JWT validation tests`      |
+| `build`    | Build process improvement                            | `build(ci): configure GitHub Actions`       |
+| `ci`       | CI/CD configuration change                           | `ci(deploy): add staging pipeline`          |
+| `chore`    | Non-functional changes                               | `chore: update dependency versions`         |
 
-## Examples
+## 2. Commit Rules
 
-- `feat(ui): add new dark mode toggle`
-- `fix(bug): resolve crash on startup`
-- `docs(standards): update commit convention guide`
+1. Single Responsibility Principle: One commit = one feature
+2. Required One-line Description: Avoid uppercase
+3. Optional Body Explanation: For complex changes, add after 2 blank lines
+4. Additional Information:
+   - Include related issue number (e.g., `See #123`)
+   - Based on Spring Boot 4.0.4
+
+## 3. Commit Message Examples
+
+### Correct Example
+
+```
+feat(server): add JWT refresh token endpoint
+
+- 사용자_refresh token 생성 로직 구현
+- Redis에 token 저장
+- JWT 보안 설정 업데이트
+```
+
+### Incorrect Example
+
+```
+fix: update dependencies
+chore(update java version)
+```
+
+## 4. Commit Message Creation Guide
+
+1. Type: [Type] (case-insensitive)
+2. Scope (Optional): `[Type](scope): Description`
+   - Scope examples: `feat(server)`, `fix(auth)`
+3. Description: Summarize changes concisely
+
+## 5. Commit Command Examples
+
+```bash
+# Simple commit
+ git commit -m "feat(auth): add password complexity validation"
+
+# Complex changes
+ git commit -m "refactor(ui): migrate to new component library\n\n- Replace old UI components with new framework\n- Update related documentation\n- Fix accessibility issues\"\"
+```
+
+## 6. Additional Information
+
+- Author Specification: Include name/email
+  Example: `By: John Doe <john@example.com>`
+- Reference Issue: If related, `See #ISSUE_NUMBER`
+
+## 7. Related Documents
+
+- AGENTS.md
+- https://www.conventionalcommits.org/en/v1.0.0/
+
+## 8. Commitlint Rules
+
+All commit messages must validate against `.commitlintrc.json`:
+
+1. Subject Line Rules:
+   - Must include type
+   - If scope included, type and description must be separated by space
+   - Description must not be empty
+2. Body Rules:
+   - Use imperative mood
+   - Line length ≤ 72 characters.
+
+## 9. Agent Log Reference Rule
+
+- Commit body must reference related agent log file:
+  Example:
+
+  ```
+  feat(server): add user creation API
+
+  See docs/backend/agent-log/2026-03-27-user-api-creation
+  ```
+
+## 10. Document Hierarchy Priority
+
+In case of conflict, AGENTS.md takes priority over:
+
+1. AGENTS.md
+2. docs/standards/
+3. docs/workflow/
+4. docs/operations/
