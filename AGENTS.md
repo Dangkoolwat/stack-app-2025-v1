@@ -47,6 +47,20 @@ docs/
 
 ---
 
+## Guide Document Ownership Policy (MANDATORY)
+
+All files under `docs/standards/`, `docs/workflow/`, and `docs/operations/` are READ-ONLY for agents.
+
+- Agents MUST NOT directly create, modify, or delete any guide document in these directories.
+- If an agent identifies an issue (error, inconsistency, missing content, improvement opportunity) in any guide document:
+  1. Document the finding in the agent log (`final-report.md` or dedicated section).
+  2. Include: file path, line number(s), issue description, and suggested fix.
+  3. Label the finding clearly as "Guide Document Feedback".
+- Only the project owner (user) may apply changes to guide documents.
+- Exception: The user may explicitly instruct an agent to modify a specific guide document in the current task scope.
+
+---
+
 ## Core Execution Flow
 
 All work MUST follow the tiered process system based on complexity:
@@ -103,6 +117,16 @@ All agents MUST follow the Conventional Commits standard (v1.0.0).
 - Details: See [Commit Convention Guide](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/commit-convention.md)
 - Body: MUST include the Agent Name and a link to the corresponding `agent-log` path.
 - Example: `fix(security): patch transitive vulnerabilities in parent POM (see docs/backend/agent-log/2026-03-25-cve-patch/)`
+
+### Commit Execution Rule
+
+- Agents MUST NOT execute `git add`, `git commit`, or `git push` commands automatically after completing implementation.
+- The correct flow is:
+  1. Complete implementation and verification.
+  2. Report completion to the user (via final-report or equivalent).
+  3. Wait for the user's explicit instruction to commit.
+- Only after the user confirms: the agent may execute the commit using the approved message format.
+- Exception: The user may pre-authorize commits for a specific task scope (e.g., "commit when done").
 
 ---
 
@@ -232,6 +256,8 @@ final-report.md:
 - docs/standards/configuration-externalization-guideline.md
 - docs/standards/java-class-comment-guideline.md
 - docs/standards/cache-safety-guideline.md
+- docs/standards/commit-convention.md
+- docs/standards/naming-convention-checker.md
 
 ### Workflow
 
