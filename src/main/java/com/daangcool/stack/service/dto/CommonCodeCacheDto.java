@@ -52,9 +52,24 @@ public class CommonCodeCacheDto {
         }
     }
 
+    public record GroupRefDto(
+        String groupCode
+    ) implements Serializable {
+
+        @Serial
+        private static final long serialVersionUID = 1L;
+
+        public static GroupRefDto from(CommonCodeGroup group) {
+            if (group == null) {
+                return null;
+            }
+            return new GroupRefDto(group.getGroupCode());
+        }
+    }
+
     /**
      * CommonCodeDetail 캐시 DTO
-     * group 연관 관계는 groupCode(String)만 보관 → LazyLoad 원천 차단
+     * group 연관 관계는 식별 정보만 보관 → LazyLoad 원천 차단
      */
     public record DetailDto(
         Long id,
@@ -62,7 +77,7 @@ public class CommonCodeCacheDto {
         String name,
         Integer sortOrder,
         boolean deleted,
-        String groupCode,
+        GroupRefDto group,
         String attribute1,
         String attribute2,
         String attribute3,
@@ -81,7 +96,7 @@ public class CommonCodeCacheDto {
                 d.getName(),
                 d.getSortOrder(),
                 d.isDeleted(),
-                d.getGroup() != null ? d.getGroup().getGroupCode() : null,
+                GroupRefDto.from(d.getGroup()),
                 d.getAttribute1(),
                 d.getAttribute2(),
                 d.getAttribute3(),

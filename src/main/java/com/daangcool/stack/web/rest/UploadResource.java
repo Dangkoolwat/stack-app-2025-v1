@@ -3,6 +3,7 @@ package com.daangcool.stack.web.rest;
 import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.service.storage.StorageService;
 import com.daangcool.stack.service.board.UploadService;
+import com.daangcool.stack.service.dto.UploadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -63,7 +64,7 @@ public class UploadResource {
     @ApiResponse(responseCode = "201", description = "성공")
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Upload> uploadFile(
+    public ResponseEntity<UploadDTO> uploadFile(
         @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
         @RequestParam(value = "public", defaultValue = "true") boolean isPublic
     ) {
@@ -71,10 +72,11 @@ public class UploadResource {
         // 고유 식별자(UUID)를 스토리지 키로 사용
         String storageKey = java.util.UUID.randomUUID().toString();
         Upload saved = uploadService.saveUpload(file, storageKey, isPublic);
+        UploadDTO response = new UploadDTO(saved);
         try {
-            return ResponseEntity.created(new java.net.URI("/api/uploads/" + saved.getId() + "/preview")).body(saved);
+            return ResponseEntity.created(new java.net.URI("/api/uploads/" + saved.getId() + "/preview")).body(response);
         } catch (java.net.URISyntaxException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(saved);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -104,7 +106,7 @@ public class UploadResource {
     @GetMapping("/{id}/download")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
         try {
-            Upload upload = uploadService.findById(id)
+            UploadDTO upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
 
             if (upload.isDeleted()) {
@@ -154,7 +156,7 @@ public class UploadResource {
     @GetMapping("/{id}/preview")
     public ResponseEntity<byte[]> previewFile(@PathVariable Long id) {
         try {
-            Upload upload = uploadService.findById(id)
+            UploadDTO upload = uploadService.findById(id)
                 .orElseThrow(() -> new FileNotFoundException("Upload ID not found: " + id));
 
             if (upload.isDeleted()) {
@@ -205,7 +207,7 @@ public class UploadResource {
     @GetMapping("/private/{id}/download")
     public ResponseEntity<StreamingResponseBody> downloadPrivateFile(@PathVariable Long id) {
         try {
-            Upload upload = uploadService.getAuthorizedPrivateUpload(id);
+            UploadDTO upload = uploadService.getAuthorizedPrivateUpload(id);
 
             String encodedFilename = encodeFilename(upload.getSourceFilename());
             HttpHeaders headers = new HttpHeaders();

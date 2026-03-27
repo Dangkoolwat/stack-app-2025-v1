@@ -8,8 +8,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Filter;
 
 import java.io.Serializable;
@@ -19,7 +17,6 @@ import java.io.Serializable;
 @Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Board 엔티티의 캐시 정책과 통일
 public class Comment extends AbstractAuditingEntity<Long> implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -6,6 +6,8 @@ import com.daangcool.stack.repository.common.CommonCodeDetailRepository;
 import com.daangcool.stack.repository.common.CommonCodeGroupRepository;
 import com.daangcool.stack.common.exception.BadRequestAlertException;
 import com.daangcool.stack.service.dto.CommonCodeCacheDto;
+import com.daangcool.stack.service.dto.CommonCodeCacheDto.DetailDto;
+import com.daangcool.stack.service.dto.CommonCodeCacheDto.GroupDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -48,18 +50,14 @@ public class CommonCodeService {
     // --- Cache Clearing Methods (UserService 패턴) ---
 
     private void clearGroupCaches(String groupCode) {
-        // 단일 그룹 조회 캐시 제거
-        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUPS)).evictIfPresent(groupCode);
-        // 전체 그룹 리스트 캐시 제거 (새 데이터 생성/수정/삭제 시 리스트 전체 갱신)
-        Objects.requireNonNull(cacheManager.getCache(COMMON_GROUP_LIST)).clear();
+        evictIfPresent(COMMON_GROUPS, groupCode);
+        clear(COMMON_GROUP_LIST);
         LOG.debug("Cleared caches for CommonCodeGroup: {}", groupCode);
     }
 
     private void clearDetailCaches(Long detailId, String groupCode) {
-        // 단일 상세 코드 조회 캐시 제거
-        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAILS)).evictIfPresent(detailId);
-        // 특정 그룹의 상세 코드 리스트 캐시 제거 (GroupCode를 키로 사용)
-        Objects.requireNonNull(cacheManager.getCache(COMMON_DETAILS_BY_GROUP)).evictIfPresent(groupCode);
+        evictIfPresent(COMMON_DETAILS, detailId);
+        evictIfPresent(COMMON_DETAILS_BY_GROUP, groupCode);
         LOG.debug("Cleared caches for CommonCodeDetail ID: {}, Group: {}", detailId, groupCode);
     }
 
@@ -103,42 +101,56 @@ public class CommonCodeService {
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<CommonCodeGroup> findAllGroups() {
+    public List<GroupDto> findAllGroups() {
         Cache cache = cacheManager.getCache(COMMON_GROUP_LIST);
-        if (cache != null) {
-            // DTO 리스트로 저장 → Hibernate Proxy / LazyLoad 문제 없음
-            List<CommonCodeCacheDto.GroupDto> cached =
-                (List<CommonCodeCacheDto.GroupDto>) cache.get("all", List.class);
-            if (cached != null) {
-                LOG.debug("[COMMON CACHE] Hit findAllGroups");
-                // DTO → 엔티티 형태로 복원 (호출부 인터페이스 유지)
-                return cached.stream().map(this::toGroupEntity).toList();
+        try {
+            if (cache != null) {
+                List<GroupDto> cached = (List<GroupDto>) cache.get("all", List.class);
+                if (cached != null) {
+                    LOG.debug("[COMMON CACHE] Hit findAllGroups");
+                    return cached;
+                }
             }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to read group list cache: {}", e.getMessage());
         }
         List<CommonCodeGroup> groups =
             groupRepository.findAllByDeletedIsFalseOrderByDisplayOrderAsc();
-        if (cache != null && !groups.isEmpty()) {
-            // 엔티티 대신 DTO 저장 (LazyLoad 세션 안에서 변환)
-            cache.put("all", CommonCodeCacheDto.GroupDto.fromList(groups));
+        List<GroupDto> groupDtos = CommonCodeCacheDto.GroupDto.fromList(groups);
+        if (cache != null && !groupDtos.isEmpty()) {
+            try {
+                cache.put("all", groupDtos);
+            } catch (RuntimeException e) {
+                LOG.warn("[COMMON CACHE] Failed to store group list cache: {}", e.getMessage());
+            }
         }
-        return groups;
+        return groupDtos;
     }
 
     @Transactional(readOnly = true)
-    public Optional<CommonCodeGroup> findGroup(String groupCode) {
+    public Optional<GroupDto> findGroup(String groupCode) {
         Cache cache = cacheManager.getCache(COMMON_GROUPS);
-        if (cache != null) {
-            CommonCodeCacheDto.GroupDto cached =
-                cache.get(groupCode, CommonCodeCacheDto.GroupDto.class);
-            if (cached != null) {
-                LOG.debug("[COMMON CACHE] Hit findGroup: {}", groupCode);
-                return Optional.of(toGroupEntity(cached));
+        try {
+            if (cache != null) {
+                GroupDto cached = cache.get(groupCode, GroupDto.class);
+                if (cached != null) {
+                    LOG.debug("[COMMON CACHE] Hit findGroup: {}", groupCode);
+                    return Optional.of(cached);
+                }
             }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to read group cache ({}): {}", groupCode, e.getMessage());
         }
-        Optional<CommonCodeGroup> result =
-            groupRepository.findOneByGroupCodeAndDeletedIsFalse(groupCode);
+        Optional<GroupDto> result = groupRepository.findOneByGroupCodeAndDeletedIsFalse(groupCode)
+            .map(CommonCodeCacheDto.GroupDto::from);
         result.ifPresent(g -> {
-            if (cache != null) cache.put(groupCode, CommonCodeCacheDto.GroupDto.from(g));
+            if (cache != null) {
+                try {
+                    cache.put(groupCode, g);
+                } catch (RuntimeException e) {
+                    LOG.warn("[COMMON CACHE] Failed to store group cache ({}): {}", groupCode, e.getMessage());
+                }
+            }
         });
         return result;
     }
@@ -227,42 +239,59 @@ public class CommonCodeService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<CommonCodeDetail> findDetail(Long id) {
+    public Optional<DetailDto> findDetail(Long id) {
         Cache cache = cacheManager.getCache(COMMON_DETAILS);
-        if (cache != null) {
-            CommonCodeCacheDto.DetailDto cached =
-                cache.get(id, CommonCodeCacheDto.DetailDto.class);
-            if (cached != null) {
-                LOG.debug("[COMMON CACHE] Hit findDetail: {}", id);
-                return Optional.of(toDetailEntity(cached));
+        try {
+            if (cache != null) {
+                DetailDto cached = cache.get(id, DetailDto.class);
+                if (cached != null) {
+                    LOG.debug("[COMMON CACHE] Hit findDetail: {}", id);
+                    return Optional.of(cached);
+                }
             }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to read detail cache ({}): {}", id, e.getMessage());
         }
-        Optional<CommonCodeDetail> result =
-            detailRepository.findById(id).filter(d -> !d.isDeleted());
+        Optional<DetailDto> result =
+            detailRepository.findById(id).filter(d -> !d.isDeleted()).map(CommonCodeCacheDto.DetailDto::from);
         result.ifPresent(d -> {
-            if (cache != null) cache.put(id, CommonCodeCacheDto.DetailDto.from(d));
+            if (cache != null) {
+                try {
+                    cache.put(id, d);
+                } catch (RuntimeException e) {
+                    LOG.warn("[COMMON CACHE] Failed to store detail cache ({}): {}", id, e.getMessage());
+                }
+            }
         });
         return result;
     }
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<CommonCodeDetail> findAllDetailsByGroup(String groupCode) {
+    public List<DetailDto> findAllDetailsByGroup(String groupCode) {
         Cache cache = cacheManager.getCache(COMMON_DETAILS_BY_GROUP);
-        if (cache != null) {
-            List<CommonCodeCacheDto.DetailDto> cached =
-                (List<CommonCodeCacheDto.DetailDto>) cache.get(groupCode, List.class);
-            if (cached != null) {
-                LOG.debug("[COMMON CACHE] Hit findAllDetailsByGroup: {}", groupCode);
-                return cached.stream().map(this::toDetailEntity).toList();
+        try {
+            if (cache != null) {
+                List<DetailDto> cached = (List<DetailDto>) cache.get(groupCode, List.class);
+                if (cached != null) {
+                    LOG.debug("[COMMON CACHE] Hit findAllDetailsByGroup: {}", groupCode);
+                    return cached;
+                }
             }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to read detail list cache ({}): {}", groupCode, e.getMessage());
         }
         List<CommonCodeDetail> details =
             detailRepository.findAllByGroupGroupCodeAndDeletedIsFalseOrderBySortOrderAsc(groupCode);
-        if (cache != null && !details.isEmpty()) {
-            cache.put(groupCode, CommonCodeCacheDto.DetailDto.fromList(details));
+        List<DetailDto> detailDtos = CommonCodeCacheDto.DetailDto.fromList(details);
+        if (cache != null && !detailDtos.isEmpty()) {
+            try {
+                cache.put(groupCode, detailDtos);
+            } catch (RuntimeException e) {
+                LOG.warn("[COMMON CACHE] Failed to store detail list cache ({}): {}", groupCode, e.getMessage());
+            }
         }
-        return details;
+        return detailDtos;
     }
 
     public void softDeleteDetail(Long id) {
@@ -281,41 +310,25 @@ public class CommonCodeService {
             );
     }
 
-    // ------------------------------------------------------------------
-    // 캐시 DTO → 엔티티 복원 헬퍼 (호출부 인터페이스 유지용)
-    // 캐시 히트 시 DB 조회 없이 가볍게 엔티티 형태로 반환합니다.
-    // 연관 관계(group.details 등)는 null 로 채워지지만, 조회 전용 용도에서는 충분합니다.
-    // 연관 엔티티가 필요한 로직에서는 DB 를 직접 조회하세요.
-    // ------------------------------------------------------------------
-
-    private CommonCodeGroup toGroupEntity(CommonCodeCacheDto.GroupDto dto) {
-        CommonCodeGroup g = new CommonCodeGroup();
-        g.setGroupCode(dto.groupCode());
-        g.setGroupName(dto.groupName());
-        g.setDisplayOrder(dto.displayOrder());
-        g.setDeleted(dto.deleted());
-        g.setDescription(dto.description());
-        return g;
+    private void evictIfPresent(String cacheName, Object key) {
+        try {
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.evictIfPresent(key);
+            }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to evict cache {}: {}", cacheName, e.getMessage());
+        }
     }
 
-    private CommonCodeDetail toDetailEntity(CommonCodeCacheDto.DetailDto dto) {
-        CommonCodeDetail d = new CommonCodeDetail();
-        d.setId(dto.id());
-        d.setCode(dto.code());
-        d.setName(dto.name());
-        d.setSortOrder(dto.sortOrder());
-        d.setDeleted(dto.deleted());
-        d.setAttribute1(dto.attribute1());
-        d.setAttribute2(dto.attribute2());
-        d.setAttribute3(dto.attribute3());
-        d.setAttribute4(dto.attribute4());
-        d.setAttribute5(dto.attribute5());
-        d.setDescription(dto.description());
-        if (dto.groupCode() != null) {
-            CommonCodeGroup g = new CommonCodeGroup();
-            g.setGroupCode(dto.groupCode());
-            d.setGroup(g);
+    private void clear(String cacheName) {
+        try {
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.clear();
+            }
+        } catch (RuntimeException e) {
+            LOG.warn("[COMMON CACHE] Failed to clear cache {}: {}", cacheName, e.getMessage());
         }
-        return d;
     }
 }

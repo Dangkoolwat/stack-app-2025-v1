@@ -9,6 +9,7 @@ import com.daangcool.stack.common.util.UploadFileUtils;
 import com.daangcool.stack.common.exception.InvalidFileException;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
 import com.daangcool.stack.service.GlobalSettingsService;
+import com.daangcool.stack.service.dto.UploadDTO;
 import com.daangcool.stack.domain.vo.FileTypePolicy;
 import com.daangcool.stack.domain.vo.FileUploadDefaults;
 import com.daangcool.stack.service.dto.SettingsDTO;
@@ -35,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -374,5 +376,41 @@ class UploadServiceT {
 
         assertThatThrownBy(() -> uploadService.hardDelete(99L))
             .isInstanceOf(UploadNotFoundException.class);
+    }
+
+    @Test
+    void findById_WhenCacheHit_ShouldReturnCachedDto() {
+        UploadDTO cached = new UploadDTO(upload);
+        when(cache.get(1L, UploadDTO.class)).thenReturn(cached);
+
+        Optional<UploadDTO> result = uploadService.findById(1L);
+
+        assertThat(result).contains(cached);
+        verify(uploadRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void findById_WhenCacheReadFails_ShouldFallbackToRepository() {
+        when(cache.get(1L, UploadDTO.class)).thenThrow(new RuntimeException("cache down"));
+        when(uploadRepository.findById(1L)).thenReturn(Optional.of(upload));
+
+        Optional<UploadDTO> result = uploadService.findById(1L);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(1L);
+        verify(uploadRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void increaseDownloadCount_ShouldUpdateCountAndEvictCaches() {
+        upload.setDownloadCount(3L);
+        when(uploadRepository.findById(1L)).thenReturn(Optional.of(upload));
+        when(uploadRepository.save(any(Upload.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        uploadService.increaseDownloadCount(1L);
+
+        assertThat(upload.getDownloadCount()).isEqualTo(4L);
+        verify(cache, times(1)).evictIfPresent(eq(1L));
+        verify(cache, times(1)).clear();
     }
 }

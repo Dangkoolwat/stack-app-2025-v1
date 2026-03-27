@@ -6,8 +6,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -24,7 +22,6 @@ import java.util.Objects;
 )
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class CommonCodeDetail extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Serial
@@ -103,5 +100,4 @@ public class CommonCodeDetail extends AbstractAuditingEntity<Long> implements Se
         return Objects.hashCode(getId());
     }
 }
-
 

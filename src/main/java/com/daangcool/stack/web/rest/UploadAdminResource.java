@@ -4,6 +4,7 @@ import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.board.UploadService;
 import com.daangcool.stack.common.exception.UploadNotFoundException;
+import com.daangcool.stack.service.dto.UploadDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,7 +60,7 @@ public class UploadAdminResource {
     @Operation(summary = "Toggle file visibility", description = "Sets the file's public/private visibility flag.")
     @ApiResponse(responseCode = "200", description = "Visibility updated successfully")
     @PatchMapping("/{id}/visibility")
-    public ResponseEntity<Upload> changeVisibility(
+    public ResponseEntity<UploadDTO> changeVisibility(
         @PathVariable Long id,
         @RequestParam("public") boolean targetIsPublic
     ) throws URISyntaxException {
@@ -67,7 +68,7 @@ public class UploadAdminResource {
         Upload updated = uploadService.changeVisibility(id, targetIsPublic);
         return ResponseEntity.ok()
             .location(new URI("/api/admin/uploads/" + updated.getId()))
-            .body(updated);
+            .body(new UploadDTO(updated));
     }
 
     /**
@@ -89,7 +90,7 @@ public class UploadAdminResource {
     ) {
         log.debug("Admin request to delete Upload : {} (mode={})", id, mode);
 
-        Optional<Upload> existing = uploadService.findById(id);
+        Optional<UploadDTO> existing = uploadService.findById(id);
         if (existing.isEmpty()) {
             throw new UploadNotFoundException("Upload ID not found: " + id);
         }
@@ -127,9 +128,9 @@ public class UploadAdminResource {
     @ApiResponse(responseCode = "200", description = "File metadata retrieved successfully")
     @ApiResponse(responseCode = "404", description = "File not found")
     @GetMapping("/{id}")
-    public ResponseEntity<Upload> getFileMetadata(@PathVariable Long id) {
+    public ResponseEntity<UploadDTO> getFileMetadata(@PathVariable Long id) {
         log.debug("Admin request to get Upload metadata: {}", id);
-        Optional<Upload> upload = uploadService.findById(id);
+        Optional<UploadDTO> upload = uploadService.findById(id);
         return upload.map(ResponseEntity::ok)
             .orElseThrow(() -> new UploadNotFoundException("Upload not found: " + id));
     }

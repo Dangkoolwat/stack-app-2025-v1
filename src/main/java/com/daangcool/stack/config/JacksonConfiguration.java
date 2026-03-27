@@ -3,8 +3,6 @@ package com.daangcool.stack.config;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import tools.jackson.databind.introspect.AnnotatedMember;
-import tools.jackson.databind.introspect.JacksonAnnotationIntrospector;
 
 @Configuration
 public class JacksonConfiguration {
@@ -21,16 +19,6 @@ public class JacksonConfiguration {
     @Bean
     public JsonMapperBuilderCustomizer jacksonCustomizer() {
         return builder -> {
-            // 캐성 재구성 시 @JsonIgnore를 무시하여 데이터 무결성을 확보하기 위한 introspector 커스텀
-            // 주의: API 응답 결과에도 영향을 줄 수 있으므로 신중히 적용됨.
-            builder.annotationIntrospector(new JacksonAnnotationIntrospector() {
-                @Override
-                public boolean hasIgnoreMarker(tools.jackson.databind.cfg.MapperConfig<?> config, AnnotatedMember m) {
-                    // 모든 IgnoreMarker 무시 (캐시 직렬화/역직렬화 안정성 확보)
-                    return false;
-                }
-            });
-
             // Hibernate MixIns 등록
             builder.addMixIn(org.hibernate.collection.spi.PersistentSet.class, HibernateSetMixIn.class);
             builder.addMixIn(org.hibernate.collection.spi.PersistentBag.class, HibernateBagMixIn.class);

@@ -83,7 +83,32 @@ mockMvc.perform(get("/api/secure-endpoint")
 
 ---
 
+## 5. Cache Verification
+
+When modifying cache configuration, cache DTOs, TTL, invalidation logic, or cache-backed read paths, tests MUST verify the cache contract directly.
+
+### Required cache test cases
+
+- cache miss loads from DB or source-of-truth path
+- cache hit avoids repeated repository or DB access
+- mutation invalidates the expected cache key or range
+- cache failure falls back without breaking the request
+
+### Recommended scope
+
+- unit tests for cache hit/miss/fallback behavior at service level
+- integration tests for write-then-read consistency on cache-backed endpoints
+- targeted regression tests for stale counters or aggregate caches when a write affects derived views
+
+### Important note
+
+Cache-backed reads should prefer DTO/read-model contracts.
+If a service still returns entities on read paths, do not add new cache tests that depend on pseudo-entity reconstruction. Migrate the read contract to DTOs first.
+
+---
+
 ## Related Documents
 
 - [AGENTS.md](../../AGENTS.md)
 - [Environment Variables Guide](environment-variables.md)
+- [Cache Operations Guide](cache-operations.md)

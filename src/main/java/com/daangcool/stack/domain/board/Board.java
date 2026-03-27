@@ -9,8 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 
@@ -24,7 +22,6 @@ import java.util.Set;
 @Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Board extends AbstractAuditingEntity<Long> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -76,21 +73,18 @@ public class Board extends AbstractAuditingEntity<Long> implements Serializable 
     // 3. 댓글 (Comments)
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     @Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "board", "user" }, allowSetters = true)
     private Set<Comment> comments = new HashSet<>();
 
     // 4. 첨부파일 (Attachments)
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     @Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "board" }, allowSetters = true)
     private Set<Upload> attachments = new HashSet<>();
 
     // 5. 태그 (Tags)
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
     @Filter(name = "softDeleteFilter", condition = "is_deleted = 0")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "board", "tag" })
     private Set<BoardTag> boardTags = new HashSet<>();
 

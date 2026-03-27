@@ -5,6 +5,8 @@ import com.daangcool.stack.domain.common.CommonCodeGroup;
 import com.daangcool.stack.security.AuthoritiesConstants;
 import com.daangcool.stack.service.common.CommonCodeService;
 import com.daangcool.stack.common.exception.BadRequestAlertException;
+import com.daangcool.stack.service.dto.CommonCodeCacheDto.DetailDto;
+import com.daangcool.stack.service.dto.CommonCodeCacheDto.GroupDto;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +90,7 @@ public class CommonCodeResource {
      */
     @GetMapping("/groups")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public List<CommonCodeGroup> getAllGroups() {
+    public List<GroupDto> getAllGroups() {
         LOG.debug("REST request to get all non-deleted CommonCodeGroups");
         return commonCodeService.findAllGroups();
     }
@@ -102,7 +104,7 @@ public class CommonCodeResource {
      */
     @GetMapping("/groups/{groupCode}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<CommonCodeGroup> getGroup(@PathVariable String groupCode) {
+    public ResponseEntity<GroupDto> getGroup(@PathVariable String groupCode) {
         LOG.debug("REST request to get CommonCodeGroup : {}", groupCode);
         return ResponseUtil.wrapOrNotFound(commonCodeService.findGroup(groupCode));
     }
@@ -173,7 +175,7 @@ public class CommonCodeResource {
      */
     @GetMapping("/details/group/{groupCode}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public List<CommonCodeDetail> getAllDetailsByGroup(@PathVariable String groupCode) {
+    public List<DetailDto> getAllDetailsByGroup(@PathVariable String groupCode) {
         LOG.debug("REST request to get all non-deleted CommonCodeDetails for group: {}", groupCode);
         return commonCodeService.findAllDetailsByGroup(groupCode);
     }
@@ -187,7 +189,7 @@ public class CommonCodeResource {
      */
     @GetMapping("/details/{id}")
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<CommonCodeDetail> getDetail(@PathVariable Long id) {
+    public ResponseEntity<DetailDto> getDetail(@PathVariable Long id) {
         LOG.debug("REST request to get CommonCodeDetail : {}", id);
         return ResponseUtil.wrapOrNotFound(commonCodeService.findDetail(id));
     }

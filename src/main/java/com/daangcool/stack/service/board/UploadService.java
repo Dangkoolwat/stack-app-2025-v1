@@ -349,29 +349,38 @@ public class UploadService {
         uploadRepository.findById(id).ifPresent(upload -> {
             long current = Optional.ofNullable(upload.getDownloadCount()).orElse(0L);
             upload.setDownloadCount(current + 1);
-            uploadRepository.save(upload);
+            Upload saved = uploadRepository.save(upload);
+            clearUploadCaches(saved);
         });
     }
 
     /**
      * 단건 조회 (캐시 포함)
      * Redis 에는 UploadDTO(단순 타입) 저장 → Hibernate Proxy @class 문제 원천 차단.
-     * 캐시 히트 시 DTO → Upload 경량 복원 객체 반환 (DB 재조회 없음).
-     * 캐시 미스 시 DB 조회 후 DTO 저장.
      */
     @Transactional(readOnly = true)
-    public Optional<Upload> findById(Long id) {
+    public Optional<UploadDTO> findById(Long id) {
         Cache cache = cacheManager.getCache(CacheNames.UPLOAD_BY_ID);
-        if (cache != null) {
-            UploadDTO cached = cache.get(id, UploadDTO.class);
-            if (cached != null) {
-                log.debug("[UPLOAD CACHE] Cache hit for id={}", id);
-                return Optional.of(toUploadEntity(cached));
+        try {
+            if (cache != null) {
+                UploadDTO cached = cache.get(id, UploadDTO.class);
+                if (cached != null) {
+                    log.debug("[UPLOAD CACHE] Cache hit for id={}", id);
+                    return Optional.of(cached);
+                }
             }
+        } catch (RuntimeException e) {
+            log.warn("[UPLOAD CACHE] Failed to read cache for id={}: {}", id, e.getMessage());
         }
-        Optional<Upload> upload = uploadRepository.findById(id);
+        Optional<UploadDTO> upload = uploadRepository.findById(id).map(UploadDTO::new);
         upload.ifPresent(u -> {
-            if (cache != null) cache.put(id, new UploadDTO(u));
+            if (cache != null) {
+                try {
+                    cache.put(id, u);
+                } catch (RuntimeException e) {
+                    log.warn("[UPLOAD CACHE] Failed to store cache for id={}: {}", id, e.getMessage());
+                }
+            }
         });
         return upload;
     }
@@ -382,18 +391,28 @@ public class UploadService {
      */
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<Upload> findAllByBoard(Long boardId) {
+    public List<UploadDTO> findAllByBoard(Long boardId) {
         Cache cache = cacheManager.getCache(CacheNames.UPLOAD_BY_BOARD);
-        if (cache != null) {
-            List<UploadDTO> cached = (List<UploadDTO>) cache.get(boardId, List.class);
-            if (cached != null) {
-                log.debug("[UPLOAD CACHE] Cache hit for boardId={}", boardId);
-                return cached.stream().map(this::toUploadEntity).toList();
+        try {
+            if (cache != null) {
+                List<UploadDTO> cached = (List<UploadDTO>) cache.get(boardId, List.class);
+                if (cached != null) {
+                    log.debug("[UPLOAD CACHE] Cache hit for boardId={}", boardId);
+                    return cached;
+                }
             }
+        } catch (RuntimeException e) {
+            log.warn("[UPLOAD CACHE] Failed to read list cache for boardId={}: {}", boardId, e.getMessage());
         }
-        List<Upload> uploads = uploadRepository.findAllByBoard_IdOrderByIdAsc(boardId);
+        List<UploadDTO> uploads = uploadRepository.findAllByBoard_IdOrderByIdAsc(boardId).stream()
+            .map(UploadDTO::new)
+            .toList();
         if (cache != null && !uploads.isEmpty()) {
-            cache.put(boardId, uploads.stream().map(UploadDTO::new).toList());
+            try {
+                cache.put(boardId, uploads);
+            } catch (RuntimeException e) {
+                log.warn("[UPLOAD CACHE] Failed to store list cache for boardId={}: {}", boardId, e.getMessage());
+            }
         }
         return uploads;
     }
@@ -422,7 +441,7 @@ public class UploadService {
      * 비공개 파일 다운로드용 업로드 조회 및 권한 검증.
      */
     @Transactional(readOnly = true)
-    public Upload getAuthorizedPrivateUpload(Long id) {
+    public UploadDTO getAuthorizedPrivateUpload(Long id) {
         Upload upload = uploadRepository.findById(id)
             .orElseThrow(() -> new UploadNotFoundException("업로드 메타데이터를 찾을 수 없습니다. id=" + id));
 
@@ -435,28 +454,7 @@ public class UploadService {
         }
 
         resourceAuthorizationService.validateOwnerOrAdminByLogin(upload.getCreatedBy(), "upload", "unauthorized");
-        return upload;
-    }
-
-    // ---------------------------------------------------
-    // 캐시 DTO → 엔티티 복원 헬퍼 (호출부 인터페이스 유지용)
-    // board 연관 관계는 null — 파일 메타데이터 조회 전용으로 충분합니다.
-    // board 정보가 필요한 로직에서는 DB 를 직접 조회하세요.
-    // ---------------------------------------------------
-    private Upload toUploadEntity(UploadDTO dto) {
-        Upload u = new Upload();
-        u.setId(dto.getId());
-        u.setStorageKey(dto.getStorageKey());
-        u.setSourceFilename(dto.getSourceFilename());
-        u.setStorageFilename(dto.getStorageFilename());
-        u.setFilePath(dto.getFilePath());
-        u.setFileSize(dto.getFileSize());
-        u.setFileExtension(dto.getFileExtension());
-        u.setMimeType(dto.getMimeType());
-        u.setDownloadCount(dto.getDownloadCount());
-        u.setPublic(dto.isPublic());
-        u.setDeleted(dto.isDeleted());
-        return u;
+        return new UploadDTO(upload);
     }
 
     // ---------------------------------------------------

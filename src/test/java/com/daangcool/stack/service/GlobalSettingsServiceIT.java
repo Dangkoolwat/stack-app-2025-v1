@@ -42,10 +42,14 @@ class GlobalSettingsServiceIT {
         dto.setDescription("Updated by service");
         globalSettingsService.updateSettings(dto);
 
+        SettingsDTO refreshed = globalSettingsService.getSettings();
+
         // DB에 직접 반영되었는지 확인
         Settings updated = settingsRepository.findById(1L).orElseThrow();
         assertThat(updated.getTokenValiditySeconds()).isEqualTo(7200L);
         assertThat(updated.getDescription()).isEqualTo("Updated by service");
         assertThat(updated.getGlobalSettings()).doesNotContain("description");
+        assertThat(refreshed.getTokenValiditySeconds()).isEqualTo(7200L);
+        assertThat(refreshed.getDescription()).isEqualTo("Updated by service");
     }
 }

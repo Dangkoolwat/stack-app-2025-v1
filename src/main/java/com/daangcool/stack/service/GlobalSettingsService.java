@@ -55,12 +55,16 @@ public class GlobalSettingsService {
     @Transactional(readOnly = true)
     public SettingsDTO getSettings() {
         Cache cache = cacheManager.getCache(CacheNames.SETTINGS);
-        if (cache != null) {
-            SettingsDTO cached = cache.get(SETTINGS_ID, SettingsDTO.class);
-            if (cached != null) {
-                log.trace("[SETTINGS CACHE] Cache hit for settings ID={}", SETTINGS_ID);
-                return cached;
+        try {
+            if (cache != null) {
+                SettingsDTO cached = cache.get(SETTINGS_ID, SettingsDTO.class);
+                if (cached != null) {
+                    log.trace("[SETTINGS CACHE] Cache hit for settings ID={}", SETTINGS_ID);
+                    return cached;
+                }
             }
+        } catch (RuntimeException e) {
+            log.warn("[SETTINGS CACHE] Failed to read cache, fallback to DB: {}", e.getMessage());
         }
 
         log.debug("[SETTINGS CACHE] Cache miss. Loading from database...");
@@ -78,8 +82,12 @@ public class GlobalSettingsService {
         );
 
         if (cache != null) {
-            cache.put(SETTINGS_ID, dto);
-            log.debug("[SETTINGS CACHE] Cached settings for ID={}", SETTINGS_ID);
+            try {
+                cache.put(SETTINGS_ID, dto);
+                log.debug("[SETTINGS CACHE] Cached settings for ID={}", SETTINGS_ID);
+            } catch (RuntimeException e) {
+                log.warn("[SETTINGS CACHE] Failed to store cache: {}", e.getMessage());
+            }
         }
 
         return dto;
@@ -166,8 +174,12 @@ public class GlobalSettingsService {
     public void clearSettingsCache() {
         Cache cache = cacheManager.getCache(CacheNames.SETTINGS);
         if (cache != null) {
-            log.info("[SETTINGS CACHE] Evicting cache for ID={}", SETTINGS_ID);
-            cache.evict(SETTINGS_ID);
+            try {
+                log.info("[SETTINGS CACHE] Evicting cache for ID={}", SETTINGS_ID);
+                cache.evict(SETTINGS_ID);
+            } catch (RuntimeException e) {
+                log.warn("[SETTINGS CACHE] Failed to evict cache: {}", e.getMessage());
+            }
         }
     }
 }

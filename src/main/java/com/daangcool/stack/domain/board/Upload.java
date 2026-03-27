@@ -10,8 +10,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Filter;
 
 import java.io.Serializable;
@@ -26,7 +24,6 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Upload extends AbstractAuditingEntity<Long> implements Serializable {
 
     private static final long serialVersionUID = 1L;

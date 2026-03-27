@@ -4,8 +4,6 @@ import com.daangcool.stack.common.constant.Constants;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import com.daangcool.stack.domain.vo.FileTypePolicy;
 import com.daangcool.stack.domain.vo.FileUploadDefaults;
 import tools.jackson.core.type.TypeReference;
@@ -20,7 +18,6 @@ import java.util.Map;
 @Table(name = "stack_settings")
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Settings extends AbstractAuditingEntity<Long> implements Serializable {
 
     @Serial

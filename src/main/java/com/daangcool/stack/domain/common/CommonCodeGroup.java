@@ -5,8 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -23,7 +21,6 @@ import java.util.Set;
 @Table(name = "stack_common_group")
 @Getter
 @Setter
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // 프로젝트의 캐시 전략을 따름
 public class CommonCodeGroup implements Serializable {
 
     @Serial
@@ -57,7 +54,6 @@ public class CommonCodeGroup implements Serializable {
     // CommonDetail 과의 연관 관계 - 1:N
     // fetch = FetchType.LAZY를 사용하여 즉시 로딩을 방지 (성능 최적화)
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<CommonCodeDetail> details = new HashSet<>();
 
     @Override

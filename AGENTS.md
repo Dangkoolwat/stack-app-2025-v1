@@ -241,6 +241,9 @@ final-report.md:
 ### Cache
 
 - MUST follow cache-safety-guideline
+- Redis application cache MUST use DTO/read-model payloads by default
+- Agents MUST NOT introduce new Redis cache entries for JPA entities or Hibernate-managed graphs
+- Any new cache MUST define payload, key, TTL, invalidation owner, and fallback path
 
 ### Code Comments
 
@@ -273,6 +276,7 @@ final-report.md:
 
 - docs/operations/environment-variables.md
 - docs/operations/testing-guideline.md
+- docs/operations/cache-operations.md
 
 ---
 

@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import tech.jhipster.config.JHipsterProperties;
 
 import java.util.Optional;
 
@@ -37,6 +38,9 @@ class GlobalSettingsServiceT {
 
     @Mock
     private Cache cache;
+
+    @Mock
+    private JHipsterProperties jHipsterProperties;
 
     @InjectMocks
     private GlobalSettingsService globalSettingsService;
@@ -151,5 +155,25 @@ class GlobalSettingsServiceT {
         assertThatThrownBy(() -> globalSettingsService.updateSettings(invalidDTO))
             .isInstanceOf(BadRequestAlertException.class)
             .hasMessageContaining("Token validity must be greater than zero");
+    }
+
+    @Test
+    void getSettings_WhenCacheReadFails_ShouldFallbackToDb() {
+        when(cache.get(anyLong(), eq(SettingsDTO.class))).thenThrow(new RuntimeException("cache read failed"));
+        when(settingsRepository.findById(1L)).thenReturn(Optional.of(settings));
+
+        SettingsDTO result = globalSettingsService.getSettings();
+
+        assertThat(result).isNotNull();
+        verify(settingsRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void clearSettingsCache_WhenEvictFails_ShouldNotThrow() {
+        doThrow(new RuntimeException("cache evict failed")).when(cache).evict(1L);
+
+        globalSettingsService.clearSettingsCache();
+
+        verify(cache, times(1)).evict(1L);
     }
 }
