@@ -6,6 +6,8 @@ import java.security.Principal;
 import java.util.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.*;
 import org.springframework.messaging.Message;
@@ -29,6 +31,7 @@ import tech.jhipster.config.JHipsterProperties;
 
 @Configuration
 @EnableWebSocketMessageBroker
+@Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
     public static final String IP_ADDRESS = "IP_ADDRESS";
