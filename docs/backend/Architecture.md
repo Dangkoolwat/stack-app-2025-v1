@@ -1,4 +1,7 @@
-# Backend Engineering Guideline
+# Backend Architecture Notes
+
+Document role: reference-only architecture notes for backend contributors.
+This file helps readers understand the intended backend shape, but it does not override `AGENTS.md`, `docs/standards/`, `docs/workflow/`, or `docs/operations/`.
 
 ## Core Principles
 - Maintainability First
@@ -39,14 +42,12 @@ Avoid:
 
 ## Security Defaults
 
-- Validate all inputs
-- Use standard error format (RFC7807)
-- Never log secrets/tokens
-- JPA 엔티티(@Entity)를 Redis에 직접 캐시하지 말 것
-  → Hibernate Proxy(@class 불일치), LazyLoading 세션 소멸, @Transient 복원 불가 문제 발생
-  → 캐시 대상은 반드시 캐시 전용 DTO(record 또는 단순 POJO)로 변환 후 저장
-- `@Cacheable`로 UserDetails를 직접 캐시하지 말 것
-  → Spring Security 내부 프록시 객체가 직렬화되어 역직렬화 실패 유발
+- Validate all inputs.
+- Use the standard RFC7807 problem format.
+- Never log secrets or tokens.
+- Do not cache JPA entities directly in Redis.
+- Cache only cache-specific DTOs or read models.
+- Do not cache `UserDetails` or similar security proxy types with `@Cacheable`.
 
 ---
 
@@ -57,15 +58,15 @@ Avoid:
 Must define:
 - Why change is needed
 - Scope of impact
-- Compatibility (breaking 여부)
+- Compatibility and possible breaking behavior
 - Rollback strategy
 - Required tests
 
 Checklist:
 - [ ] Dependency tree checked
 - [ ] No duplicate libraries (e.g. Jackson)
-- [ ] Config consistency 유지
-- [ ] Runtime 영향 검증
+- [ ] Configuration consistency maintained
+- [ ] Runtime impact verified
 
 ---
 
@@ -89,42 +90,31 @@ Steps:
 
 ---
 
-## Caching Rules (Redis)
+## Caching Notes (Redis)
 
 Use ONLY when:
 - High read frequency
 - Low consistency risk
 
-### 캐시 대상 선정 원칙 (중요)
+### Cache Target Selection
 
-허용 — 명시적 저장소 패턴으로 캐시 가능:
-- 캐시 전용 DTO (record 또는 단순 POJO, 민감정보 제외)
-  - 예) `UserAuthCacheDto` — id, login, activated, Set<String> authorities
-  - 예) `CommonCodeCacheDto.GroupDto` — groupCode, groupName 등 단순 타입
-- OTP 코드 / 실패 횟수 / 계정 잠금 상태 (Redisson RMapCache, TTL 필수)
-- Rate Limiting 상태 (Redisson RRateLimiter)
-- 분산 Lock (Redisson RLock)
+Allowed:
+- Cache-specific DTOs or read models with simple fields only.
+- OTP codes, failure counts, and account lock status when TTL is explicit.
+- Rate limiting state and distributed lock state through dedicated Redis primitives.
 
-금지 — 다음은 절대 캐시 대상으로 사용 불가:
-- JPA 엔티티 직접 캐시 (`User`, `Authority`, `Board` 등 @Entity 클래스)
-  → 이유: Hibernate가 런타임에 생성하는 `$HibernateProxy$xxxx` 클래스가
-    Jackson DefaultTyping의 @class 필드에 저장되어 역직렬화 시 복원 불가
-- `@Cacheable` 어노테이션으로 UserDetails / 권한 객체 캐시
-  → 이유: Spring Security 프록시 타입 + LazyLoading 컬렉션 직렬화 실패
-- Hibernate L2 캐시 영역과 Application 캐시 영역 혼용
-  → 이유: Binary(Hibernate) vs JSON(Application) 코덱 충돌
+Forbidden:
+- Direct caching of JPA entities such as `User`, `Authority`, or `Board`.
+- `@Cacheable` usage for `UserDetails`, security authorities, or proxy-backed auth objects.
+- Mixing Hibernate L2 cache assumptions with application JSON cache assumptions.
 
-### 캐시 설계 규칙
+### Cache Design Rules
 
-- TTL 필수 (데이터 성격에 따라 세분화)
-  - Long TTL(24h): 공통코드, 태그, 시스템 설정
-  - Default TTL(1h): 게시글, 댓글, 업로드
-  - Short TTL(5min): 인증 정보(UserAuthCacheDto)
-- 캐시는 Service 레이어에서만 관리
-- 상태 변경(비밀번호·권한·활성화·탈퇴) 시 반드시 명시적 evict() 호출
-- Redis 장애 시 DB fallback 동작 보장 (예외를 삼키고 Optional.empty() 반환)
-- 캐시 저장 시 반드시 트랜잭션(영속성 컨텍스트) 안에서 DTO 변환 수행
-  → LazyLoad 해소 후 단순 타입만 추출
+- TTL is mandatory and must match data volatility.
+- Manage cache only in the service layer.
+- Evict explicitly on state changes.
+- Guarantee DB fallback when Redis is unavailable.
+- Convert to DTOs inside the transaction boundary before caching.
 
 ---
 

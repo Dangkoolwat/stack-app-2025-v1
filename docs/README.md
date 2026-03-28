@@ -67,6 +67,21 @@ Collaboration, review, CI, and delivery process.
 
 Execution guides, runtime HOW TO, and runbooks.
 
+### `knowledge/`
+
+Reusable lessons learned and architectural context.
+These documents help explain why a decision was made, but they do not override `AGENTS.md`, `standards/`, `workflow/`, or `operations/`.
+
+### `backend/` and `frontend/`
+
+Domain-specific reference notes and examples.
+Unless a document in these folders is explicitly referenced by `AGENTS.md` or a guide document in the priority chain, treat it as supporting context rather than an authoritative rule source.
+
+### `agent-log/`
+
+Task history, implementation trace, and audit evidence.
+Agent logs are important for grounding and traceability, but they are not policy documents and must not be used to override current standards.
+
 ---
 
 ## Rule of Priority
@@ -75,6 +90,22 @@ Execution guides, runtime HOW TO, and runbooks.
 2. `docs/standards/`
 3. `docs/workflow/`
 4. `docs/operations/`
+
+If another document outside this chain appears to conflict with the priority order, follow the higher-priority source and record the mismatch in the current agent log.
+
+---
+
+## Authority Matrix
+
+| Document location | Primary role | Can define mandatory rules? | Notes |
+|---|---|---|---|
+| `AGENTS.md` | Repository-wide execution contract | Yes | Highest priority |
+| `docs/standards/` | Engineering rules | Yes | Must/Must Not policies |
+| `docs/workflow/` | Process rules | Yes | Cannot weaken `standards/` |
+| `docs/operations/` | Runbooks and procedures | Yes | Execution HOW TO only |
+| `docs/knowledge/` | Shared lessons learned | No | Context and rationale |
+| `docs/backend/`, `docs/frontend/` | Domain reference notes | No, unless explicitly promoted | Useful orientation material |
+| `docs/*/agent-log/` | Task traceability | No | Historical evidence only |
 
 ---
 

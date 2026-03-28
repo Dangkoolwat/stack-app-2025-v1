@@ -1,4 +1,7 @@
-# Frontend Engineering Guideline
+# Frontend Architecture Notes
+
+Document role: reference-only architecture notes for frontend contributors.
+This file provides orientation for the frontend structure, but it does not override `AGENTS.md`, `docs/standards/`, `docs/workflow/`, or `docs/operations/`.
 
 ## Core Principles
 - Maintainability First

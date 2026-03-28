@@ -45,6 +45,13 @@ docs/
 3. docs/workflow/
 4. docs/operations/
 
+### Authority Clarification
+
+- Files under `docs/backend/` and `docs/frontend/` are reference documents unless a higher-priority guide explicitly promotes one of them as authoritative.
+- Files under any `agent-log/` directory are historical task records and MUST NOT be treated as current policy.
+- `docs/knowledge/` captures lessons learned and rationale. It is reusable context, but it MUST NOT override the priority order above.
+- If two documents conflict, agents MUST follow the higher-priority document and record the mismatch in the current agent log.
+
 ---
 
 ## Guide Document Ownership Policy (MANDATORY)
