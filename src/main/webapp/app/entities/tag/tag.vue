@@ -5,7 +5,7 @@
         <h2 id="page-heading" data-cy="TagHeading" class="dc-page-header__title">
           <span v-text="t$('entities.tag.title')" id="tag-heading"></span>
         </h2>
-        <p class="dc-page-header__subtitle">게시글 분류에 사용되는 태그 목록과 사용 빈도를 확인하고 관리하는 화면입니다.</p>
+        <p class="dc-page-header__subtitle" v-text="t$('entities.tag.labels.subtitle')"></p>
       </div>
       <div class="dc-page-actions">
         <button class="btn btn-outline-secondary" @click="handleSyncList" :disabled="isFetching">
@@ -19,7 +19,7 @@
       <div class="dc-panel__body">
         <div class="dc-toolbar">
           <div class="dc-toolbar__group">
-            <span class="dc-toolbar__meta">총 {{ tags?.length || 0 }}건</span>
+            <span class="dc-toolbar__meta" v-text="t$('entities.tag.labels.totalItems', { count: tags?.length || 0 })"></span>
           </div>
         </div>
 

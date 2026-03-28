@@ -1,12 +1,20 @@
 {
   "error": {
-    "title": "Error page!",
+    "title": "Error Occurred!",
     "http": {
       "400": "Bad request.",
-      "403": "You are not authorized to access this page.",
-      "404": "The page does not exist.",
+      "403": {
+        "title": "Access Denied",
+        "subtitle": "You do not have sufficient permissions to access this page. Please contact the administrator or check your login status.",
+        "backToHome": "Back to Home"
+      },
+      "404": {
+        "title": "Page Not Found",
+        "subtitle": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable. Please check the URL and try again.",
+        "backToHome": "Back to Home"
+      },
       "405": "The HTTP verb you used is not supported for this URL.",
-      "500": "Internal server error."
+      "500": "Internal server error. If the situation does not improve shortly, please contact us."
     },
     "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
     "validation": "Validation error on the server."

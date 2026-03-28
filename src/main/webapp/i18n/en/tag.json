@@ -26,6 +26,10 @@
         "undeleted": "Tag {param} restored successfully.",
         "deleteConfirm": "Are you sure you want to delete tag {id}?",
         "notFound": "Tag not found."
+      },
+      "labels": {
+        "subtitle": "This is a screen to check and manage the list of tags used to categorize posts and their frequency of use.",
+        "totalItems": "Total {count} items"
       }
     }
   }

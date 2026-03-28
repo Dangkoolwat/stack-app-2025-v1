@@ -27,6 +27,10 @@
         "deleted": "Common Code Group {param} deleted successfully.",
         "deleteConfirm": "Are you sure you want to (soft) delete group {id}?",
         "notFound": "Common code group not found."
+      },
+      "labels": {
+        "subtitle": "This is a management screen that defines system common code groups and systematically classifies sub-codes.",
+        "totalItems": "Total {count} items"
       }
     }
   }

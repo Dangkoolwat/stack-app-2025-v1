@@ -5,7 +5,7 @@
         <h2 id="page-heading" data-cy="CommonCodeGroupHeading" class="dc-page-header__title">
           <span v-text="t$('entities.commonCodeGroup.title')" id="common-code-group-heading"></span>
         </h2>
-        <p class="dc-page-header__subtitle">시스템 공통 코드 그룹을 정의하고 하위 코드들을 체계적으로 분류하는 관리 화면입니다.</p>
+        <p class="dc-page-header__subtitle" v-text="t$('entities.commonCodeGroup.labels.subtitle')"></p>
       </div>
       <div class="dc-page-actions">
         <button class="btn btn-outline-secondary" @click="handleSyncList" :disabled="isFetching">
@@ -25,7 +25,7 @@
       <div class="dc-panel__body">
         <div class="dc-toolbar">
           <div class="dc-toolbar__group">
-            <span class="dc-toolbar__meta">총 {{ commonCodeGroups?.length || 0 }}건</span>
+            <span class="dc-toolbar__meta" v-text="t$('entities.commonCodeGroup.labels.totalItems', { count: commonCodeGroups?.length || 0 })"></span>
           </div>
         </div>
 

@@ -5,7 +5,7 @@
         <h2 id="page-heading" data-cy="CommonCodeDetailHeading" class="dc-page-header__title">
           <span v-text="t$('entities.commonCodeDetail.title')" id="common-code-detail-heading"></span>
         </h2>
-        <p class="dc-page-header__subtitle">코드 그룹별 상세 코드값을 정의하고 표시 순서 및 상태를 관리하는 화면입니다.</p>
+        <p class="dc-page-header__subtitle" v-text="t$('entities.commonCodeDetail.labels.subtitle')"></p>
       </div>
       <div class="dc-page-actions">
         <button class="btn btn-outline-secondary" @click="handleSyncList" :disabled="isFetching || !selectedGroupCode">
@@ -34,9 +34,9 @@
     <section class="dc-panel">
       <div class="dc-panel__header px-4 pt-4">
         <div class="d-flex align-items-center">
-          <label class="me-3 fw-bold text-nowrap mb-0">그룹 선택:</label>
+          <label class="me-3 fw-bold text-nowrap mb-0" v-text="t$('entities.commonCodeDetail.labels.selectGroupLabel')"></label>
           <select class="form-select form-select-sm dc-select-compact" style="width: 240px" v-model="selectedGroupCode">
-            <option :value="null">-- Select Group --</option>
+            <option :value="null" v-text="t$('entities.commonCodeDetail.labels.selectGroupPlaceholder')"></option>
             <option v-for="group in commonCodeGroups" :key="group.groupCode" :value="group.groupCode">
               {{ group.groupName }} ({{ group.groupCode }})
             </option>
@@ -47,7 +47,7 @@
       <div class="dc-panel__body">
         <div class="dc-toolbar" v-if="selectedGroupCode">
           <div class="dc-toolbar__group">
-            <span class="dc-toolbar__meta">총 {{ commonCodeDetails?.length || 0 }}건</span>
+            <span class="dc-toolbar__meta" v-text="t$('entities.commonCodeDetail.labels.totalItems', { count: commonCodeDetails?.length || 0 })"></span>
           </div>
         </div>
 

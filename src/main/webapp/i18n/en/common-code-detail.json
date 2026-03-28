@@ -34,6 +34,12 @@
         "deleteConfirm": "Are you sure you want to delete detail code {id}?",
         "notFound": "Detail code not found.",
         "selectGroup": "Please select a common code group."
+      },
+      "labels": {
+        "subtitle": "This is a screen that defines detailed code values for each code group and manages display order and status.",
+        "selectGroupLabel": "Select Group:",
+        "selectGroupPlaceholder": "-- Select Group --",
+        "totalItems": "Total {count} items"
       }
     }
   }

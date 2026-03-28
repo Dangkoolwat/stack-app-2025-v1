@@ -38,6 +38,16 @@
         "titleRequired": "Title is required.",
         "contentRequired": "Content is required.",
         "boardTypeRequired": "Board type is required."
+      },
+      "labels": {
+        "subtitle": "This is a work screen where you can quickly browse the list of posts and immediately move to create, view, and edit.",
+        "totalItems": "Total {count} items",
+        "sortOrder": "Sort Order: {order}",
+        "liveList": "Live List",
+        "emptySubtitle": "Once you create your first post, you can manage the list and actions directly in this area.",
+        "createdDateLabel": "Created Date",
+        "statusNotice": "Notice",
+        "statusNormal": "Normal"
       }
     }
   }

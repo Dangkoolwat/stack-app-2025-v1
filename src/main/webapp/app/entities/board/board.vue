@@ -5,7 +5,7 @@
         <h2 id="page-heading" data-cy="BoardHeading" class="dc-page-header__title">
           <span v-text="t$('entities.board.title')" id="board-heading"></span>
         </h2>
-        <p class="dc-page-header__subtitle">게시글 목록을 빠르게 훑고 바로 생성, 조회, 수정으로 이동할 수 있는 작업 화면입니다.</p>
+        <p class="dc-page-header__subtitle" v-text="t$('entities.board.labels.subtitle')"></p>
       </div>
       <div class="dc-page-actions">
         <button class="btn btn-outline-secondary" @click="handleSyncList" :disabled="isFetching">
@@ -25,17 +25,17 @@
       <div class="dc-panel__body">
         <div class="dc-toolbar">
           <div class="dc-toolbar__group">
-            <span class="dc-toolbar__meta">총 {{ totalItems }}건</span>
-            <span class="dc-toolbar__meta">정렬 기준: {{ propOrder }}</span>
+            <span class="dc-toolbar__meta" v-text="t$('entities.board.labels.totalItems', { count: totalItems })"></span>
+            <span class="dc-toolbar__meta" v-text="t$('entities.board.labels.sortOrder', { order: propOrder })"></span>
           </div>
           <div class="dc-toolbar__group">
-            <span class="dc-status-badge dc-status-badge--success">라이브 목록</span>
+            <span class="dc-status-badge dc-status-badge--success" v-text="t$('entities.board.labels.liveList')"></span>
           </div>
         </div>
 
         <div class="dc-empty-state" v-if="!isFetching && boards && boards.length === 0">
           <div class="dc-empty-state__title" v-text="t$('entities.board.messages.notFound')"></div>
-          <p class="mb-0 mt-2 text-muted">첫 게시글을 생성하면 이 영역에서 목록과 액션을 바로 관리할 수 있습니다.</p>
+          <p class="mb-0 mt-2 text-muted" v-text="t$('entities.board.labels.emptySubtitle')"></p>
         </div>
 
         <div class="dc-table-shell table-responsive" v-if="boards && boards.length > 0">
@@ -78,14 +78,14 @@
                   <router-link :to="{ name: 'BoardView', params: { id: board.id } }" class="text-decoration-none fw-bold text-primary">
                     {{ board.title }}
                   </router-link>
-                  <div class="small text-muted mt-1">작성일 {{ board.createdDate ? $d(board.createdDate, 'short') : '-' }}</div>
+                  <div class="small text-muted mt-1">{{ t$('entities.board.labels.createdDateLabel') }} {{ board.createdDate ? $d(board.createdDate, 'short') : '-' }}</div>
                 </td>
                 <td>
                   <span class="fw-semibold">{{ board.viewCount }}</span>
                 </td>
                 <td>
                   <span :class="board.notice ? 'dc-status-badge dc-status-badge--warning' : 'dc-status-badge'">
-                    {{ board.notice ? 'Notice' : 'Normal' }}
+                    {{ board.notice ? t$('entities.board.labels.statusNotice') : t$('entities.board.labels.statusNormal') }}
                   </span>
                 </td>
                 <td>

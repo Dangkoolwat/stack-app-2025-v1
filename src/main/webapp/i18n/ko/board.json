@@ -38,6 +38,16 @@
         "titleRequired": "제목을 입력해주세요.",
         "contentRequired": "내용을 입력해주세요.",
         "boardTypeRequired": "게시판 유형을 선택해주세요."
+      },
+      "labels": {
+        "subtitle": "게시글 목록을 빠르게 훑고 바로 생성, 조회, 수정으로 이동할 수 있는 작업 화면입니다.",
+        "totalItems": "총 {count}건",
+        "sortOrder": "정렬 기준: {order}",
+        "liveList": "라이브 목록",
+        "emptySubtitle": "첫 게시글을 생성하면 이 영역에서 목록과 액션을 바로 관리할 수 있습니다.",
+        "createdDateLabel": "작성일",
+        "statusNotice": "공지",
+        "statusNormal": "일반"
       }
     }
   }

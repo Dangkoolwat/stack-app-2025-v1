@@ -34,6 +34,12 @@
         "deleteConfirm": "정말 상세 코드 {id}를 삭제하시겠습니까?",
         "notFound": "상세 코드를 찾을 수 없습니다.",
         "selectGroup": "공통 코드를 선택하세요."
+      },
+      "labels": {
+        "subtitle": "코드 그룹별 상세 코드값을 정의하고 표시 순서 및 상태를 관리하는 화면입니다.",
+        "selectGroupLabel": "그룹 선택:",
+        "selectGroupPlaceholder": "-- 그룹 선택 --",
+        "totalItems": "총 {count}건"
       }
     }
   }
