@@ -33,6 +33,11 @@
         "deleted": "게시글이 삭제되었습니다. (ID: {param})",
         "deleteConfirm": "정말 게시글 {id}번을 삭제하시겠습니까?",
         "notFound": "게시글을 찾을 수 없습니다."
+      },
+      "validate": {
+        "titleRequired": "제목을 입력해주세요.",
+        "contentRequired": "내용을 입력해주세요.",
+        "boardTypeRequired": "게시판 유형을 선택해주세요."
       }
     }
   }

@@ -36,7 +36,7 @@ export default [
   },
   {
     path: '/account/settings',
-    name: 'Settings',
+    name: 'AccountSettings',
     component: Settings,
     meta: { authorities: [Authority.USER] },
   },

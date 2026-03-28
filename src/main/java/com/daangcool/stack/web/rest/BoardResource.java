@@ -55,6 +55,9 @@ public class BoardResource {
         if (dto.getId() != null) {
             throw new BadRequestAlertException("A new board cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        if (dto.getBoardTypeCode() == null || dto.getBoardTypeCode().isBlank()) {
+            throw new BadRequestAlertException("Board type code is required", ENTITY_NAME, "boardTypeCodeRequired");
+        }
         BoardDTO result = boardService.save(dto);
         return ResponseEntity.created(new URI("/api/boards/" + result.getId())).body(result);
     }
@@ -104,6 +107,9 @@ public class BoardResource {
     @PutMapping("/{id}")
     public ResponseEntity<BoardDTO> updateBoard(@PathVariable Long id, @Valid @RequestBody BoardDTO dto) {
         log.debug("REST request to update Board : {}", id);
+        if (dto.getBoardTypeCode() == null || dto.getBoardTypeCode().isBlank()) {
+            throw new BadRequestAlertException("Board type code is required", ENTITY_NAME, "boardTypeCodeRequired");
+        }
         return ResponseEntity.ok(boardService.update(id, dto));
     }
 

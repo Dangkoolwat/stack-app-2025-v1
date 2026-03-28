@@ -19,8 +19,8 @@
           "status": "Status"
         },
         "detailsMap": {
-          "uploads": " ({{size}} KB)",
-          "tags": " (Usage count: {{count}})",
+          "uploads": " ({size} KB)",
+          "tags": " (Usage count: {count})",
           "comments": ""
         },
         "statusMap": {

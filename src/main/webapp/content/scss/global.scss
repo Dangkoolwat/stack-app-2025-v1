@@ -642,7 +642,7 @@ th svg:last-child {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 8px;
+  gap: 12px; /* Increased from 8px for better spacing */
 }
 
 .dc-form-actions {
@@ -661,11 +661,11 @@ th svg:last-child {
 }
 
 .dc-btn-compact {
-  min-height: 28px !important;
-  padding: 0.2rem 0.45rem !important;
-  font-size: 0.72rem !important;
-  line-height: 1.1 !important;
-  border-radius: 8px !important;
+  min-height: 26px !important;
+  padding: 0.15rem 0.4rem !important;
+  font-size: 0.7rem !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
 }
 
 .dc-table-actions {

@@ -12,6 +12,7 @@ import { faBolt } from '@fortawesome/free-solid-svg-icons/faBolt';
 import { faBullseye } from '@fortawesome/free-solid-svg-icons/faBullseye';
 import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
 import { faCloud } from '@fortawesome/free-solid-svg-icons/faCloud';
+import { faCircleInfo } from '@fortawesome/free-solid-svg-icons/faCircleInfo';
 
 import { faCode } from '@fortawesome/free-solid-svg-icons/faCode';
 import { faCogs } from '@fortawesome/free-solid-svg-icons/faCogs';
@@ -60,6 +61,7 @@ import { faUpload } from '@fortawesome/free-solid-svg-icons/faUpload';
 import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
 import { faTrashCan } from '@fortawesome/free-solid-svg-icons/faTrashCan';
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen';
+import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons/faExclamationTriangle';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
 const datetimeFormats: IntlDateTimeFormats = {
@@ -89,6 +91,7 @@ export function initFortAwesome(vue: App) {
     faBullseye,
     faCheck,
     faCloud,
+    faCircleInfo,
     faCogs,
     faDatabase,
     faEye,
@@ -134,6 +137,7 @@ export function initFortAwesome(vue: App) {
     faWandMagicSparkles,
     faTrashCan,
     faFolderOpen,
+    faExclamationTriangle,
   );
 }
 export function initI18N(opts: any = {}) {

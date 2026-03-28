@@ -4,6 +4,7 @@ import {
   BAlert,
   BBadge,
   BButton,
+  BButtonGroup,
   BCollapse,
   BDropdown,
   BDropdownItem,
@@ -25,6 +26,7 @@ import {
   BFormTags,
   createBootstrap,
   vBModal,
+  vBTooltip,
 } from 'bootstrap-vue-next';
 
 export function initBootstrapVue(vue: App) {
@@ -52,5 +54,7 @@ export function initBootstrapVue(vue: App) {
   vue.component('BNavItem', BNavItem);
   vue.component('BNavItemDropdown', BNavItemDropdown);
   vue.component('BModal', BModal);
+  vue.component('BButtonGroup', BButtonGroup);
   vue.directive('b-modal', vBModal);
+  vue.directive('b-tooltip', vBTooltip);
 }

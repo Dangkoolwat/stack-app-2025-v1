@@ -152,7 +152,7 @@ export default defineComponent({
       for (const id of idsToDelete) {
         try {
           await axios.delete(`/api/uploads/${id}`);
-          console.log(`[Soft Delete] Editor image id=${id} deleted.`);
+          // [Soft Delete] Editor image id=${id} deleted.
         } catch (err) {
           console.error(`Failed to soft delete editor image id=${id}`, err);
         }
@@ -160,6 +160,20 @@ export default defineComponent({
     };
 
     const save = async () => {
+      // 유효성 검사
+      if (!board.value.title || board.value.title.trim() === '') {
+        alertService.showError(t$(`entities.board.validate.titleRequired`).toString());
+        return;
+      }
+      if (!board.value.boardTypeCode) {
+        alertService.showError(t$(`entities.board.validate.boardTypeRequired`).toString());
+        return;
+      }
+      if (!board.value.content || board.value.content.trim() === '') {
+        alertService.showError(t$(`entities.board.validate.contentRequired`).toString());
+        return;
+      }
+
       isSaving.value = true;
       try {
         // 백엔드 통신 전 로컬 마크다운 추적에서 소실된 이미지 파일 삭제 API 호출

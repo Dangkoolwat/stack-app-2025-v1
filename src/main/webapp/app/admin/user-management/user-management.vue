@@ -47,7 +47,7 @@
                   <span>{{ t$('userManagement.email') }}</span>
                   <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'email'"></jhi-sort-indicator>
                 </th>
-                <th scope="col"></th>
+                <th scope="col"><span>{{ t$('userManagement.activated') }}</span></th>
                 <th scope="col" @click="changeOrder('langKey')">
                   <span>{{ t$('userManagement.langKey') }}</span>
                   <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'langKey'"></jhi-sort-indicator>
@@ -59,10 +59,6 @@
                   <span>{{ t$('userManagement.createdDate') }}</span>
                   <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'createdDate'"></jhi-sort-indicator>
                 </th>
-                <th scope="col" @click="changeOrder('lastModifiedBy')">
-                  <span>{{ t$('userManagement.lastModifiedBy') }}</span>
-                  <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'lastModifiedBy'"></jhi-sort-indicator>
-                </th>
                 <th scope="col" id="modified-date-sort" @click="changeOrder('lastModifiedDate')">
                   <span>{{ t$('userManagement.lastModifiedDate') }}</span>
                   <jhi-sort-indicator :current-order="propOrder" :reverse="reverse" :field-name="'lastModifiedDate'"></jhi-sort-indicator>
@@ -73,11 +69,13 @@
             <tbody v-if="users">
               <tr v-for="user in users" :key="user.id" :id="user.login" data-cy="entityTable">
                 <td>
-                  <router-link :to="{ name: 'JhiUserView', params: { userId: user.login } }">{{ user.id }}</router-link>
+                  <span class="text-muted small">{{ user.id }}</span>
                 </td>
                 <td>
-                  <div class="fw-semibold">{{ user.login }}</div>
-                  <div class="small text-muted">{{ user.lastModifiedBy || 'system' }}</div>
+                  <router-link :to="{ name: 'JhiUserView', params: { userId: user.login } }" class="text-decoration-none fw-bold text-primary">
+                    {{ user.login }}
+                  </router-link>
+                  <div class="small text-muted mt-1">{{ user.lastModifiedBy || 'system' }}</div>
                 </td>
                 <td class="jhi-user-email">
                   <span class="fw-medium">{{ user.email }}</span>
@@ -95,19 +93,18 @@
                     {{ t$('userManagement.activated') }}
                   </button>
                 </td>
-                <td>{{ user.langKey }}</td>
+                <td><span class="dc-chip">{{ user.langKey }}</span></td>
                 <td>
                   <div class="d-flex flex-wrap gap-1">
                     <span v-for="authority of user.authorities" :key="authority" class="dc-chip">{{ authority }}</span>
                   </div>
                 </td>
-                <td>{{ formatDate(user.createdDate) }}</td>
-                <td>{{ user.lastModifiedBy }}</td>
-                <td>{{ formatDate(user.lastModifiedDate) }}</td>
+                <td><span class="small">{{ formatDate(user.createdDate) }}</span></td>
+                <td><span class="small">{{ formatDate(user.lastModifiedDate) }}</span></td>
                 <td class="text-end">
                   <div class="dc-table-actions">
                     <router-link :to="{ name: 'JhiUserView', params: { userId: user.login } }" custom v-slot="{ navigate }">
-                      <button @click="navigate" class="btn btn-info btn-sm dc-btn-compact details" data-cy="entityDetailsButton">
+                      <button @click="navigate" class="btn btn-outline-secondary btn-sm dc-btn-compact details" data-cy="entityDetailsButton">
                         <font-awesome-icon icon="eye"></font-awesome-icon>
                         <span class="d-none d-md-inline">{{ t$('entity.action.view') }}</span>
                       </button>
@@ -121,8 +118,7 @@
                     <b-button
                       @click="prepareRemove(user)"
                       variant="danger"
-                      size="sm"
-                      class="delete dc-btn-compact"
+                      class="btn btn-sm dc-btn-compact"
                       :disabled="username === user.login"
                       data-cy="entityDeleteButton"
                     >
@@ -137,11 +133,11 @@
         </div>
       </div>
     </section>
+
     <b-modal
       ref="removeUser"
       id="removeUser"
       :title="t$('entity.delete.title')"
-      @ok="deleteUser()"
       data-cy="userManagementDeleteDialogHeading"
     >
       <div class="modal-body">
@@ -149,13 +145,14 @@
       </div>
       <template #footer>
         <div class="dc-modal-actions">
-          <button type="button" class="btn btn-outline-secondary" @click="closeDialog()">{{ t$('entity.action.cancel') }}</button>
-          <button type="button" class="btn btn-danger" id="confirm-delete-user" @click="deleteUser()" data-cy="entityConfirmDeleteButton">
+          <button type="button" class="btn btn-outline-secondary btn-sm" @click="closeDialog()">{{ t$('entity.action.cancel') }}</button>
+          <button type="button" class="btn btn-danger btn-sm" id="confirm-delete-user" @click="deleteUser()" data-cy="entityConfirmDeleteButton">
             {{ t$('entity.action.delete') }}
           </button>
         </div>
       </template>
     </b-modal>
+
     <div class="dc-table-footer" v-show="users?.length > 0">
       <div class="dc-table-footer__count">
         <jhi-item-count :page="page" :total="queryCount" :items-per-page="itemsPerPage"></jhi-item-count>

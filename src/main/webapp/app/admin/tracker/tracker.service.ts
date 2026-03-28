@@ -51,8 +51,8 @@ export default class TrackerService {
   set stomp(rxStomp) {
     this.rxStomp = rxStomp;
     this.rxStomp.configure({
-      debug: (msg: string): void => {
-        console.log(new Date(), msg);
+      debug: (/* msg: string */): void => {
+        // console.log(new Date(), msg);
       },
     });
 

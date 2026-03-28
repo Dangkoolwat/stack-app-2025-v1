@@ -33,6 +33,11 @@
         "deleted": "A board post has been deleted with identifier {param}.",
         "deleteConfirm": "Are you sure you want to delete board {id}?",
         "notFound": "Board not found."
+      },
+      "validate": {
+        "titleRequired": "Title is required.",
+        "contentRequired": "Content is required.",
+        "boardTypeRequired": "Board type is required."
       }
     }
   }

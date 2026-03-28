@@ -1,66 +1,83 @@
 <template>
-  <div>
-    <h2 id="page-heading" data-cy="TagHeading">
-      <span v-text="t$('entities.tag.title')" id="tag-heading"></span>
-      <div class="d-flex justify-content-end">
-        <button class="btn btn-info btn-sm me-2" @click="handleSyncList" :disabled="isFetching">
+  <div class="dc-page">
+    <section class="dc-page-header">
+      <div>
+        <h2 id="page-heading" data-cy="TagHeading" class="dc-page-header__title">
+          <span v-text="t$('entities.tag.title')" id="tag-heading"></span>
+        </h2>
+        <p class="dc-page-header__subtitle">게시글 분류에 사용되는 태그 목록과 사용 빈도를 확인하고 관리하는 화면입니다.</p>
+      </div>
+      <div class="dc-page-actions">
+        <button class="btn btn-outline-secondary" @click="handleSyncList" :disabled="isFetching">
           <font-awesome-icon icon="sync" :spin="isFetching"></font-awesome-icon>
           <span v-text="t$('userManagement.home.refreshListLabel')"></span>
         </button>
       </div>
-    </h2>
-    <br />
-    <div class="alert alert-warning" v-if="!isFetching && tags && tags.length === 0">
-      <span v-text="t$('entities.tag.messages.notFound')"></span>
-    </div>
-    <div class="table-responsive" v-if="tags && tags.length > 0">
-      <table class="table table-striped" aria-describedby="Tags">
-        <thead>
-          <tr>
-            <th scope="col"><span v-text="t$('entities.tag.form.id')"></span></th>
-            <th scope="col"><span v-text="t$('entities.tag.form.name')"></span></th>
-            <th scope="col"><span v-text="t$('entities.tag.form.usageCount')"></span></th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="tag in tags" :key="tag.id" data-cy="entityTable">
-            <td>{{ tag.id }}</td>
-            <td>{{ tag.name }}</td>
-            <td>{{ tag.usageCount }}</td>
-            <td class="text-end">
-              <div class="btn-group">
-                <b-button
-                  v-b-modal.removeEntity
-                  variant="danger"
-                  class="btn btn-sm"
-                  data-cy="entityDeleteButton"
-                  @click="prepareRemove(tag)"
-                >
-                  <font-awesome-icon icon="times"></font-awesome-icon>
-                  <span class="d-none d-md-inline" v-text="t$('entities.tag.actions.delete')"></span>
-                </b-button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    </section>
+
+    <section class="dc-panel">
+      <div class="dc-panel__body">
+        <div class="dc-toolbar">
+          <div class="dc-toolbar__group">
+            <span class="dc-toolbar__meta">총 {{ tags?.length || 0 }}건</span>
+          </div>
+        </div>
+
+        <div class="dc-empty-state" v-if="!isFetching && tags && tags.length === 0">
+          <div class="dc-empty-state__title" v-text="t$('entities.tag.messages.notFound')"></div>
+        </div>
+
+        <div class="dc-table-shell table-responsive" v-if="tags && tags.length > 0">
+          <table class="table align-middle" aria-describedby="Tags">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 80px"><span v-text="t$('entities.tag.form.id')"></span></th>
+                <th scope="col"><span v-text="t$('entities.tag.form.name')"></span></th>
+                <th scope="col" style="width: 150px"><span v-text="t$('entities.tag.form.usageCount')"></span></th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="tag in tags" :key="tag.id" data-cy="entityTable">
+                <td><span class="text-muted small">{{ tag.id }}</span></td>
+                <td><span class="dc-chip dc-chip--primary">{{ tag.name }}</span></td>
+                <td><span class="fw-semibold">{{ tag.usageCount }}</span></td>
+                <td class="text-end">
+                  <div class="dc-table-actions">
+                    <b-button
+                      v-b-modal.removeEntity
+                      variant="danger"
+                      class="btn btn-sm dc-btn-compact"
+                      data-cy="entityDeleteButton"
+                      @click="prepareRemove(tag)"
+                    >
+                      <font-awesome-icon icon="times"></font-awesome-icon>
+                      <span class="d-none d-md-inline" v-text="t$('entities.tag.actions.delete')"></span>
+                    </b-button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <b-modal ref="removeEntity" id="removeEntity" :title="t$('entity.delete.title')">
       <div class="modal-body">
         <p id="jhi-delete-tag-heading" v-text="t$('entities.tag.messages.deleteConfirm', { id: removeId })"></p>
       </div>
       <template #footer>
-        <div>
+        <div class="dc-modal-actions">
           <button
             type="button"
-            class="btn btn-secondary btn-sm me-2"
+            class="btn btn-outline-secondary btn-sm"
             v-text="t$('entities.tag.actions.cancel')"
             @click="closeDialog()"
           ></button>
           <button
             type="button"
-            class="btn btn-primary btn-sm"
+            class="btn btn-danger btn-sm"
             id="jhi-confirm-delete-tag"
             data-cy="entityConfirmDeleteButton"
             v-text="t$('entities.tag.actions.delete')"

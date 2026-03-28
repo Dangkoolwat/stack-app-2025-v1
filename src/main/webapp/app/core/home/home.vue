@@ -13,7 +13,7 @@
           <h1 class="home-hero__title">{{ t$('home.title') }}</h1>
           <p class="home-hero__body">{{ t$('home.subtitle') }}</p>
           <p class="home-hero__body home-hero__body--subtle">{{ t$('home.intro') }}</p>
-          <div class="dc-page-actions">
+          <div class="dc-page-actions mt-4">
             <button class="btn btn-primary btn-lg px-4" @click="showLogin()">
               <font-awesome-icon icon="sign-in-alt" class="me-2" />{{ t$('global.messages.info.authenticated.link') }}
             </button>

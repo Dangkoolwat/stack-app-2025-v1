@@ -19,8 +19,8 @@
           "status": "상태"
         },
         "detailsMap": {
-          "uploads": " ({{size}} KB)",
-          "tags": " (사용 횟수: {{count}})",
+          "uploads": " ({size} KB)",
+          "tags": " (사용 횟수: {count})",
           "comments": ""
         },
         "statusMap": {

@@ -11,7 +11,7 @@ const swaggerUiPath = getAbsoluteFSPath();
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const backendPort = env.BACKEND_PORT || process.env.BACKEND_PORT || '8443';
-  const backendUrl = env.BACKEND_URL || process.env.BACKEND_URL || `https://localhost:${backendPort}`;
+  const backendUrl = env.BACKEND_URL || process.env.BACKEND_URL || `https://127.0.0.1:${backendPort}`;
   const serverApiUrl = env.VITE_API_URL || process.env.VITE_API_URL || (command === 'serve' ? backendUrl : '/');
 
   return {
