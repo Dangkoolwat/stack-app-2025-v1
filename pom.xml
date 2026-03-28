@@ -46,6 +46,13 @@
     <jackson3-bom.version>3.1.0</jackson3-bom.version>
 
     <!-- ========================================================= -->
+    <!-- Security Patch: CVE-2026-33871                             -->
+    <!-- Netty HTTP/2 CONTINUATION Frame Flood DoS via Zero-Byte   -->
+    <!-- io.netty:netty-codec-http2 4.2.10.Final → 4.2.11.Final    -->
+    <!-- ========================================================= -->
+    <netty.version>4.2.11.Final</netty.version>
+
+    <!-- ========================================================= -->
     <!-- Library Versions -->
     <!-- ========================================================= -->
     <springdoc-openapi-starter-webmvc-api.version>3.0.2</springdoc-openapi-starter-webmvc-api.version>
