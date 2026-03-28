@@ -10,7 +10,7 @@ export default defineComponent({
     return {
       t$: i18n.t,
       hasAnyAuthority: (authorities: any) => {
-        const userAuthorities = store?.account?.authorities;
+        const userAuthorities = store?.account?.authorities ?? store?.userIdentity?.authorities ?? [];
         if (authorities && userAuthorities) {
           if (typeof authorities === 'string') {
             authorities = [authorities];

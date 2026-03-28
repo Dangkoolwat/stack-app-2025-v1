@@ -15,7 +15,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -105,7 +107,7 @@ public class CommonCodeService {
         Cache cache = cacheManager.getCache(COMMON_GROUP_LIST);
         try {
             if (cache != null) {
-                List<GroupDto> cached = (List<GroupDto>) cache.get("all", List.class);
+                List<GroupDto> cached = normalizeCachedGroupList(cache.get("all", List.class));
                 if (cached != null) {
                     LOG.debug("[COMMON CACHE] Hit findAllGroups");
                     return cached;
@@ -272,7 +274,7 @@ public class CommonCodeService {
         Cache cache = cacheManager.getCache(COMMON_DETAILS_BY_GROUP);
         try {
             if (cache != null) {
-                List<DetailDto> cached = (List<DetailDto>) cache.get(groupCode, List.class);
+                List<DetailDto> cached = normalizeCachedDetailList(cache.get(groupCode, List.class));
                 if (cached != null) {
                     LOG.debug("[COMMON CACHE] Hit findAllDetailsByGroup: {}", groupCode);
                     return cached;
@@ -319,6 +321,129 @@ public class CommonCodeService {
         } catch (RuntimeException e) {
             LOG.warn("[COMMON CACHE] Failed to evict cache {}: {}", cacheName, e.getMessage());
         }
+    }
+
+    private List<GroupDto> normalizeCachedGroupList(Object cachedValue) {
+        if (!(cachedValue instanceof List<?> rawList)) {
+            return null;
+        }
+
+        List<GroupDto> normalized = new ArrayList<>();
+        for (Object item : rawList) {
+            GroupDto dto = toGroupDto(item);
+            if (dto == null) {
+                LOG.warn("[COMMON CACHE] Invalid group cache entry type: {}", item == null ? "null" : item.getClass().getName());
+                return null;
+            }
+            normalized.add(dto);
+        }
+        return normalized;
+    }
+
+    private List<DetailDto> normalizeCachedDetailList(Object cachedValue) {
+        if (!(cachedValue instanceof List<?> rawList)) {
+            return null;
+        }
+
+        List<DetailDto> normalized = new ArrayList<>();
+        for (Object item : rawList) {
+            DetailDto dto = toDetailDto(item);
+            if (dto == null) {
+                LOG.warn("[COMMON CACHE] Invalid detail cache entry type: {}", item == null ? "null" : item.getClass().getName());
+                return null;
+            }
+            normalized.add(dto);
+        }
+        return normalized;
+    }
+
+    private GroupDto toGroupDto(Object raw) {
+        if (raw instanceof GroupDto dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            return new GroupDto(
+                asString(map.get("groupCode")),
+                asString(map.get("groupName")),
+                asInteger(map.get("displayOrder")),
+                asBoolean(map.get("deleted")),
+                asString(map.get("description"))
+            );
+        }
+        return null;
+    }
+
+    private DetailDto toDetailDto(Object raw) {
+        if (raw instanceof DetailDto dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            return new DetailDto(
+                asLong(map.get("id")),
+                asString(map.get("code")),
+                asString(map.get("name")),
+                asInteger(map.get("sortOrder")),
+                asBoolean(map.get("deleted")),
+                toGroupRefDto(map.get("group")),
+                asString(map.get("attribute1")),
+                asString(map.get("attribute2")),
+                asString(map.get("attribute3")),
+                asString(map.get("attribute4")),
+                asString(map.get("attribute5")),
+                asString(map.get("description"))
+            );
+        }
+        return null;
+    }
+
+    private CommonCodeCacheDto.GroupRefDto toGroupRefDto(Object raw) {
+        if (raw instanceof CommonCodeCacheDto.GroupRefDto dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            return new CommonCodeCacheDto.GroupRefDto(asString(map.get("groupCode")));
+        }
+        return null;
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Integer asInteger(Object value) {
+        if (value instanceof Integer integer) {
+            return integer;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Integer.valueOf(text);
+        }
+        return null;
+    }
+
+    private Long asLong(Object value) {
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Long.valueOf(text);
+        }
+        return null;
+    }
+
+    private boolean asBoolean(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof String text) {
+            return Boolean.parseBoolean(text);
+        }
+        return false;
     }
 
     private void clear(String cacheName) {

@@ -18,12 +18,12 @@ public class WebSocketSecurityConfiguration {
         messages
             .simpTypeMatchers(SimpMessageType.CONNECT, SimpMessageType.DISCONNECT, SimpMessageType.UNSUBSCRIBE, SimpMessageType.OTHER).permitAll()
             .nullDestMatcher().permitAll()
-            .simpDestMatchers("/topic/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
+            .simpSubscribeDestMatchers("/topic/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
+            .simpMessageDestMatchers("/app/activity").authenticated()
             .simpDestMatchers("/topic/**").authenticated()
-            .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).denyAll()
+            .simpTypeMatchers(SimpMessageType.MESSAGE, SimpMessageType.SUBSCRIBE).authenticated()
             .anyMessage().denyAll();
 
         return messages.build();
     }
 }
-

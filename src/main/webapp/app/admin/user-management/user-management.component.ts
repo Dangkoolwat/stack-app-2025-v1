@@ -1,4 +1,4 @@
-import { type ComputedRef, type Ref, defineComponent, inject, ref } from 'vue';
+import { computed, type ComputedRef, type Ref, defineComponent, inject, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useAlertService } from '@/shared/alert/alert.service';
@@ -27,6 +27,8 @@ export default defineComponent({
     const users: Ref<any[]> = ref([]);
     const totalItems = ref(0);
     const queryCount: Ref<number> = ref(null);
+    const activeUserCount = computed(() => users.value.filter(user => user.activated).length);
+    const inactiveUserCount = computed(() => users.value.filter(user => !user.activated).length);
 
     return {
       formatDate,
@@ -42,6 +44,8 @@ export default defineComponent({
       isLoading,
       removeId,
       users,
+      activeUserCount,
+      inactiveUserCount,
       username,
       totalItems,
       queryCount,

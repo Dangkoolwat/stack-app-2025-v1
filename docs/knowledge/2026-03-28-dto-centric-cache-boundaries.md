@@ -34,3 +34,11 @@ Verification pattern
 
 Operational note
 - If integration tests fail before application startup due datasource bootstrapping, separate that blocker from cache-migration verification and record it explicitly instead of treating it as cache-regression evidence.
+
+Sweep note
+- DTO cache migration is incomplete if list or page caches still read payloads as raw `List.class`, `Page.class`, or wrapper `Map` objects without normalization.
+- In this repository, common code list caches exposed the failure first, but the same risk pattern also applied to board notice/search/page caches, tag list caches, and upload-by-board caches.
+- For list/page caches, the safe pattern is:
+  - write DTO/read-model payloads only
+  - normalize cache hits back into DTOs before returning them
+  - add one regression test that simulates `List<Map>` or `PageDTO<Map>` cache payloads after Redis/Jackson deserialization

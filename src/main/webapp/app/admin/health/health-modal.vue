@@ -11,9 +11,21 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in currentHealth.details" :key="index">
-              <td class="text-start">{{ index }}</td>
-              <td class="text-start">{{ readableValue(item) }}</td>
+            <tr v-for="[detailName, item] in detailEntries()" :key="detailName">
+              <td class="text-start">{{ detailName }}</td>
+              <td class="text-start">
+                <div v-if="isObjectValue(item)" class="table-responsive">
+                  <table class="table table-sm table-bordered align-middle mb-0">
+                    <tbody>
+                      <tr v-for="[childKey, childValue] in entryList(item)" :key="childKey">
+                        <td class="w-40 text-muted">{{ childKey }}</td>
+                        <td class="text-start">{{ readableValue(childValue) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <span v-else>{{ readableValue(item) }}</span>
+              </td>
             </tr>
           </tbody>
         </table>

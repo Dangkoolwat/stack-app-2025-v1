@@ -52,6 +52,18 @@ export default class AlertService {
     });
   }
 
+  private translateOrUseRaw(message: unknown, fallback = 'error.http.500'): string {
+    if (typeof message !== 'string' || message.trim().length === 0) {
+      return this.i18n.t(fallback).toString();
+    }
+
+    if (this.i18n.te(message)) {
+      return this.i18n.t(message).toString();
+    }
+
+    return message;
+  }
+
   showHttpError({ data, status, headers }: any) {
     let errorMessage: string | null = null;
     switch (status) {
@@ -75,7 +87,7 @@ export default class AlertService {
         } else if (message.errorMessage) {
           errorMessage = message.errorMessage;
         } else if (data.message) {
-          errorMessage = this.i18n.t(data.message).toString();
+          errorMessage = this.translateOrUseRaw(data.message, 'error.http.400');
         } else if (data?.fieldErrors) {
           errorMessage = 'Validation error';
         }
@@ -87,7 +99,7 @@ export default class AlertService {
         break;
 
       default:
-        errorMessage = this.i18n.t(data.message).toString();
+        errorMessage = this.translateOrUseRaw(data?.message ?? data?.detail ?? data?.title);
     }
     this.showError(errorMessage!);
   }

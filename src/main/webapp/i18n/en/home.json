@@ -8,6 +8,107 @@
       "guide": "You can use various management functions through the top menu, such as User Management, Entity Management, and System Monitoring.",
       "info": "Current Connection Info"
     },
+    "dashboard": {
+      "badge": "Operations Workspace",
+      "title": "Welcome back, { username }.",
+      "subtitle": "Your most-used screens and the next UX improvement targets are gathered here.",
+      "actions": {
+        "create": "Create Post",
+        "monitor": "Open Health"
+      },
+      "stats": {
+        "role": {
+          "label": "Current Role",
+          "adminHint": "You can access admin tools and system monitoring views.",
+          "userHint": "You can access the core workspace and account features."
+        },
+        "workspace": {
+          "label": "Shortcut Screens",
+          "hint": "Calculated from the most relevant screens in the current navigation structure."
+        },
+        "system": {
+          "label": "Ops Tools",
+          "hint": "Represents the available monitoring and diagnostic views."
+        },
+        "profile": {
+          "label": "Runtime Profile",
+          "hint": "Environment context helps operators understand system behavior quickly."
+        }
+      },
+      "quick": {
+        "title": "Quick Actions",
+        "desc": "Frequent tasks should be one click away instead of hidden behind several menus.",
+        "boards": {
+          "title": "Manage Boards",
+          "desc": "Jump straight into board lists, details, and editing flows."
+        },
+        "create": {
+          "title": "Start Writing",
+          "desc": "Open the editor immediately and begin with title, content, and attachments."
+        },
+        "codes": {
+          "title": "Common Codes",
+          "desc": "Review groups and detail codes used across the application."
+        },
+        "cleanup": {
+          "title": "Resource Cleanup",
+          "desc": "Check orphaned uploads and cleanup targets that need attention."
+        },
+        "users": {
+          "title": "User Management",
+          "desc": "Review authorities and activation status more quickly."
+        },
+        "health": {
+          "title": "System Monitoring",
+          "desc": "Go directly to health and diagnostics screens."
+        }
+      },
+      "attention": {
+        "title": "What Needs Attention",
+        "desc": "These are the main UX areas that still deserve the next round of cleanup.",
+        "system": {
+          "label": "Operations Views",
+          "value": "Dashboard summaries and direct entry points should lead the experience"
+        },
+        "navigation": {
+          "label": "Top Navigation",
+          "value": "Task-based grouping will work better than technical grouping"
+        },
+        "filters": {
+          "label": "List Screens",
+          "value": "Shared search, filter, and toolbar patterns are still needed"
+        },
+        "feedback": {
+          "label": "Feedback Patterns",
+          "value": "Empty states, loading states, and modal actions should be unified"
+        }
+      },
+      "workspace": {
+        "title": "Workspace Guide",
+        "desc": "Grouping screens by real tasks reduces navigation friction.",
+        "content": {
+          "label": "Content Management",
+          "value": "Boards, tags, and codes should be treated as one workflow"
+        },
+        "writing": {
+          "label": "Writing Experience",
+          "value": "Separate the main editor from secondary options to improve focus"
+        },
+        "ops": {
+          "label": "Operations Monitoring",
+          "value": "Connect Health, Metrics, and Logs through concise summaries"
+        },
+        "account": {
+          "label": "Account Management",
+          "value": "Clarify settings, password changes, and authority context"
+        }
+      },
+      "context": {
+        "title": "Current Context",
+        "desc": "A lightweight summary of session and environment context.",
+        "user": "User: { username }"
+      }
+    },
     "goals": {
       "title": "Project Goals",
       "consistency": {

@@ -4,8 +4,11 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 
 import viteConfig from './vite.config.ts';
 
+const resolvedViteConfig =
+  typeof viteConfig === 'function' ? viteConfig({ command: 'serve', mode: 'test', isSsrBuild: false, isPreview: false }) : viteConfig;
+
 export default mergeConfig(
-  viteConfig,
+  resolvedViteConfig,
   defineConfig({
     resolve: {
       alias: {

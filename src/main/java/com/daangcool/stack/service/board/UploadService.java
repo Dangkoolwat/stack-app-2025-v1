@@ -31,7 +31,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.Optional;
@@ -395,7 +397,7 @@ public class UploadService {
         Cache cache = cacheManager.getCache(CacheNames.UPLOAD_BY_BOARD);
         try {
             if (cache != null) {
-                List<UploadDTO> cached = (List<UploadDTO>) cache.get(boardId, List.class);
+                List<UploadDTO> cached = normalizeCachedUploads(cache.get(boardId, List.class));
                 if (cached != null) {
                     log.debug("[UPLOAD CACHE] Cache hit for boardId={}", boardId);
                     return cached;
@@ -415,6 +417,72 @@ public class UploadService {
             }
         }
         return uploads;
+    }
+
+    private List<UploadDTO> normalizeCachedUploads(Object cachedValue) {
+        if (!(cachedValue instanceof List<?> rawList)) {
+            return null;
+        }
+
+        List<UploadDTO> normalized = new ArrayList<>();
+        for (Object item : rawList) {
+            UploadDTO dto = toUploadDto(item);
+            if (dto == null) {
+                log.warn("[UPLOAD CACHE] Invalid upload cache entry type: {}", item == null ? "null" : item.getClass().getName());
+                return null;
+            }
+            normalized.add(dto);
+        }
+        return normalized;
+    }
+
+    private UploadDTO toUploadDto(Object raw) {
+        if (raw instanceof UploadDTO dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            return new UploadDTO(
+                asLong(map.get("id")),
+                asString(map.get("storageKey")),
+                asString(map.get("sourceFilename")),
+                asString(map.get("storageFilename")),
+                asString(map.get("filePath")),
+                asLong(map.get("fileSize")),
+                asString(map.get("fileExtension")),
+                asString(map.get("mimeType")),
+                asLong(map.get("downloadCount")),
+                asBoolean(map.get("public")) || asBoolean(map.get("isPublic")),
+                asBoolean(map.get("deleted"))
+            );
+        }
+        return null;
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Long asLong(Object value) {
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Long.valueOf(text);
+        }
+        return null;
+    }
+
+    private boolean asBoolean(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof String text) {
+            return Boolean.parseBoolean(text);
+        }
+        return false;
     }
 
     /** 스토리지 타입이 클라우드 계열인지 여부 */

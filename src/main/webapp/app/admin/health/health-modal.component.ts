@@ -26,6 +26,30 @@ export default defineComponent({
     subSystemName(name: string): any {
       return this.healthService.getSubSystemName(name);
     },
+    isObjectValue(value: any): boolean {
+      return value !== null && typeof value === 'object' && !Array.isArray(value);
+    },
+    shouldUnwrapDetailEntry(key: string, value: any): boolean {
+      return (key === 'detail' || key === 'details') && this.isObjectValue(value);
+    },
+    entryList(value: any): Array<[string, any]> {
+      if (!this.isObjectValue(value)) {
+        return [];
+      }
+      return Object.entries(value);
+    },
+    detailEntries(): Array<[string, any]> {
+      if (!this.currentHealth?.details || !this.isObjectValue(this.currentHealth.details)) {
+        return [];
+      }
+
+      return Object.entries(this.currentHealth.details).flatMap(([key, value]) => {
+        if (this.shouldUnwrapDetailEntry(key, value)) {
+          return Object.entries(value);
+        }
+        return [[key, value]];
+      });
+    },
     readableValue(value: any): string {
       if (this.currentHealth.name === 'diskSpace') {
         // Should display storage space in a human readable unit

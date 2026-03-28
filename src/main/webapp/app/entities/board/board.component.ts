@@ -35,8 +35,9 @@ export default defineComponent({
         };
         const res = await boardService.retrieve(paginationQuery);
         boards.value = res.data.content;
-        totalItems.value = res.data.totalElements;
-        queryCount.value = res.data.totalElements;
+        const totalElements = res.data?.page?.totalElements ?? res.data?.totalElements ?? 0;
+        totalItems.value = totalElements;
+        queryCount.value = totalElements;
       } catch (err: any) {
         alertService.showHttpError(err.response);
       } finally {

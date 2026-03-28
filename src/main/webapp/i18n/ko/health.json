@@ -18,7 +18,8 @@
       "readinessState": "Readiness state",
       "ping": "Application",
       "db": "데이터베이스",
-      "redis": "Redis"
+      "redis": "Redis",
+      "redisServer": "Redis"
     },
     "table": {
       "service": "서비스 이름",

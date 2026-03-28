@@ -22,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -165,6 +167,59 @@ class BoardServiceT {
         assertThat(result.getContent().get(0).getTitle()).isEqualTo(board.getTitle());
     }
 
+    @Test
+    void findAll_WhenCachedAsMapPage_ShouldNormalizeToDtos() {
+        Cache.ValueWrapper wrapper = mock(Cache.ValueWrapper.class);
+        when(cache.get("page:0:size:10")).thenReturn(wrapper);
+        when(wrapper.get()).thenReturn(
+            Map.of(
+                "content",
+                List.of(
+                    Map.ofEntries(
+                        Map.entry("id", 1L),
+                        Map.entry("title", "캐시 제목"),
+                        Map.entry("content", "캐시 내용"),
+                        Map.entry("userId", 1L),
+                        Map.entry("notice", true),
+                        Map.entry("viewCount", 11L),
+                        Map.entry("createdDate", Instant.parse("2026-03-28T00:00:00Z").toString()),
+                        Map.entry("deleted", false),
+                        Map.entry("boardTypeCode", "NOTICE"),
+                        Map.entry("tags", List.of("ops"))
+                    )
+                ),
+                "totalElements",
+                1L,
+                "totalPages",
+                1,
+                "number",
+                0,
+                "size",
+                10
+            )
+        );
+
+        Page<BoardDTO> result = boardService.findAll(0, 10);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("캐시 제목");
+        verify(boardRepository, never()).findAllActive(any(PageRequest.class));
+    }
+
+    @Test
+    void findAll_WhenCacheReadFails_ShouldFallbackToRepository() {
+        when(cache.get("page:0:size:10")).thenThrow(new RuntimeException("cache down"));
+        Page<Board> page = new PageImpl<>(List.of(board));
+        when(boardRepository.findAllActive(any(PageRequest.class))).thenReturn(page);
+        when(boardMapper.toDto(any(Board.class))).thenReturn(boardDTO);
+
+        Page<BoardDTO> result = boardService.findAll(0, 10);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(boardRepository, times(1)).findAllActive(any(PageRequest.class));
+        verify(cache).evictIfPresent("page:0:size:10");
+    }
+
     /**
      * 단일 게시글 조회 테스트
      */
@@ -180,6 +235,50 @@ class BoardServiceT {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(board.getId());
+    }
+
+    @Test
+    void search_WhenCachedAsMapPage_ShouldNormalizeToDtos() {
+        when(cache.get("q:test:p:0:s:10", com.daangcool.stack.service.dto.PageDTO.class)).thenReturn(
+            new com.daangcool.stack.service.dto.PageDTO<>(
+                List.of(boardDTO),
+                1L,
+                1,
+                0,
+                10
+            )
+        );
+
+        Page<BoardDTO> result = boardService.search("test", 0, 10);
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo(boardDTO.getTitle());
+        verify(boardRepository, never()).searchByKeyword(anyString(), any(PageRequest.class));
+    }
+
+    @Test
+    void findAllNotices_WhenCachedAsMaps_ShouldNormalizeToDtos() {
+        when(cache.get("notice:all", List.class)).thenReturn(
+            List.of(
+                Map.ofEntries(
+                    Map.entry("id", 5L),
+                    Map.entry("title", "공지"),
+                    Map.entry("content", "공지 내용"),
+                    Map.entry("userId", 1L),
+                    Map.entry("notice", true),
+                    Map.entry("viewCount", 5L),
+                    Map.entry("deleted", false),
+                    Map.entry("boardTypeCode", "NOTICE"),
+                    Map.entry("tags", List.of("notice"))
+                )
+            )
+        );
+
+        List<BoardDTO> result = boardService.findAllNotices();
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getTitle()).isEqualTo("공지");
+        verify(boardRepository, never()).findAllNotices();
     }
 
     /**

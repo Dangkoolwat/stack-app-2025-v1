@@ -1,36 +1,29 @@
 <template>
-  <b-navbar data-cy="navbar" toggleable="md" variant="dark" data-bs-theme="dark">
-    <b-navbar-brand class="logo" b-link to="/">
-      <span class="logo-img"></span>
-      <span class="navbar-title">{{ t$('global.title') }}</span> <span class="navbar-version">{{ version }}</span>
+  <b-navbar data-cy="navbar" variant="light" data-bs-theme="light" class="dc-navbar">
+    <b-navbar-brand class="dc-navbar__brand" b-link to="/">
+      <span class="dc-navbar__mark">S</span>
+      <span>
+        <span class="dc-navbar__title">{{ t$('global.title') }}</span>
+        <span class="dc-navbar__version">{{ version }}</span>
+      </span>
     </b-navbar-brand>
-    <b-navbar-toggle
-      right
-      class="jh-navbar-toggler d-lg-none"
-      href="javascript:void(0);"
-      data-toggle="collapse"
-      target="header-tabs"
-      aria-expanded="false"
-      aria-label="Toggle navigation"
-    >
-      <font-awesome-icon icon="bars" />
-    </b-navbar-toggle>
 
-    <b-collapse is-nav id="header-tabs">
-      <b-navbar-nav class="ms-auto">
-        <b-nav-item to="/" exact>
+    <div class="dc-navbar__content">
+      <b-navbar-nav class="dc-navbar__nav">
+        <b-nav-item to="/" exact class="dc-navbar__item">
           <span>
             <font-awesome-icon icon="home" />
             <span>{{ t$('global.menu.home') }}</span>
           </span>
         </b-nav-item>
+
         <b-nav-item-dropdown
           :no-size="true"
           end
           id="entity-menu"
           v-if="authenticated"
           active-class="active"
-          class="pointer"
+          class="pointer dc-navbar__item"
           data-cy="entity"
         >
           <template #button-content>
@@ -40,15 +33,15 @@
             </span>
           </template>
           <entities-menu></entities-menu>
-          <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
         </b-nav-item-dropdown>
+
         <b-nav-item-dropdown
           right
           id="admin-menu"
           v-if="hasAnyAuthority('ROLE_ADMIN') && authenticated"
           :class="{ 'router-link-active': subIsActive('/admin') }"
           active-class="active"
-          class="pointer"
+          class="pointer dc-navbar__item"
           data-cy="adminMenu"
         >
           <template #button-content>
@@ -86,7 +79,8 @@
             <span>{{ t$('global.menu.admin.logs') }}</span>
           </b-dropdown-item>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown id="languagesnavBarDropdown" end v-if="languages && Object.keys(languages).length > 1">
+
+        <b-nav-item-dropdown id="languagesnavBarDropdown" end v-if="languages && Object.keys(languages).length > 1" class="dc-navbar__item">
           <template #button-content>
             <font-awesome-icon icon="flag" />
             <span class="no-bold">{{ t$('global.menu.language') }}</span>
@@ -100,13 +94,13 @@
             {{ value.name }}
           </b-dropdown-item>
         </b-nav-item-dropdown>
+
         <b-nav-item-dropdown
           right
-          href="javascript:void(0);"
           id="account-menu"
           :class="{ 'router-link-active': subIsActive('/account') }"
           active-class="active"
-          class="pointer"
+          class="pointer dc-navbar__item"
           data-cy="accountMenu"
         >
           <template #button-content>
@@ -137,62 +131,104 @@
           </b-dropdown-item>
         </b-nav-item-dropdown>
       </b-navbar-nav>
-    </b-collapse>
+    </div>
   </b-navbar>
 </template>
 
 <script lang="ts" src="./jhi-navbar.component.ts"></script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-/* ==========================================================================
-  Navbar
-  ========================================================================== */
-.navbar-version {
-  font-size: 0.65em;
+.dc-navbar {
+  position: relative;
+  z-index: 1041;
+  min-height: 72px;
+  padding: 12px 20px;
+  align-items: flex-start;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(12px);
 }
 
-.navbar .navbar-nav .nav-item {
-  margin-right: 0.5rem;
+.dc-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
 }
 
-@media screen and (min-width: 768px) {
-  .jh-navbar-toggler {
-    display: none;
+.dc-navbar__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: #eff6ff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+}
+
+.dc-navbar__title {
+  display: block;
+  color: #111827;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.dc-navbar__version {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-top: 4px;
+  padding: 0 8px;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.dc-navbar__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.dc-navbar__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.dc-navbar__item :deep(.nav-link),
+.dc-navbar__item :deep(.dropdown-toggle) {
+  min-height: 40px;
+  padding: 8px 12px;
+  color: #334155;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.dc-navbar__item :deep(.nav-link:hover),
+.dc-navbar__item :deep(.dropdown-toggle:hover),
+.dc-navbar__item.router-link-active :deep(.dropdown-toggle),
+.dc-navbar__item :deep(.router-link-active) {
+  color: #0f172a;
+  background: #eff6ff;
+}
+
+@media (max-width: 991px) {
+  .dc-navbar {
+    padding: 12px 16px;
   }
-}
 
-@media screen and (min-width: 768px) and (max-width: 1150px) {
-  span span {
-    display: none;
+  .dc-navbar__nav {
+    justify-content: flex-start;
   }
-}
-
-.navbar-title {
-  display: inline-block;
-  color: white;
-}
-
-/* ==========================================================================
-  Logo styles
-  ========================================================================== */
-.navbar-brand.logo {
-  padding: 0 7px;
-}
-
-.logo .logo-img {
-  height: 45px;
-  display: inline-block;
-  vertical-align: middle;
-  width: 45px;
-}
-
-.logo-img {
-  height: 100%;
-  background: url('/content/images/logo-jhipster.png') no-repeat center center;
-  background-size: contain;
-  width: 100%;
-  filter: drop-shadow(0 0 0.05rem white);
-  margin: 0 5px;
 }
 </style>

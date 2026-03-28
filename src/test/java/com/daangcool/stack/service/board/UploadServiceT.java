@@ -29,6 +29,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -309,6 +310,33 @@ class UploadServiceT {
         // then
         verify(storageService, times(1)).delete(upload.getFilePath());
         verify(uploadRepository, times(1)).delete(upload);
+    }
+
+    @Test
+    void findAllByBoard_WhenCachedAsMaps_ShouldNormalizeToDtos() {
+        when(cache.get(10L, List.class)).thenReturn(
+            List.of(
+                Map.ofEntries(
+                    Map.entry("id", 1L),
+                    Map.entry("storageKey", "BOARD"),
+                    Map.entry("sourceFilename", "sample.png"),
+                    Map.entry("storageFilename", "sample-1.png"),
+                    Map.entry("filePath", "/uploads/sample.png"),
+                    Map.entry("fileSize", 1024L),
+                    Map.entry("fileExtension", "png"),
+                    Map.entry("mimeType", "image/png"),
+                    Map.entry("downloadCount", 7L),
+                    Map.entry("public", true),
+                    Map.entry("deleted", false)
+                )
+            )
+        );
+
+        List<UploadDTO> results = uploadService.findAllByBoard(10L);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getSourceFilename()).isEqualTo("sample.png");
+        verify(uploadRepository, never()).findAllByBoard_IdOrderByIdAsc(10L);
     }
 
     /**

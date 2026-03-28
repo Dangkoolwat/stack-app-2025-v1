@@ -18,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -119,7 +121,7 @@ public class TagService {
     public List<TagDTO> findAll() {
         Cache cache = cacheManager.getCache(CacheNames.TAG_ALL);
         if (cache != null) {
-            List<TagDTO> cached = (List<TagDTO>) cache.get("all", List.class);
+            List<TagDTO> cached = normalizeCachedTags(cache.get("all", List.class));
             if (cached != null) {
                 log.debug("[TAG CACHE] Hit for all tags");
                 return cached;
@@ -213,7 +215,7 @@ public class TagService {
         Cache cache = cacheManager.getCache(CacheNames.TAG_PREFIX);
         String key = prefix.toLowerCase();
         if (cache != null) {
-            List<TagDTO> cached = (List<TagDTO>) cache.get(key, List.class);
+            List<TagDTO> cached = normalizeCachedTags(cache.get(key, List.class));
             if (cached != null) {
                 log.debug("[TAG CACHE] Hit for prefix={}", prefix);
                 return cached;
@@ -236,7 +238,7 @@ public class TagService {
     public List<TagDTO> findPopularTags(int limit) {
         Cache cache = cacheManager.getCache(CacheNames.TAG_POPULAR);
         if (cache != null) {
-            List<TagDTO> cached = (List<TagDTO>) cache.get("popular", List.class);
+            List<TagDTO> cached = normalizeCachedTags(cache.get("popular", List.class));
             if (cached != null) {
                 log.debug("[TAG CACHE] Hit for popular tags");
                 return cached;
@@ -249,5 +251,64 @@ public class TagService {
 
         if (cache != null && !tags.isEmpty()) cache.put("popular", tags);
         return tags;
+    }
+
+    private List<TagDTO> normalizeCachedTags(Object cachedValue) {
+        if (!(cachedValue instanceof List<?> rawList)) {
+            return null;
+        }
+
+        List<TagDTO> normalized = new ArrayList<>();
+        for (Object item : rawList) {
+            TagDTO dto = toTagDto(item);
+            if (dto == null) {
+                log.warn("[TAG CACHE] Invalid tag cache entry type: {}", item == null ? "null" : item.getClass().getName());
+                return null;
+            }
+            normalized.add(dto);
+        }
+        return normalized;
+    }
+
+    private TagDTO toTagDto(Object raw) {
+        if (raw instanceof TagDTO dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            TagDTO dto = new TagDTO();
+            dto.setId(asLong(map.get("id")));
+            dto.setName(asString(map.get("name")));
+            dto.setUsageCount(asLong(map.get("usageCount")));
+            dto.setDeleted(asBoolean(map.get("deleted")));
+            return dto;
+        }
+        return null;
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Long asLong(Object value) {
+        if (value instanceof Long longValue) {
+            return longValue;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Long.valueOf(text);
+        }
+        return null;
+    }
+
+    private boolean asBoolean(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof String text) {
+            return Boolean.parseBoolean(text);
+        }
+        return false;
     }
 }

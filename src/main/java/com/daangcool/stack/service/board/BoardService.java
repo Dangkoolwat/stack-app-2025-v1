@@ -11,11 +11,17 @@ import com.daangcool.stack.domain.board.Upload;
 import com.daangcool.stack.repository.UserRepository;
 import com.daangcool.stack.repository.board.BoardRepository;
 import com.daangcool.stack.service.dto.BoardDTO;
+import com.daangcool.stack.service.dto.PageDTO;
+import com.daangcool.stack.service.dto.UploadDTO;
 import com.daangcool.stack.service.mapper.BoardMapper;
 import com.daangcool.stack.service.softdelete.IncludeDeleted;
 import com.daangcool.stack.security.ResourceAuthorizationService;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -118,11 +124,19 @@ public class BoardService {
     public Page<BoardDTO> findAll(int page, int size) {
         String key = "page:" + page + ":size:" + size;
         Cache cache = cacheManager.getCache(CacheNames.BOARD_PAGE);
-        if (cache != null && cache.get(key) != null) {
-            com.daangcool.stack.service.dto.PageDTO<BoardDTO> cached = (com.daangcool.stack.service.dto.PageDTO<BoardDTO>) cache.get(key).get();
-            if (cached != null) {
-                log.debug("[BOARD CACHE] Hit page {}", key);
-                return new org.springframework.data.domain.PageImpl<>(cached.getContent(), PageRequest.of(cached.getNumber(), cached.getSize()), cached.getTotalElements());
+        if (cache != null) {
+            try {
+                Cache.ValueWrapper cacheValue = cache.get(key);
+                if (cacheValue != null) {
+                    PageDTO<BoardDTO> cached = normalizeCachedBoardPage(cacheValue.get());
+                    if (cached != null) {
+                        log.debug("[BOARD CACHE] Hit page {}", key);
+                        return new org.springframework.data.domain.PageImpl<>(cached.getContent(), PageRequest.of(cached.getNumber(), cached.getSize()), cached.getTotalElements());
+                    }
+                }
+            } catch (RuntimeException e) {
+                log.warn("[BOARD CACHE] Failed to read page cache ({}): {}", key, e.getMessage());
+                cache.evictIfPresent(key);
             }
         }
 
@@ -130,7 +144,7 @@ public class BoardService {
             .map(boardMapper::toDto);
 
         if (cache != null && !result.isEmpty()) {
-            cache.put(key, new com.daangcool.stack.service.dto.PageDTO<>(result.getContent(), result.getTotalElements(), result.getTotalPages(), result.getNumber(), result.getSize()));
+            cache.put(key, new PageDTO<>(result.getContent(), result.getTotalElements(), result.getTotalPages(), result.getNumber(), result.getSize()));
         }
         return result;
     }
@@ -300,17 +314,24 @@ public class BoardService {
         String key = "q:" + Optional.ofNullable(keyword).orElse("").toLowerCase() + ":p:" + page + ":s:" + size;
         Cache cache = cacheManager.getCache(CacheNames.BOARD_SEARCH);
         if (cache != null) {
-            Page<BoardDTO> cached = (Page<BoardDTO>) cache.get(key, Page.class);
-            if (cached != null) {
-                log.debug("[BOARD CACHE] Hit search {}", key);
-                return cached;
+            try {
+                PageDTO<BoardDTO> cached = normalizeCachedBoardPage(cache.get(key, PageDTO.class));
+                if (cached != null) {
+                    log.debug("[BOARD CACHE] Hit search {}", key);
+                    return new org.springframework.data.domain.PageImpl<>(cached.getContent(), PageRequest.of(cached.getNumber(), cached.getSize()), cached.getTotalElements());
+                }
+            } catch (RuntimeException e) {
+                log.warn("[BOARD CACHE] Failed to read search cache ({}): {}", key, e.getMessage());
+                cache.evictIfPresent(key);
             }
         }
 
         Page<BoardDTO> result = boardRepository.searchByKeyword(keyword, PageRequest.of(page, size))
             .map(boardMapper::toDto);
 
-        if (cache != null && !result.isEmpty()) cache.put(key, result);
+        if (cache != null && !result.isEmpty()) {
+            cache.put(key, new PageDTO<>(result.getContent(), result.getTotalElements(), result.getTotalPages(), result.getNumber(), result.getSize()));
+        }
         return result;
     }
 
@@ -322,10 +343,15 @@ public class BoardService {
         String key = "notice:all";
         Cache cache = cacheManager.getCache(CacheNames.BOARD_NOTICES);
         if (cache != null) {
-            List<BoardDTO> cached = (List<BoardDTO>) cache.get(key, List.class);
-            if (cached != null) {
-                log.debug("[BOARD CACHE] Hit notice list");
-                return cached;
+            try {
+                List<BoardDTO> cached = normalizeCachedBoardList(cache.get(key, List.class));
+                if (cached != null) {
+                    log.debug("[BOARD CACHE] Hit notice list");
+                    return cached;
+                }
+            } catch (RuntimeException e) {
+                log.warn("[BOARD CACHE] Failed to read notice cache: {}", e.getMessage());
+                cache.evictIfPresent(key);
             }
         }
 
@@ -514,6 +540,171 @@ public class BoardService {
     private void cacheIfPresent(String cacheName, Object key, Object value) {
         Optional.ofNullable(cacheManager.getCache(cacheName))
             .ifPresent(cache -> cache.put(key, value));
+    }
+
+    private PageDTO<BoardDTO> normalizeCachedBoardPage(Object cachedValue) {
+        if (cachedValue instanceof PageDTO<?> pageDto) {
+            List<BoardDTO> content = normalizeCachedBoardList(pageDto.getContent());
+            if (content == null) {
+                return null;
+            }
+            return new PageDTO<>(content, pageDto.getTotalElements(), pageDto.getTotalPages(), pageDto.getNumber(), pageDto.getSize());
+        }
+
+        if (cachedValue instanceof Map<?, ?> map) {
+            List<BoardDTO> content = normalizeCachedBoardList(map.get("content"));
+            if (content == null) {
+                return null;
+            }
+            return new PageDTO<>(
+                content,
+                asLong(map.get("totalElements"), 0L),
+                asInt(map.get("totalPages"), 0),
+                asInt(map.get("number"), 0),
+                asInt(map.get("size"), content.size())
+            );
+        }
+
+        return null;
+    }
+
+    private List<BoardDTO> normalizeCachedBoardList(Object cachedValue) {
+        if (!(cachedValue instanceof List<?> rawList)) {
+            return null;
+        }
+
+        List<BoardDTO> normalized = new ArrayList<>();
+        for (Object item : rawList) {
+            BoardDTO dto = toBoardDto(item);
+            if (dto == null) {
+                log.warn("[BOARD CACHE] Invalid board cache entry type: {}", item == null ? "null" : item.getClass().getName());
+                return null;
+            }
+            normalized.add(dto);
+        }
+        return normalized;
+    }
+
+    private BoardDTO toBoardDto(Object raw) {
+        if (raw instanceof BoardDTO dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            BoardDTO dto = new BoardDTO();
+            dto.setId(asLong(map.get("id"), null));
+            dto.setTitle(asString(map.get("title")));
+            dto.setContent(asString(map.get("content")));
+            dto.setUserId(asLong(map.get("userId"), null));
+            dto.setNotice(asBooleanObject(map.get("notice")));
+            dto.setViewCount(asLong(map.get("viewCount"), 0L));
+            dto.setCreatedDate(asInstant(map.get("createdDate")));
+            dto.setLastModifiedDate(asInstant(map.get("lastModifiedDate")));
+            dto.setCreatedBy(asString(map.get("createdBy")));
+            dto.setLastModifiedBy(asString(map.get("lastModifiedBy")));
+            dto.setDeleted(asBooleanObject(map.get("deleted")));
+            dto.setBoardTypeCode(asString(map.get("boardTypeCode")));
+            dto.setTags(asStringList(map.get("tags")));
+            dto.setUploads(toUploadDtoList(map.get("uploads")));
+            return dto;
+        }
+        return null;
+    }
+
+    private List<UploadDTO> toUploadDtoList(Object raw) {
+        if (!(raw instanceof List<?> rawList)) {
+            return new ArrayList<>();
+        }
+
+        List<UploadDTO> uploads = new ArrayList<>();
+        for (Object item : rawList) {
+            UploadDTO dto = toUploadDto(item);
+            if (dto == null) {
+                return new ArrayList<>();
+            }
+            uploads.add(dto);
+        }
+        return uploads;
+    }
+
+    private UploadDTO toUploadDto(Object raw) {
+        if (raw instanceof UploadDTO dto) {
+            return dto;
+        }
+        if (raw instanceof Map<?, ?> map) {
+            return new UploadDTO(
+                asLong(map.get("id"), null),
+                asString(map.get("storageKey")),
+                asString(map.get("sourceFilename")),
+                asString(map.get("storageFilename")),
+                asString(map.get("filePath")),
+                asLong(map.get("fileSize"), null),
+                asString(map.get("fileExtension")),
+                asString(map.get("mimeType")),
+                asLong(map.get("downloadCount"), null),
+                asBoolean(map.get("public")) || asBoolean(map.get("isPublic")),
+                asBoolean(map.get("deleted"))
+            );
+        }
+        return null;
+    }
+
+    private List<String> asStringList(Object raw) {
+        if (!(raw instanceof List<?> rawList)) {
+            return new ArrayList<>();
+        }
+        return rawList.stream().map(this::asString).filter(Objects::nonNull).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private String asString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Long asLong(Object value, Long defaultValue) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Long.parseLong(text);
+        }
+        return defaultValue;
+    }
+
+    private int asInt(Object value, int defaultValue) {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            return Integer.parseInt(text);
+        }
+        return defaultValue;
+    }
+
+    private Boolean asBooleanObject(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+        if (value instanceof String text) {
+            return Boolean.parseBoolean(text);
+        }
+        return null;
+    }
+
+    private boolean asBoolean(Object value) {
+        return Boolean.TRUE.equals(asBooleanObject(value));
+    }
+
+    private Instant asInstant(Object value) {
+        if (value instanceof Instant instant) {
+            return instant;
+        }
+        if (value instanceof String text && !text.isBlank()) {
+            try {
+                return Instant.parse(text);
+            } catch (DateTimeParseException e) {
+                log.warn("[BOARD CACHE] Invalid instant cache value: {}", text);
+            }
+        }
+        return null;
     }
 
     private User getCurrentAuthenticatedUser() {

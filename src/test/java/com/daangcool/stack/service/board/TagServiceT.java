@@ -16,6 +16,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,6 +125,18 @@ class TagServiceT {
         assertThat(results).hasSize(1);
         assertThat(results.get(0).getName()).isEqualTo(tag.getName());
         verify(cache, times(1)).put(anyString(), anyList()); // 결과를 캐시에 저장하는지 검증
+    }
+
+    @Test
+    void findAll_WhenCachedAsMaps_ShouldNormalizeToDtos() {
+        when(cache.get("all", List.class)).thenReturn(List.of(Map.of("id", 1L, "name", "java", "usageCount", 3L, "deleted", false)));
+
+        List<TagDTO> results = tagService.findAll();
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).getName()).isEqualTo("java");
+        assertThat(results.get(0).getUsageCount()).isEqualTo(3L);
+        verify(tagRepository, never()).findAll();
     }
 
     /**

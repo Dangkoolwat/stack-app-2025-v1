@@ -66,7 +66,7 @@
               style="border-style: dashed !important; border-width: 2px !important; cursor: pointer"
               @click="triggerFileInput"
             >
-              <font-awesome-icon icon="cloud-upload-alt" class="text-muted fa-2x mb-2"></font-awesome-icon>
+              <font-awesome-icon icon="upload" class="text-muted fa-2x mb-2"></font-awesome-icon>
               <p class="mb-0 text-muted">파일을 여기에 드래그하거나 클릭하여 업로드하세요</p>
               <small class="text-danger">최대 5개, 각 파일 10MB 이하 제한</small>
               <input type="file" multiple class="d-none" ref="fileInput" @change="handleFileSelect" />

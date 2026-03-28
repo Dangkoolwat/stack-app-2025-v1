@@ -54,6 +54,27 @@ describe('Health Modal Component', () => {
 
       expect(result).toBe('data');
     });
+
+    it('unwraps nested detail entries for redis health payload', () => {
+      const wrapper = shallowMount(HealthModal, {
+        propsData: {
+          currentHealth: {
+            details: {
+              detail: {
+                used_memory_human: '1.65M',
+              },
+            },
+          },
+        },
+        global: {
+          provide: {
+            healthService,
+          },
+        },
+      });
+
+      expect(wrapper.vm.detailEntries()).toEqual([['used_memory_human', '1.65M']]);
+    });
   });
 });
 

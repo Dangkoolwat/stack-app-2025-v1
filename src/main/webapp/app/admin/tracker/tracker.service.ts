@@ -6,7 +6,7 @@ import { map } from 'rxjs';
 import SockJS from 'sockjs-client';
 
 const DESTINATION_TRACKER = '/topic/tracker';
-const DESTINATION_ACTIVITY = '/topic/activity';
+const DESTINATION_ACTIVITY = '/app/activity';
 
 export const useTrackerService = ({ stomp, authenticated }: { stomp?: RxStomp; authenticated?: ComputedRef<boolean> } = {}) => {
   const router = useRouter();
@@ -94,16 +94,17 @@ export default class TrackerService {
     const wsUrl = SERVER_WS_URL.startsWith('/')
       ? `${loc.protocol}//${loc.host}${baseHref ?? '/'}${SERVER_WS_URL.substring(1)}/tracker`
       : `${SERVER_WS_URL}/tracker`;
-    const url = wsUrl.replace(/\/+/g, '/').replace('http:/', 'http://').replace('https:/', 'https://');
-    const authToken = this.getAuthToken();
-    if (authToken) {
-      return `${url}?access_token=${authToken}`;
-    }
-    return url;
+    return wsUrl.replace(/\/+/g, '/').replace('http:/', 'http://').replace('https:/', 'https://');
   }
 
   private updateCredentials(): void {
+    const authToken = this.getAuthToken();
     this.rxStomp.configure({
+      connectHeaders: authToken
+        ? {
+            Authorization: `Bearer ${authToken}`,
+          }
+        : {},
       webSocketFactory: () => {
         return new SockJS(this.buildUrl());
       },

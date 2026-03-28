@@ -18,7 +18,8 @@
       "readinessState": "Readiness state",
       "ping": "Application",
       "db": "Database",
-      "redis": "Redis"
+      "redis": "Redis",
+      "redisServer": "Redis"
     },
     "table": {
       "service": "Service name",

@@ -1,12 +1,12 @@
 <template>
   <BToastOrchestrator />
-  <div id="app">
+  <div id="app" class="app-shell">
     <ribbon></ribbon>
-    <div id="app-header">
+    <div id="app-header" class="app-header">
       <jhi-navbar></jhi-navbar>
     </div>
-    <div class="container-fluid">
-      <div class="card jh-card">
+    <div class="page-shell">
+      <div class="page-surface">
         <router-view></router-view>
       </div>
       <b-modal
