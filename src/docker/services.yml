@@ -5,3 +5,7 @@ services:
     extends:
       file: ./redis.yml
       service: redis
+  oracle:
+    extends:
+      file: ./oracle-23-slim-faststart.yml
+      service: oracle

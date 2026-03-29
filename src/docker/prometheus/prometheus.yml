@@ -25,7 +25,7 @@ scrape_configs:
     # username: admin
     # password: admin
     metrics_path: /management/prometheus
-    static_configs:
-      - targets:
+#    static_configs:
+#      - targets:
           # On MacOS, replace localhost by host.docker.internal
-          - localhost:8080
+#          - localhost:8080

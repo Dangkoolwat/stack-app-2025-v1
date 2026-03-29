@@ -1,0 +1,15 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:23-slim-faststart
+    container_name: oracle-free-23-slim-faststart
+    restart: always
+    ports:
+      - 1521:1521
+    environment:
+      TZ: Asia/Seoul
+      ORACLE_PASSWORD: Docker#2020
+      APP_USER: dizzyUncle
+      APP_USER_PASSWORD: Docker#2020
+      # ORACLE_DATABASE=FREEPDB1
+    # volumes:
+    # - ./oradata:/opt/oracle/oradata
