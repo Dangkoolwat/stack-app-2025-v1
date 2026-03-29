@@ -1,0 +1,10 @@
+services:
+  mail:
+    # axllent/mailpit 이미지가 최근 가장 널리 쓰이는 대안입니다. (ARM64 완벽 지원)
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP 포트
+      - "8025:8025"   # 웹 UI 포트
+    # 별도의 환경변수 설정 없이도 기본적으로 잘 작동합니다.

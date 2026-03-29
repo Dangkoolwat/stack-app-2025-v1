@@ -11,5 +11,5 @@ services:
       service: oracle
   mail:
     extends:
-      file: ./mailhog.yml
+      file: ./mailsy.yml
       service: mail
