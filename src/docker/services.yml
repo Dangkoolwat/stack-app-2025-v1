@@ -9,3 +9,7 @@ services:
     extends:
       file: ./oracle-23-slim-faststart.yml
       service: oracle
+  mail:
+    extends:
+      file: ./mailhog.yml
+      service: mail
