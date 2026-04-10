@@ -13,6 +13,8 @@
 
 - All agent logs and shared documentation MUST NOT use bolding (`**`) or emojis.
 - Maintain a clean, professional, and plain-text-oriented style.
+- This formatting restriction applies to repository documents under `docs/` and `agent-log` outputs.
+- Chat or tool-facing responses MAY follow the runtime/client formatting rules unless the user explicitly requests the same plain-text restriction there as well.
 
 ---
 
@@ -51,6 +53,7 @@ docs/
 - Files under any `agent-log/` directory are historical task records and MUST NOT be treated as current policy.
 - `docs/knowledge/` captures lessons learned and rationale. It is reusable context, but it MUST NOT override the priority order above.
 - If two documents conflict, agents MUST follow the higher-priority document and record the mismatch in the current agent log.
+- If runtime-level global instructions and this repository `AGENTS.md` differ, agents MUST treat this repository `AGENTS.md` as the local source of truth for work performed in this repository.
 
 ---
 
@@ -92,6 +95,7 @@ Enhanced review for high-impact changes.
 
 - Criteria: Security, infrastructure (pom.xml, config, etc.), database schema, or breaking API changes.
 - Flow: Tier 2 + Mandatory Peer Review/Approval before Implementation.
+- This approval rule overrides any default agent tendency toward autonomous end-to-end execution.
 
 ---
 
@@ -112,6 +116,8 @@ When receiving a task:
 ### Exception (Interaction)
 
 - If the task is trivial or explicitly defined, agents MAY proceed directly to implementation
+- "Explicitly defined" means the requested outcome and safe scope are already clear enough that an additional confirmation turn would not reduce risk.
+- If the task still affects shared contracts, security, infrastructure, persistence, or cross-cutting behavior, agents MUST treat it as approval-sensitive even when the user request is otherwise explicit.
 
 ---
 
@@ -322,6 +328,8 @@ When an agent is asked to perform a deep analysis (not tied to a specific code-c
 - Location: `docs/analysis/YYYY-MM-DD-agentName/`
 - Metadata: MUST follow the same Metadata header rule as `agent-log` files.
 - Goal: To build a persistent knowledge base of system insights and research findings.
+- Use `docs/analysis/` for repository-wide reviews, policy audits, architecture studies, and similar non-implementation work.
+- Do NOT create a parallel `docs/{backend|frontend}/agent-log/...` set for the same task unless the user also requested implementation work that requires the standard execution log flow.
 
 ---
 
