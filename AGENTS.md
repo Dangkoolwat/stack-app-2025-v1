@@ -176,7 +176,7 @@ All agents MUST follow the Conventional Commits standard (v1.0.0).
 
 ### Search First
 
-Before creating a new KI, agents MUST search `docs/knowledge/` for existing items on the same topic. If a relevant KI exists, update it instead of creating a duplicate. Additionally, agents MUST consult the Project Knowledge Base (Graphify) to understand the broader architectural impact.
+Before creating a new KI, agents MUST search `docs/knowledge/` for existing items on the same topic. If a relevant KI exists, update it instead of creating a duplicate. When the impact is unclear or the task touches shared or high-centrality areas, agents MAY also consult the supplemental Graphify resources for architectural context.
 
 ### Creation Rule
 
@@ -189,25 +189,25 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 
 ---
 
-## Project Knowledge Base (Graphify)
+## Supplemental Architecture Analysis (Graphify)
 
-This project utilizes a structured knowledge graph generated via `graphify`. Agents MUST use these resources to maintain architectural integrity and understand dependency relationships.
+This project uses `graphify` as a supplemental architecture analysis tool. It helps agents understand dependency relationships and change impact, but it does not replace `AGENTS.md`, `docs/standards/`, `docs/workflow/`, `docs/operations/`, tests, or source code.
 
 ### 1. Knowledge Graph Resources
 
 - Analysis Report: docs/graphify/GRAPH_REPORT.md
-  - Summarizes core components (God Nodes) and identifies complex dependency clusters.
+  - Snapshot report for architectural orientation and impact analysis.
 - Graph Data: docs/graphify/graph.json
-  - Raw graph data. Agents can use the `graphify` MCP tool or CLI queries to analyze specific node paths and relationships.
+  - Raw graph snapshot for relationship lookup.
 - Visualization: docs/graphify/graph.html
   - Interactive visual map of the system architecture.
 
-### 2. Mandatory Usage Guidelines
+### 2. Usage Guidelines
 
-- Mandatory Analysis: Before starting any Tier 2 or Tier 3 task, agents MUST review GRAPH_REPORT.md to assess how the proposed changes affect the identified God Nodes and their dependencies.
-- Architectural Preservation: When modifying components identified as high-centrality nodes (God Nodes), agents MUST follow the Global Impact Review process strictly.
-- Synchronization: If a task involves significant structural changes (e.g., refactoring core services, renaming packages, or changing major dependencies), agents MUST execute the `updateGraphify` command from the project root to keep the graph artifacts synchronized with the codebase.
-- MCP Tool Integration: Agents should leverage the `graphify` MCP tool to perform programmatic searches and relationship analysis within the knowledge graph.
+- Context Check: When a task may ripple across modules, shared services, or other high-centrality areas, agents SHOULD review `GRAPH_REPORT.md` before editing.
+- Architectural Preservation: When modifying components that appear central in the graph, agents SHOULD treat the graph as an additional impact signal and still follow the Global Impact Review process.
+- Synchronization: If the repository workflow provides an `updateGraphify` command, agents SHOULD run it after significant structural changes so the graph artifacts stay aligned with the codebase.
+- MCP Tool Integration: Agents MAY use the `graphify` MCP tool when it helps answer relationship or impact questions faster.
 
 ---
 
