@@ -97,6 +97,35 @@ Enhanced review for high-impact changes.
 - Flow: Tier 2 + Mandatory Peer Review/Approval before Implementation.
 - This approval rule overrides any default agent tendency toward autonomous end-to-end execution.
 
+### Emergency Protocol
+
+In extreme cases where immediate action is required to restore system functionality, agents MAY bypass the standard proposal phase.
+
+- Applicable Scenarios: Build failure recovery, critical runtime crashes, accidental exposure of sensitive data, or environment-blocking issues.
+- Requirements: Modifications MUST be minimal and focused solely on resolving the emergency. A detailed report explaining the cause, fix, and verification results MUST be provided immediately after the intervention.
+
+---
+
+## Behavioral Protocols (Senior Architect Edition)
+
+To ensure system integrity and maintainability, agents MUST adhere to these operational principles:
+
+### 1. Read-Before-Write Protocol
+
+- Action: Execute `grep`, `cat`, or `ls` to fully understand the target block and its caller functions BEFORE writing a single line of code.
+- Goal: Maintain context preservation and avoid breaking hidden dependencies.
+
+### 2. Surgical Precision
+
+- Action: Touch only the lines necessary to satisfy the request.
+- Constraint: Do not "polish" adjacent code, fix unrelated linter warnings, or change formatting unless explicitly asked.
+- Reversion: If unrelated lines were accidentally modified, revert them to their original state immediately.
+
+### 3. No Speculative Abstraction
+
+- Action: Implement the minimum required logic.
+- Constraint: Never remove default parameters or change global patterns for a specific local case unless it is part of a deliberate refactoring task.
+
 ---
 
 ## Interaction Rule (MANDATORY)
@@ -147,7 +176,7 @@ All agents MUST follow the Conventional Commits standard (v1.0.0).
 
 ### Search First
 
-Before creating a new KI, agents MUST search `docs/knowledge/` for existing items on the same topic. If a relevant KI exists, update it instead of creating a duplicate.
+Before creating a new KI, agents MUST search `docs/knowledge/` for existing items on the same topic. If a relevant KI exists, update it instead of creating a duplicate. Additionally, agents MUST consult the Project Knowledge Base (Graphify) to understand the broader architectural impact.
 
 ### Creation Rule
 
@@ -157,6 +186,28 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 - Location: `docs/knowledge/YYYY-MM-DD-topic-name.md`
 - Goal: To prevent recurring issues and shared context across different agents/time.
 - Metadata: MUST include the same Metadata header as `agent-log` files.
+
+---
+
+## Project Knowledge Base (Graphify)
+
+This project utilizes a structured knowledge graph generated via `graphify`. Agents MUST use these resources to maintain architectural integrity and understand dependency relationships.
+
+### 1. Knowledge Graph Resources
+
+- Analysis Report: docs/graphify/GRAPH_REPORT.md
+  - Summarizes core components (God Nodes) and identifies complex dependency clusters.
+- Graph Data: docs/graphify/graph.json
+  - Raw graph data. Agents can use the `graphify` MCP tool or CLI queries to analyze specific node paths and relationships.
+- Visualization: docs/graphify/graph.html
+  - Interactive visual map of the system architecture.
+
+### 2. Mandatory Usage Guidelines
+
+- Mandatory Analysis: Before starting any Tier 2 or Tier 3 task, agents MUST review GRAPH_REPORT.md to assess how the proposed changes affect the identified God Nodes and their dependencies.
+- Architectural Preservation: When modifying components identified as high-centrality nodes (God Nodes), agents MUST follow the Global Impact Review process strictly.
+- Synchronization: If a task involves significant structural changes (e.g., refactoring core services, renaming packages, or changing major dependencies), agents MUST execute the `updateGraphify` command from the project root to keep the graph artifacts synchronized with the codebase.
+- MCP Tool Integration: Agents should leverage the `graphify` MCP tool to perform programmatic searches and relationship analysis within the knowledge graph.
 
 ---
 
@@ -353,6 +404,24 @@ Must perform:
 - check affected systems for rollback safety
 - verify no performance regression
 - verify no security regression
+
+### Side Effect Analysis Questions
+
+Before proceeding with any Non-trivial change, agents MUST answer these questions:
+
+1. Who are the direct callers of this logic, and do they have specific invariants that must be preserved?
+2. Does this change affect backward compatibility with existing data, configurations, or API contracts?
+3. If the operation fails halfway, what is the impact on data integrity and how can it be safely rolled back?
+4. Are there any shared states, caches, or asynchronous processes that need to be synchronized?
+
+### High-Risk Change Zones (Project Specific)
+
+Modifications in these areas require mandatory impact analysis and exhaustive testing:
+
+- `com.daangcool.stack.security`: Authentication, Authorization, and JWT handling.
+- `com.daangcool.stack.config`: Core Spring configurations and externalized property mappings.
+- `com.daangcool.stack.domain`: JPA Entities and persistence layer mappings (affecting DB schema).
+- `com.daangcool.stack.service`: Core business orchestration and transaction boundaries.
 
 ---
 
