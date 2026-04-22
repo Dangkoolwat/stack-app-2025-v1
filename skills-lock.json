@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "bootstrap-vue3": {
+      "source": "teachingai/full-stack-skills",
+      "sourceType": "github",
+      "computedHash": "558fb93135bad830d32d8b03ee8bf2823a60f8d42be414787196a18bbc58216b"
+    },
+    "oracle": {
+      "source": "trancong12102/agentskills",
+      "sourceType": "github",
+      "computedHash": "a5fff9b1cb5e3198bc0377c0c3275a3d79881b18f66bdbebc9d1a202af5e5217"
+    },
+    "redis-expert": {
+      "source": "personamanagmentlayer/pcl",
+      "sourceType": "github",
+      "computedHash": "8635b47de37442f5342cd68138e1e406224e0a9b5502b62d2a61fc769a4cefc0"
+    },
+    "springboot-tdd": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "c759c47d0dcbc914ab4cd565b32c63f886b6599cddd7e4e8c8d3082dbff4da39"
+    },
+    "vitest": {
+      "source": "onmax/nuxt-skills",
+      "sourceType": "github",
+      "computedHash": "04ed1b09da8ac778d693ad12fab49b1c48aadfe1758fe13eb4d6de3fdcbb22f4"
+    },
+    "whisper-transcription": {
+      "source": "guia-matthieu/clawfu-skills",
+      "sourceType": "github",
+      "computedHash": "8f0ef0d22d564c347e49a521bb5cf66b51d06b518553868aa3789eba23d9a700"
+    }
+  }
+}

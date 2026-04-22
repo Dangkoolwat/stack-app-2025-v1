@@ -1,0 +1,16 @@
+{
+  "author": "nextlevelbuilder",
+  "created_at": 1776056408,
+  "description": "Comprehensive design intelligence for web and mobile UI/UX across 10 technology stacks.",
+  "install_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+  "marketplace_skill_id": "sk_3bd611673e6f61f5",
+  "marketplace_skill_slug": "nextlevelbuilder/ui-ux-pro-max-skill/ui-ux-pro-max",
+  "marketplace_source_id": "src_skills_sh_home",
+  "name": "ui-ux-pro-max",
+  "remote_revision": "market-api-fnv64:662d2a32ef547e79",
+  "repo_url": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+  "skill_path": "ui-ux-pro-max",
+  "source": "marketplace",
+  "tags": [],
+  "version": "1.0"
+}
