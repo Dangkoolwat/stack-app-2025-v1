@@ -91,6 +91,16 @@
       "sourceType": "github",
       "computedHash": "1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
     },
+    "swift-architecture-skill": {
+      "source": "efremidze/swift-architecture-skill@swift-architecture-skill",
+      "sourceType": "github",
+      "computedHash": "67d3359424b19084631998def14666fd5a77284a45ac0353c41a86a7ed216923"
+    },
+    "swift-concurrency": {
+      "source": "avdlee/swift-concurrency-agent-skill@swift-concurrency",
+      "sourceType": "github",
+      "computedHash": "a1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
     "tailwind-patterns": {
       "source": "giuseppe-trisciuoglio/developer-kit",
       "sourceType": "github",
