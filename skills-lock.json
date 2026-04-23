@@ -14,7 +14,7 @@
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",
-      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
     },
     "frontend-design": {
       "source": "anthropics/skills",
@@ -62,9 +62,9 @@
       "computedHash": "8635b47de37442f5342cd68138e1e406224e0a9b5502b62d2a61fc769a4cefc0"
     },
     "scan-code-review-rules": {
-      "source": "duc01226/easyplatform@scan-code-review-rules",
+      "source": "duc01226/easyplatform",
       "sourceType": "github",
-      "computedHash": "c0c3c083dde7cc1f0e5ed647c5ca80a3f0ef83c200612cbe7276cdbb53758bbf0"
+      "computedHash": "80c6dc712dbb333cd7007b89eb9f0eea4e091de68f44a6f183d02ecd1c635153"
     },
     "spring-boot-engineer": {
       "source": "giuseppe-trisciuoglio/developer-kit",
