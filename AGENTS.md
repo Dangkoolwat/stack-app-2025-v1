@@ -206,7 +206,7 @@ This project uses `graphify` as a supplemental architecture analysis tool. It he
 
 - Context Check: When a task may ripple across modules, shared services, or other high-centrality areas, agents SHOULD review `GRAPH_REPORT.md` before editing.
 - Architectural Preservation: When modifying components that appear central in the graph, agents SHOULD treat the graph as an additional impact signal and still follow the Global Impact Review process.
-- Synchronization: If the repository workflow provides an `updateGraphify` command, agents SHOULD run it after significant structural changes so the graph artifacts stay aligned with the codebase.
+- Update: If there is a significant change in the code structure, maintain the graphs in docs/graphify in the latest state by running the command: graphify update . && rm -rf docs/graphify/* && mv graphify-out/* docs/graphify/ && rm -rf graphify-out
 - MCP Tool Integration: Agents MAY use the `graphify` MCP tool when it helps answer relationship or impact questions faster.
 
 ---

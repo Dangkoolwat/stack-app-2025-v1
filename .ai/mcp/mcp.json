@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "graphify-stack-app-2025-v1": {
+      "command": "/usr/local/bin/python3",
+      "args": [
+        "-m",
+        "graphify.serve",
+        "/Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/graphify/graph.json"
+      ]
+    }
+  }
+}
