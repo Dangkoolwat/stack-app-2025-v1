@@ -1,7 +1,7 @@
-# Graph Report - /Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1  (2026-04-21)
+# Graph Report - /Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1  (2026-04-23)
 
 ## Corpus Check
-- 386 files · ~479,775 words
+- 386 files · ~483,019 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -1113,10 +1113,8 @@ Nodes (0):
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AuthenticateController` connect `Community 14` to `Community 5`, `Community 13`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
-- **Why does `OtpResultDTO` connect `Community 35` to `Community 2`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `MailServiceIT` connect `Community 8` to `Community 0`?**
+  _High betweenness centrality (0.026) - this node is a cross-community bridge._
 - **What connects `TechnicalStructureTest`, `DateTimeWrapperRepository`, `TestcontainersConfiguration` to the rest of the system?**
   _29 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
@@ -1127,3 +1125,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.02 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.02 - nodes in this community are weakly interconnected._
+- **Should `Community 4` be split into smaller, more focused modules?**
+  _Cohesion score 0.03 - nodes in this community are weakly interconnected._
