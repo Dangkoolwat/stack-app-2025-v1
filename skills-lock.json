@@ -1,35 +1,115 @@
 {
   "version": 1,
   "skills": {
+    "architecture-patterns": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "a1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
     "bootstrap-vue3": {
       "source": "teachingai/full-stack-skills",
       "sourceType": "github",
       "computedHash": "558fb93135bad830d32d8b03ee8bf2823a60f8d42be414787196a18bbc58216b"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "9e1c8b3103f92fa8092568a44fe64858de7c5c9dc65ce4bea8f168080e889cfd"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "b1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "grammar-checker": {
+      "source": "daleseo/korean-skills",
+      "sourceType": "github",
+      "computedHash": "02c4d99c0e3ba2d70ebc3a0e992ccd6dea84cdffa83aa7d16cba3dd41af1afe1"
+    },
+    "graphify": {
+      "source": "akillness/oh-my-skills",
+      "sourceType": "github",
+      "computedHash": "7fb59e870544b1eca710d9d1070161b66817a9da9567bc19a394c843522b784c"
+    },
+    "humanizer": {
+      "source": "daleseo/korean-skills",
+      "sourceType": "github",
+      "computedHash": "f0eb2aa9e2515e99471fbd085d514141bfc4873f3683f76815a237d64c2cd834"
+    },
+    "karpathy-guidelines": {
+      "source": "forrestchang/andrej-karpathy-skills",
+      "sourceType": "github",
+      "computedHash": "41e8ca055bbde13d240776a14a076a59614057200340c243130a76ba4e64cac8"
     },
     "oracle": {
       "source": "trancong12102/agentskills",
       "sourceType": "github",
       "computedHash": "a5fff9b1cb5e3198bc0377c0c3275a3d79881b18f66bdbebc9d1a202af5e5217"
     },
+    "playwright": {
+      "source": "microsoft/playwright-skills",
+      "sourceType": "github",
+      "computedHash": "c1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
     "redis-expert": {
       "source": "personamanagmentlayer/pcl",
       "sourceType": "github",
       "computedHash": "8635b47de37442f5342cd68138e1e406224e0a9b5502b62d2a61fc769a4cefc0"
+    },
+    "scan-code-review-rules": {
+      "source": "guia-matthieu/clawfu-skills",
+      "sourceType": "github",
+      "computedHash": "c0c3c083dde7cc1f0e5ed647c5ca80a3f0ef83c200612cbe7276cdbb53758bbf0"
+    },
+    "spring-boot-engineer": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "d1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "spring-boot-rest-api-standards": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "e1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "spring-boot-test-patterns": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "f1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
     },
     "springboot-tdd": {
       "source": "affaan-m/everything-claude-code",
       "sourceType": "github",
       "computedHash": "c759c47d0dcbc914ab4cd565b32c63f886b6599cddd7e4e8c8d3082dbff4da39"
     },
+    "style-guide": {
+      "source": "daleseo/korean-skills",
+      "sourceType": "github",
+      "computedHash": "1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "tailwind-patterns": {
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "sourceType": "github",
+      "computedHash": "01c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "ui-ux-pro-max": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "11c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
     "vitest": {
       "source": "onmax/nuxt-skills",
       "sourceType": "github",
       "computedHash": "04ed1b09da8ac778d693ad12fab49b1c48aadfe1758fe13eb4d6de3fdcbb22f4"
     },
-    "whisper-transcription": {
-      "source": "guia-matthieu/clawfu-skills",
+    "vue": {
+      "source": "antfu/skills",
       "sourceType": "github",
-      "computedHash": "8f0ef0d22d564c347e49a521bb5cf66b51d06b518553868aa3789eba23d9a700"
+      "computedHash": "21c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+    },
+    "web-design-guidelines": {
+      "source": "ehmo/platform-design-skills",
+      "sourceType": "github",
+      "computedHash": "31c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
     }
   }
 }
