@@ -40,12 +40,12 @@ docs/
 - workflow: collaboration, review, CI, delivery rules
 - operations: execution HOW TO (run, deploy, troubleshoot)
 
-### Priority Order
+### Priority Order (Source of Truth)
 
-1. AGENTS.md
-2. docs/standards/
-3. docs/workflow/
-4. docs/operations/
+1. User instructions (Current task)
+2. AGENTS.md (Local rules)
+3. docs/ (Standards, Workflow, Operations)
+4. Code, tests, and configuration
 
 ### Authority Clarification
 
@@ -53,6 +53,7 @@ docs/
 - Files under any `agent-log/` directory are historical task records and MUST NOT be treated as current policy.
 - `docs/knowledge/` captures lessons learned and rationale. It is reusable context, but it MUST NOT override the priority order above.
 - If two documents conflict, agents MUST follow the higher-priority document and record the mismatch in the current agent log.
+- If the conflict significantly affects the task direction, agents MUST ask the user for clarification before proceeding.
 - If runtime-level global instructions and this repository `AGENTS.md` differ, agents MUST treat this repository `AGENTS.md` as the local source of truth for work performed in this repository.
 
 ---
@@ -79,8 +80,9 @@ All work MUST follow the tiered process system based on complexity:
 
 Direct implementation for minor changes.
 
-- Criteria: Single-file changes, < 10 lines of code, no logic changes.
-- Flow: Problem → Plan → Implementation → Verification
+- Criteria: Single-file changes, < 30 lines of code, local logic changes only.
+- Flow: Problem → Implementation → Verification
+- Documentation: Minimal recording. A single `final-report.md` is sufficient, or chat-only record if extremely minor.
 
 ### Tier 2: Standard
 
@@ -88,6 +90,7 @@ Full process for feature developments and bug fixes.
 
 - Criteria: Most development tasks.
 - Flow: Problem Analysis → Proposal → Self-Check → Plan → Implementation → Verification
+- Documentation: **Lightweight Mode** (`task-log.md`) is the default. Use Full Mode (6 files) only if explicitly requested or for high-risk changes.
 
 ### Tier 3: Critical
 
@@ -126,6 +129,16 @@ To ensure system integrity and maintainability, agents MUST adhere to these oper
 - Action: Implement the minimum required logic.
 - Constraint: Never remove default parameters or change global patterns for a specific local case unless it is part of a deliberate refactoring task.
 
+### 4. Data Safety
+
+- Action: Never overwrite or delete user-generated data without explicit approval.
+- Precaution: For high-risk operations, use temporary paths or backups first.
+
+### 5. Proportional Validation
+
+- Action: Keep validation effort proportional to the change.
+- Principle: Do not dump long logs; report success/failure and key errors only.
+
 ---
 
 ## Interaction Rule (MANDATORY)
@@ -147,6 +160,13 @@ When receiving a task:
 - If the task is trivial or explicitly defined, agents MAY proceed directly to implementation
 - "Explicitly defined" means the requested outcome and safe scope are already clear enough that an additional confirmation turn would not reduce risk.
 - If the task still affects shared contracts, security, infrastructure, persistence, or cross-cutting behavior, agents MUST treat it as approval-sensitive even when the user request is otherwise explicit.
+
+### Response Style (RECOMMENDED)
+
+1. **Core Point First**: Start with the most important information or result.
+2. **Conciseness**: Keep responses short and direct. Avoid repeating the entire task history.
+3. **Proportional Reporting**: For tiny tasks, keep the report tiny. For complex ones, provide a structured summary.
+4. **Actionable Verification**: Report success/failure and the key error only. Do not dump long logs unless requested.
 
 ---
 
@@ -186,6 +206,15 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 - Location: `docs/knowledge/YYYY-MM-DD-topic-name.md`
 - Goal: To prevent recurring issues and shared context across different agents/time.
 - Metadata: MUST include the same Metadata header as `agent-log` files.
+
+---
+
+## Agent Skills (RECOMMENDED)
+
+- Use project-local skills under `.agents/skills/` as a primary reference (e.g., `jhipster-vue-standards`, `jpa-expert`).
+- If a global skill conflicts with local guidance, local guidance is preferred.
+- Consider installing new tools or workflows locally with `npx skills add` when relevant.
+- `.agents/skills/karpathy-guidelines/SKILL.md` is recommended for behavioral guidance: surgical changes, simplicity, and explicit assumptions.
 
 ---
 
@@ -247,17 +276,16 @@ docs/{backend|frontend}/agent-log/YYYY-MM-DD-task-name/
 
 ### File Metadata Requirement
 
-All files under `agent-log/` MUST include a metadata header (YAML format) at the top:
+All files under `agent-log/` MUST include a metadata header (YAML format) at the top.
 
-```markdown
----
-agent: [Agent Model Name]
-created_at: YYYY-MM-DD (요일)
-language: [en|ko]
----
-```
+### Logging Modes
 
-Files:
+1. **Lightweight Mode (Preferred for Tier 1 & 2)**:
+   - Use a single `task-log.md` (or `final-report.md` for Tier 1) containing a concise summary of analysis, implementation, and verification.
+2. **Full Mode (Mandatory for Tier 3)**:
+   - Use the 6-file set below for high-impact or complex changes.
+
+### Full Mode Files
 
 - problem-analysis.md
 - proposal.md
@@ -266,32 +294,21 @@ Files:
 - walkthrough.md
 - final-report.md
 
-### Content Guide
+### Archiving Policy
 
-problem-analysis.md:
+To maintain efficiency and minimize token overhead, old logs should be managed periodically:
+- **Frequency**: Every month or when the number of task folders exceeds 20.
+- **Action**: Move folders older than 30 days to `docs/archive/agent-log/{backend|frontend}/`.
+- **Note**: Ensure critical Knowledge Items (KIs) are extracted before archiving.
 
-- 문제 현상 / 재현 / 원인 / 영향
+### Content Guide (Full Mode)
 
-proposal.md:
-
-- 최소 2개 방안 / 선택 이유 / 리스크
-
-self-check.md:
-
-- 아키텍처 / 보안 / 영향 / 테스트
-
-implementation-plan.md:
-
-- 단계 / 변경 파일 / 테스트
-
-walkthrough.md:
-
-- 구현 흐름 / 핵심 포인트
-
-final-report.md:
-
-- 수행 에이전트 (Agent Model)
-- 요약 / 이유 / 영향 / 결과
+- problem-analysis.md: 문제 현상 / 재현 / 원인 / 영향
+- proposal.md: 최소 2개 방안 / 선택 이유 / 리스크
+- self-check.md: 아키텍처 / 보안 / 영향 / 테스트
+- implementation-plan.md: 단계 / 변경 파일 / 테스트
+- walkthrough.md: 구현 흐름 / 핵심 포인트
+- final-report.md: 수행 에이전트 / 요약 / 이유 / 결과
 
 ---
 
@@ -325,6 +342,7 @@ final-report.md:
 - docs/standards/cache-safety-guideline.md
 - docs/standards/commit-convention.md
 - docs/standards/naming-convention-checker.md
+- docs/standards/jpa-entity-standards.md
 
 ### Workflow
 
@@ -346,29 +364,9 @@ final-report.md:
 
 ## Spring Boot 4 Testing Standards (MANDATORY)
 
-To ensure high performance and security in the modern Spring Boot 4 environment, all agents MUST follow these patterns:
+To ensure high performance and security in the modern Spring Boot 4 environment, all agents MUST follow the established testing patterns.
 
-### Infrastructure
-
-- Use `@IntegrationTest` (composite annotation) for all integration tests.
-- Leverage `spring-boot-testcontainers` with `@ServiceConnection` for automatic property injection.
-- Do NOT use legacy `spring.factories` or custom `ContextCustomizerFactory` for Testcontainers.
-
-### Authentication
-
-- Stateless JWT environments MUST NOT use `@WithMockUser`.
-- Use token-based authentication with `Bearer` header for all protected API tests.
-- Generate tokens dynamically using `JwtAuthenticationTestUtils`.
-
-### Data Integrity
-
-- Explicitly handle database cleanup (e.g., `userRepository.deleteAll()`) in `@BeforeEach` or `@AfterEach`.
-- Ensure tests are truly isolated to prevent flaky results in shared container environments.
-
-### Performance
-
-- Disable Rate Limiting in test profiles (e.g., `rate-limit.enabled: false`) to prevent intermittent 429 errors.
-- Reference [Testing Guideline](docs/operations/testing-guideline.md) for detailed implementation patterns.
+- Refer to: [Spring Boot 4 Testing Standards](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/spring-boot-4-testing-standards.md)
 
 ---
 
@@ -384,78 +382,17 @@ When an agent is asked to perform a deep analysis (not tied to a specific code-c
 
 ---
 
-## Global Impact Review
+## Global Impact Review (MANDATORY)
 
-Required when changing:
+Required when changing core configurations, security, cache, or shared contracts.
 
-- config
-- cache
-- security
-- dependencies
-- API contracts
-- shared constants, enums, or utility classes
-- cross-cutting patterns (annotations, base classes, interfaces)
-
-Must perform:
-
-- codebase-wide search for all usages of the changed pattern
-- list all affected files in the implementation plan
-- verify zero remaining old-pattern usages after implementation
-- check affected systems for rollback safety
-- verify no performance regression
-- verify no security regression
-
-### Side Effect Analysis Questions
-
-Before proceeding with any Non-trivial change, agents MUST answer these questions:
-
-1. Who are the direct callers of this logic, and do they have specific invariants that must be preserved?
-2. Does this change affect backward compatibility with existing data, configurations, or API contracts?
-3. If the operation fails halfway, what is the impact on data integrity and how can it be safely rolled back?
-4. Are there any shared states, caches, or asynchronous processes that need to be synchronized?
-
-### High-Risk Change Zones (Project Specific)
-
-Modifications in these areas require mandatory impact analysis and exhaustive testing:
-
-- `com.daangcool.stack.security`: Authentication, Authorization, and JWT handling.
-- `com.daangcool.stack.config`: Core Spring configurations and externalized property mappings.
-- `com.daangcool.stack.domain`: JPA Entities and persistence layer mappings (affecting DB schema).
-- `com.daangcool.stack.service`: Core business orchestration and transaction boundaries.
-
----
+- Refer to: [Global Impact Review](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/global-impact-review.md)
 
 ## Consistency Sweep Rule (MANDATORY)
 
-IF the task involves any of the following:
+Mandatory check for renaming, moving, or modifying shared types and method signatures.
 
-- adding, renaming, or moving a constant, enum, or shared class
-- changing a method signature in a service interface
-- modifying cache names, config keys, or annotation values
-- renaming a DTO field or changing its type
-- changing import paths after package restructuring
-
-THEN the agent MUST:
-
-1. Run: `grep -rn "OLD_PATTERN" src/ --include="*.java"` (or equivalent)
-2. List every affected file in the implementation plan
-3. Apply the change to ALL files, not only the ones in the immediate task scope
-4. Run the same grep again to verify zero remaining matches
-5. If any old-pattern usages remain, the task is INCOMPLETE
-
-### Known Failure Patterns (DO NOT REPEAT)
-
-- CacheNames constant class was created but only BoardService was updated. Other services continued using string literals, causing NPE.
-- ResourceAuthorizationService was introduced but only applied to BoardService. Other services had no authorization checks.
-- DTO field was renamed in the service layer but test fixtures still used the old field name, causing compile errors.
-
-### Self-Check Verification
-
-```text
-- [ ] grep -rn "OLD_PATTERN" src/ --include="*.java" returns zero results
-- [ ] All affected files are listed in implementation-plan.md
-- [ ] Verification command and result recorded in self-check.md
-```
+- Refer to: [Consistency Sweep Rule](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/consistency-sweep-rule.md)
 
 ---
 
@@ -463,5 +400,7 @@ THEN the agent MUST:
 
 "Make it correct, safe, and understandable first."
 
-- Refer to the Self-Check section for concrete checklists for each pillar.
-- Refer to the Consistency Sweep Rule to prevent partial pattern migration.
+1. **Simplicity Over Complexity**: Prefer the smallest safe change.
+2. **Context Over Guesswork**: Read before you write.
+3. **Verifiability Over Assumption**: Verify before you claim success.
+4. **Communication Over Silence**: State assumptions and ask when ambiguous.
