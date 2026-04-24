@@ -1,40 +1,10 @@
 {
   "version": 1,
   "skills": {
-    "architecture-patterns": {
-      "source": "giuseppe-trisciuoglio/developer-kit",
-      "sourceType": "github",
-      "computedHash": "a1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
     "bootstrap-vue3": {
       "source": "teachingai/full-stack-skills",
       "sourceType": "github",
       "computedHash": "558fb93135bad830d32d8b03ee8bf2823a60f8d42be414787196a18bbc58216b"
-    },
-    "find-skills": {
-      "source": "vercel-labs/skills",
-      "sourceType": "github",
-      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
-    },
-    "frontend-design": {
-      "source": "anthropics/skills",
-      "sourceType": "github",
-      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
-    },
-    "grammar-checker": {
-      "source": "daleseo/korean-skills",
-      "sourceType": "github",
-      "computedHash": "02c4d99c0e3ba2d70ebc3a0e992ccd6dea84cdffa83aa7d16cba3dd41af1afe1"
-    },
-    "graphify": {
-      "source": "akillness/oh-my-skills",
-      "sourceType": "github",
-      "computedHash": "25b67f0220e237c1a1e35aacfa02e2240c6265cb27b28a3d954bb27617caff07"
-    },
-    "humanizer": {
-      "source": "daleseo/korean-skills",
-      "sourceType": "github",
-      "computedHash": "f0eb2aa9e2515e99471fbd085d514141bfc4873f3683f76815a237d64c2cd834"
     },
     "karpathy-guidelines": {
       "source": "forrestchang/andrej-karpathy-skills",
@@ -46,25 +16,10 @@
       "sourceType": "github",
       "computedHash": "a5fff9b1cb5e3198bc0377c0c3275a3d79881b18f66bdbebc9d1a202af5e5217"
     },
-    "playwright": {
-      "source": "sickn33/antigravity-awesome-skills@playwright-skill",
-      "sourceType": "github",
-      "computedHash": "c1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
-    "playwright-skill": {
-      "source": "sickn33/antigravity-awesome-skills",
-      "sourceType": "github",
-      "computedHash": "465b1d346b9fabd4c8abe4fa1cecf285109f587cf8f159babc054d96dfb30a36"
-    },
     "redis-expert": {
       "source": "personamanagmentlayer/pcl",
       "sourceType": "github",
       "computedHash": "8635b47de37442f5342cd68138e1e406224e0a9b5502b62d2a61fc769a4cefc0"
-    },
-    "scan-code-review-rules": {
-      "source": "duc01226/easyplatform",
-      "sourceType": "github",
-      "computedHash": "80c6dc712dbb333cd7007b89eb9f0eea4e091de68f44a6f183d02ecd1c635153"
     },
     "spring-boot-engineer": {
       "source": "giuseppe-trisciuoglio/developer-kit",
@@ -81,36 +36,6 @@
       "sourceType": "github",
       "computedHash": "8c2a847c1b9e5c1652545106e385a31683915e35f15e2ef862cadbe073aadcfc"
     },
-    "springboot-tdd": {
-      "source": "affaan-m/everything-claude-code",
-      "sourceType": "github",
-      "computedHash": "c759c47d0dcbc914ab4cd565b32c63f886b6599cddd7e4e8c8d3082dbff4da39"
-    },
-    "style-guide": {
-      "source": "daleseo/korean-skills",
-      "sourceType": "github",
-      "computedHash": "1c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
-    "swift-architecture-skill": {
-      "source": "efremidze/swift-architecture-skill",
-      "sourceType": "github",
-      "computedHash": "67d3359424b19084631998def14666fd5a77284a45ac0353c41a86a7ed216923"
-    },
-    "swift-concurrency": {
-      "source": "avdlee/swift-concurrency-agent-skill",
-      "sourceType": "github",
-      "computedHash": "f3f1bda772590c6ee32446c9eec59bb3ff6c38329e3c78fa949e6a859644a10b"
-    },
-    "tailwind-patterns": {
-      "source": "giuseppe-trisciuoglio/developer-kit",
-      "sourceType": "github",
-      "computedHash": "01c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
-    "ui-ux-pro-max": {
-      "source": "pbakaus/impeccable",
-      "sourceType": "github",
-      "computedHash": "11c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
     "vitest": {
       "source": "onmax/nuxt-skills",
       "sourceType": "github",
@@ -120,11 +45,6 @@
       "source": "antfu/skills",
       "sourceType": "github",
       "computedHash": "21c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
-    },
-    "web-design-guidelines": {
-      "source": "ehmo/platform-design-skills",
-      "sourceType": "github",
-      "computedHash": "31c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
     }
   }
 }
