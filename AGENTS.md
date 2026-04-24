@@ -40,6 +40,12 @@ docs/
 - workflow: collaboration, review, CI, delivery rules
 - operations: execution HOW TO (run, deploy, troubleshoot)
 
+### Lightweight Reference Rule
+
+- Start with the smallest relevant file set.
+- Prefer `docs/standards/` for mandatory rules, `docs/workflow/` for process, and `docs/operations/` for runbooks.
+- Use `docs/analysis/` and `docs/archive/` only when you need historical context or prior conclusions.
+
 ### Priority Order (Source of Truth)
 
 1. User instructions (Current task)
@@ -213,7 +219,6 @@ When a task involves complex troubleshooting, non-obvious logic, or critical arc
 
 - Use project-local skills under `.agents/skills/` as a primary reference (e.g., `jhipster-vue-standards`, `jpa-expert`).
 - If a global skill conflicts with local guidance, local guidance is preferred.
-- Consider installing new tools or workflows locally with `npx skills add` when relevant.
 - `.agents/skills/karpathy-guidelines/SKILL.md` is recommended for behavioral guidance: surgical changes, simplicity, and explicit assumptions.
 
 ---
@@ -233,9 +238,9 @@ This project uses `graphify` as a supplemental architecture analysis tool. It he
 
 ### 2. Usage Guidelines
 
-- Context Check: When a task may ripple across modules, shared services, or other high-centrality areas, agents SHOULD review `GRAPH_REPORT.md` before editing.
-- Architectural Preservation: When modifying components that appear central in the graph, agents SHOULD treat the graph as an additional impact signal and still follow the Global Impact Review process.
-- Update: If there is a significant change in the code structure, maintain the graphs in docs/graphify in the latest state by running the command: graphify update . && rm -rf docs/graphify/* && mv graphify-out/* docs/graphify/ && rm -rf graphify-out
+- Context Check: Review `GRAPH_REPORT.md` only for structure changes, migrations, shared contract updates, shared service updates, or other cross-module work.
+- Architectural Preservation: Treat the graph as supplemental impact signal, not as a replacement for tests, docs, or code review.
+- Update: If structure changes significantly, run `graphify update . && rm -rf docs/graphify/* && mv graphify-out/* docs/graphify/ && rm -rf graphify-out`.
 - MCP Tool Integration: Agents MAY use the `graphify` MCP tool when it helps answer relationship or impact questions faster.
 
 ---

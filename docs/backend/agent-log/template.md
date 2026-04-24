@@ -10,6 +10,8 @@ docs/agent-log/
 
 The goal is to maintain continuity between multiple agents and preserve context for future work.
 
+For standard tasks, keep the entry short. Use only the fields that matter for later review.
+
 ---
 
 ## File Naming Convention
@@ -170,3 +172,29 @@ Include
 - assumptions made
 - limitations
 - important design decisions
+
+---
+
+## Minimal Task Log
+
+Use this compact format when the task is standard and does not need a full narrative.
+
+```md
+## Token Check
+- Task type:
+- Files read:
+- Approx. scope:
+- Extra context:
+- Result:
+```
+
+Example:
+
+```md
+## Token Check
+- Task type: docs
+- Files read: AGENTS.md, docs/analysis/2026-04-25-token-usage-analysis/measurement-plan.md
+- Approx. scope: 2 files / 220 lines
+- Extra context: graphify not used
+- Result: Reduced graphify review to migration and cross-module tasks only
+```

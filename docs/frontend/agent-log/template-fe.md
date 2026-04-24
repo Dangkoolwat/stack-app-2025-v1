@@ -6,6 +6,8 @@
 
 경로: docs/frontend/agent-log/YYYY-MM-DD-task-name/
 
+표준 작업은 짧게 기록해도 됩니다. 나중에 검토할 핵심 정보만 남기면 됩니다.
+
 ---
 
 ## Date
@@ -100,3 +102,29 @@ YYYY-MM-DD
 다음 작업자가 알아야 할 중요한 결정 사항이나 가이드.
 - 선택한 컴포넌트 설계 방식의 이유
 - 특정 외부 라이브러리(PrimeVue 등) 사용 시 주의점
+
+---
+
+## Minimal Task Log
+
+표준 작업용 최소 기록 형식입니다.
+
+```md
+## Token Check
+- 작업 유형:
+- 읽은 파일:
+- 대략 범위:
+- 추가 컨텍스트:
+- 결과:
+```
+
+예시:
+
+```md
+## Token Check
+- 작업 유형: docs
+- 읽은 파일: AGENTS.md, docs/analysis/2026-04-25-token-usage-analysis/measurement-plan.md
+- 대략 범위: 2 files / 220 lines
+- 추가 컨텍스트: graphify 미사용
+- 결과: 마이그레이션 및 cross-module 작업만 graphify 확인
+```
