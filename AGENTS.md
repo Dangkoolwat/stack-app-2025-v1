@@ -163,7 +163,7 @@ Shared API/DTO/validation/auth changes require checking both sides when practica
 ## 8. Implementation
 
 - make the smallest safe change
-- prefer targeted edits over broad rewrites
+- prefer targeted edits; avoid rewriting whole files/functions unless necessary
 - stay within approved scope
 - preserve existing architecture/naming/conventions
 - avoid opportunistic refactors
@@ -305,7 +305,20 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 15. Git
+## 15. Handoff
+
+For paused or handed-off work, report:
+- changed files
+- decisions made
+- assumptions
+- verification results
+- remaining risks or next steps
+
+Keep handoffs short and factual.
+
+---
+
+## 16. Git
 
 - do not run `git add`, `git commit`, or `git push` without approval
 - use Conventional Commits when preparing commit messages
@@ -314,7 +327,7 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 16. Response
+## 17. Response
 
 - start with the core point
 - be concise but complete
@@ -325,7 +338,7 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 17. Golden Rule
+## 18. Golden Rule
 
 Make it correct, safe, small, and understandable.
 
