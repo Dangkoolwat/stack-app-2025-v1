@@ -55,11 +55,11 @@ Not trivial if it touches:
 - auth/session/security
 - DB/cache/persistence
 - global styles/theme
-- shared components
+- shared components (defined as files in `shared/`, `common/`, or imported by >1 consumer)
 - build/deploy/config
 - file I/O
 - destructive ops
-- workflow/state flow
+- workflow/state flow (e.g. Pinia/Vuex actions)
 
 Procedure:
 - implement directly
@@ -104,12 +104,12 @@ Procedure:
 
 Open linked/local rules when their trigger matches. Do not rely on memory.
 
-Must read:
+Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
 - cross-module changes: `docs/graphify/GRAPH_REPORT.md`
-- backend changes: backend config and relevant backend standards
-- frontend changes: frontend config and relevant frontend standards
+- backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
+- frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
 If a required file is missing, say so and continue with the best available repo context.
 
@@ -123,7 +123,7 @@ Instead:
 - state the likely direction
 - state assumptions
 - state the smallest safe approach
-- ask for approval only when required
+- ask for approval only when required (i.e., changing public signatures, behavior, or multi-file contracts)
 
 Trivial low-risk tasks may proceed directly.
 High-risk tasks require explicit approval before editing.
@@ -179,7 +179,7 @@ Revert accidental unrelated edits.
 
 ## 9. Data Safety
 
-- never delete, overwrite, move, or migrate user data without approval
+- never delete, overwrite, move, or migrate user data (including local DB seed/test data and `.env`) without approval
 - use temp paths, backups, or separate outputs for risky operations
 - do not hardcode secrets
 - do not expose sensitive data in logs/docs/examples/commits
