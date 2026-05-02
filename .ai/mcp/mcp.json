@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "graphify": {
-      "command": "/usr/local/bin/python3",
+      "command": "python3",
       "args": [
         "/Users/sanghyoukjin/.gemini/antigravity/graphify_dynamic_serve.py"
       ]
