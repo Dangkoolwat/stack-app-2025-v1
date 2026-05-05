@@ -2,15 +2,15 @@
   "mcpServers": {
     "graphify": {
       "command": "python3",
-      "args": [
-        "/Users/sanghyoukjin/.gemini/antigravity/graphify_dynamic_serve.py"
-      ]
+      "args": ["/Users/sanghyoukjin/.gemini/antigravity/graphify_dynamic_serve.py"]
     },
     "code-review-graph": {
-      "command": "code-review-graph",
-      "args": [
-        "serve"
-      ]
+      "command": "npx",
+      "args": ["caveman-shrink", "/usr/local/bin/code-review-graph", "serve"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     }
   }
 }
