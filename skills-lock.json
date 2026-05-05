@@ -4,22 +4,38 @@
     "bootstrap-vue3": {
       "source": "teachingai/full-stack-skills",
       "sourceType": "github",
+      "skillPath": "skills/vue-ui-skills/bootstrap-vue3/SKILL.md",
       "computedHash": "558fb93135bad830d32d8b03ee8bf2823a60f8d42be414787196a18bbc58216b"
+    },
+    "caveman": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "caveman/SKILL.md",
+      "computedHash": "259cb6ef69b4e9eeb07155c925ce9895ed509b0feb6a7e29cbc9e70d3c7bcfb2"
     },
     "karpathy-guidelines": {
       "source": "forrestchang/andrej-karpathy-skills",
       "sourceType": "github",
+      "skillPath": "skills/karpathy-guidelines/SKILL.md",
       "computedHash": "41e8ca055bbde13d240776a14a076a59614057200340c243130a76ba4e64cac8"
     },
     "oracle": {
       "source": "trancong12102/agentskills",
       "sourceType": "github",
-      "computedHash": "a5fff9b1cb5e3198bc0377c0c3275a3d79881b18f66bdbebc9d1a202af5e5217"
+      "skillPath": "oracle/SKILL.md",
+      "computedHash": "7e812ce116fc3a7195d5c03e92edd11d55bf3bfb6522867e3d880f5eae0315bd"
     },
     "redis-expert": {
       "source": "personamanagmentlayer/pcl",
       "sourceType": "github",
+      "skillPath": "stdlib/data/redis-expert/SKILL.md",
       "computedHash": "8635b47de37442f5342cd68138e1e406224e0a9b5502b62d2a61fc769a4cefc0"
+    },
+    "sequential-thinking": {
+      "source": "mrgoonie/claudekit-skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/sequential-thinking/SKILL.md",
+      "computedHash": "2d772aca1eab9aa266fb1ab50455febb571fb2a409ad6be90302a345da40a880"
     },
     "spring-boot-engineer": {
       "source": "giuseppe-trisciuoglio/developer-kit",
@@ -29,22 +45,26 @@
     "spring-boot-rest-api-standards": {
       "source": "giuseppe-trisciuoglio/developer-kit",
       "sourceType": "github",
+      "skillPath": "plugins/developer-kit-java/skills/spring-boot-rest-api-standards/SKILL.md",
       "computedHash": "64cdf48d3045aaea5108a0d125d4193dc0cbf70804a37cd0d07d17a4851c1414"
     },
     "spring-boot-test-patterns": {
       "source": "giuseppe-trisciuoglio/developer-kit",
       "sourceType": "github",
+      "skillPath": "plugins/developer-kit-java/skills/spring-boot-test-patterns/SKILL.md",
       "computedHash": "8c2a847c1b9e5c1652545106e385a31683915e35f15e2ef862cadbe073aadcfc"
     },
     "vitest": {
       "source": "onmax/nuxt-skills",
       "sourceType": "github",
+      "skillPath": "skills/vitest/SKILL.md",
       "computedHash": "04ed1b09da8ac778d693ad12fab49b1c48aadfe1758fe13eb4d6de3fdcbb22f4"
     },
     "vue": {
       "source": "antfu/skills",
       "sourceType": "github",
-      "computedHash": "21c007481f87dc43a2ea26f10fded48492f400354e36c63acde7f60f37e8b5283"
+      "skillPath": "skills/vue/SKILL.md",
+      "computedHash": "9c241141e07e836e4f0537c63e8f929fba3767c2997250be38e699f19b75e3f2"
     }
   }
 }
