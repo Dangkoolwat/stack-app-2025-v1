@@ -195,6 +195,5 @@ Example:
 - Task type: docs
 - Files read: AGENTS.md, docs/analysis/2026-04-25-token-usage-analysis/measurement-plan.md
 - Approx. scope: 2 files / 220 lines
-- Extra context: graphify not used
-- Result: Reduced graphify review to migration and cross-module tasks only
+- [ ] **Influence Analysis**: Used Serena (`find_referencing_symbols`) and `code-review-graph` impact analysis tools. Checked side effects for changed logics.ymbols
 ```

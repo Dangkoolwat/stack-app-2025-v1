@@ -53,9 +53,7 @@ YYYY-MM-DD
 ## Files Modified
 수정되거나 생성된 모든 파일 목록을 작성합니다. (경로 포함)
 예:
-- src/main/webapp/app/core/api/user-service.ts
-- src/main/webapp/app/views/user/user-list.vue
-- src/main/webapp/app/themes/avalon/components/user-card.scss
+- [ ] **Influence Analysis**: Used Serena (`find_referencing_symbols`) impact analysis tools. Checked side effects for changed components/states.
 
 ---
 
@@ -125,6 +123,6 @@ YYYY-MM-DD
 - 작업 유형: docs
 - 읽은 파일: AGENTS.md, docs/analysis/2026-04-25-token-usage-analysis/measurement-plan.md
 - 대략 범위: 2 files / 220 lines
-- 추가 컨텍스트: graphify 미사용
-- 결과: 마이그레이션 및 cross-module 작업만 graphify 확인
+- 추가 컨텍스트: Serena 사용
+- 결과: find_referencing_symbols를 통한 영향도 확인 완료
 ```

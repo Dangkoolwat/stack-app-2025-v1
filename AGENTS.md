@@ -107,7 +107,8 @@ Open linked/local rules when their trigger matches. Do not rely on memory.
 Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
-- cross-module changes: `docs/graphify/GRAPH_REPORT.md`
+- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools.
+- semantic navigation & editing: `docs/standards/serena-guide.md`
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
@@ -244,12 +245,12 @@ Prefer existing project patterns over new abstractions.
 
 ---
 
-## 12. Graphify
+## 12. Code Review Graph (Structural Analysis)
 
-Graphify is for dependency/blast-radius checks only.
+`code-review-graph` is for dependency/blast-radius checks only.
 It is not a source of truth. Code, tests, and current docs win.
 
-Use Graphify when:
+Use `code-review-graph` tools when:
 - changing services/managers/stores/workflow state
 - changing module/package dependencies
 - touching more than 3 modules
@@ -257,26 +258,33 @@ Use Graphify when:
 - changing auth, DB, cache, deploy, or other cross-cutting infra
 - planning large refactors, renames, or moves
 
-Do not use Graphify for:
-- typos/comments/docs-only
-- local UI text
-- one-component styling
-- isolated local fixes
+Tool usage:
+1. Run `detect_changes` or `get_impact_radius` for blast-radius analysis.
+2. Use `get_architecture_overview` or `list_communities` for high-level structure.
+3. Do NOT rely on static reports; use the tools to query the current graph state.
 
-Exception:
-Use Graphify for UI/styling only if it affects shared components, global styles, state flow, API contracts, or module boundaries.
-
-Read order:
-1. `docs/graphify/GRAPH_REPORT.md`
-2. `docs/graphify/graph.json` if dependency details are needed
-3. `docs/graphify/graph.html` if visual review helps
-
-Do not treat Graphify output as proof that a change is safe.
-Use it to decide what else to inspect.
+Do not treat tool output as proof that a change is safe.
+Use it to decide what else to inspect with Serena.
 
 ---
 
-## 13. Skills
+## 13. Serena (LSP Semantic Agent)
+
+Serena is the primary tool for semantic code navigation, impact analysis, and precise editing. It leverages the Language Server Protocol (LSP) for 100% accurate symbol resolution.
+
+Refer to the full guide: `docs/standards/serena-guide.md`
+
+Operating Principles:
+1. **Precision First**: 오타 수정이나 단순 텍스트 변경 외의 모든 **Non-trivial** 작업은 Serena의 심볼 분석(`find_symbol`, `find_referencing_symbols`)을 우선 수행한다.
+2. **Memory-Driven**: 새로운 아키텍처 결정이나 복잡한 비즈니스 로직 수정 시 반드시 `write_memory`를 통해 기록을 남긴다.
+3. **Zero Assumption**: 코드를 읽기 전 Serena의 `get_symbols_overview`를 통해 파일 구조를 먼저 파악한다.
+4. **Surgical Edits**: 대규모 파일 치환 대신 `replace_symbol_body` 또는 `insert_after_symbol`을 사용하여 정밀하게 수정한다.
+
+Do not rely on outdated Graphify reports for implementation details. Serena provides real-time, IDE-level understanding of the code.
+
+---
+
+## 14. Skills
 
 - Prefer `.agents/skills/`.
 - Local skills override global guidance.
@@ -287,7 +295,7 @@ Use it to decide what else to inspect.
 
 ---
 
-## 14. Docs and Logs
+## 15. Docs and Logs
 
 Guide docs under `docs/standards/`, `docs/workflow/`, and `docs/operations/` are authoritative.
 
@@ -305,7 +313,7 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 15. Handoff
+## 16. Handoff
 
 For paused or handed-off work, report:
 - changed files
@@ -318,7 +326,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 16. Git
+## 17. Git
 
 - do not run `git add`, `git commit`, or `git push` without approval
 - use Conventional Commits when preparing commit messages
@@ -327,7 +335,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 17. Response
+## 18. Response
 
 - start with the core point
 - be concise but complete
@@ -338,7 +346,26 @@ Keep handoffs short and factual.
 
 ---
 
-## 18. Golden Rule
+## 20. Token Efficiency Hierarchy (Token-Saving Protocol)
+
+To minimize token usage and maximize context accuracy, follow this tool priority:
+
+1.  **Priority 1: `code-review-graph` (Structural Analysis)**
+    - Use for high-level codebase understanding, blast-radius, and dependency maps.
+    - Tools: `detect_changes`, `get_impact_radius`, `list_communities`.
+2.  **Priority 2: `Serena` (LSP Precision)**
+    - Use for real-time symbol resolution, finding callers, and surgical edits.
+    - Tools: `find_symbol`, `find_referencing_symbols`, `get_symbols_overview`.
+3.  **Priority 3: `Grep / Read` (Text & Non-code)**
+    - Use for searching strings in non-code files (YAML, JSON, Markdown) or simple text matches.
+    - Tools: `grep_search`, `view_file`.
+4.  **Priority 4: `git` (History)**
+    - Use for understanding *why* a change was made or tracking evolution.
+    - Tools: `git log`, `git show`.
+
+---
+
+## 21. Golden Rule
 
 Make it correct, safe, small, and understandable.
 

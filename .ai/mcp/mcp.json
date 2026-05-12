@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "graphify": {
-      "command": "python3",
-      "args": ["/Users/sanghyoukjin/.gemini/antigravity/graphify_dynamic_serve.py"]
+    "serena": {
+      "command": "/Users/sanghyoukjin/.local/bin/serena",
+      "args": ["start-mcp-server"]
     },
     "code-review-graph": {
       "command": "npx",
