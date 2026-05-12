@@ -34,6 +34,22 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
 
+## 2A. Code Exploration & Token Efficiency Rules
+
+When exploring and modifying code, tools MUST be used according to the priorities below to minimize token consumption. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
+
+- **Step 0: [Semble]** - First obtain relevant code snippets via natural language search.
+- **Step 1: [code-review-graph]** - Understand high/low-level module structures and dependencies.
+- **Step 1.5: [File Skeleton]** - Verify file maps using Serena's `get_symbols_overview`.
+- **Step 2: [Serena (LSP)]** - Perform precision navigation to specific symbol definitions and references.
+- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (Surgical Read).
+- **Step 4: [Git]** - Review change history and perform final verification.
+
+- **Principle**: Follow the "Hypothesis -> Locate -> Confirm -> Precision Read" sequence.
+- **Gating Principle**: Prohibit calling the next tool if the current step satisfies the search goal.
+
+---
+
 ## 3. Task Levels
 
 Classify before acting.
@@ -360,28 +376,6 @@ Keep handoffs short and factual.
 
 ---
 
-## 20. Token Efficiency Hierarchy (Token-Saving Protocol)
-
-에이전트 친구들이 작업할 때 특히 토큰 절약할때 아래 순서대로 하세요.
-
-0.  **0순위: `Semble` (Code Search & Discovery)**
-    - Use for hybrid (semantic + keyword) search across the local codebase.
-    - Highly effective for finding candidates without consuming large amounts of tokens.
-    - Tools: `mcp_semble_search`, `mcp_semble_find_related`.
-1.  **1순위: `code-review-graph` (Structural Analysis)**
-    - Use for high-level codebase understanding, blast-radius, and dependency maps.
-    - Tools: `detect_changes`, `get_impact_radius`, `list_communities`.
-2.  **2순위: `Serena` (LSP Precision)**
-    - Use for real-time symbol resolution, finding callers, and surgical edits.
-    - Tools: `find_symbol`, `find_referencing_symbols`, `get_symbols_overview`.
-3.  **3순위: `Grep / Read` (Text & Non-code)**
-    - Use for searching strings in non-code files (YAML, JSON, Markdown) or simple text matches.
-    - Tools: `grep_search`, `view_file`.
-4.  **4순위: `git` (History)**
-    - Use for understanding *why* a change was made or tracking evolution.
-    - Tools: `git log`, `git show`.
-
----
 
 ## 21. Golden Rule
 
