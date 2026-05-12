@@ -42,7 +42,7 @@ When exploring and modifying code, tools MUST be used according to the prioritie
 - **Step 1: [code-review-graph]** - Understand high/low-level module structures and dependencies.
 - **Step 1.5: [File Skeleton]** - Verify file maps using Serena's `get_symbols_overview`.
 - **Step 2: [Serena (LSP)]** - Perform precision navigation to specific symbol definitions and references.
-- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (Surgical Read).
+- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (Surgical Read: Strictly limit reading to specific Line Ranges containing the necessary functions or logic).
 - **Step 4: [Git]** - Review change history and perform final verification.
 
 - **Principle**: Follow the "Hypothesis -> Locate -> Confirm -> Precision Read" sequence.
