@@ -109,6 +109,7 @@ Must read (search `docs/` for keywords matching the target file path/domain):
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
 - cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools.
 - semantic navigation & editing: `docs/standards/serena-guide.md`
+- code search & discovery: `docs/standards/semble-guide.md`
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
@@ -284,6 +285,19 @@ Do not rely on outdated Graphify reports for implementation details. Serena prov
 
 ---
 
+## 19. Semble (Code Search & Discovery)
+
+Semble is the primary tool for fast, token-efficient code search. It should be used at the beginning of any task to narrow down relevant files and code blocks.
+
+Refer to the full guide: `docs/standards/semble-guide.md`
+
+Operating Principles:
+1. **Search First**: Before reading files or analyzing structure, use `semble_search` with natural language or code queries to find candidates.
+2. **Explore Related**: Use `semble_find_related` to discover similar patterns or implementations across the codebase.
+3. **Token Economy**: Use Semble to avoid reading large files or traversing deep directory structures when a targeted search can identify the correct location.
+
+---
+
 ## 14. Skills
 
 - Prefer `.agents/skills/`.
@@ -348,18 +362,22 @@ Keep handoffs short and factual.
 
 ## 20. Token Efficiency Hierarchy (Token-Saving Protocol)
 
-To minimize token usage and maximize context accuracy, follow this tool priority:
+에이전트 친구들이 작업할 때 특히 토큰 절약할때 아래 순서대로 하세요.
 
-1.  **Priority 1: `code-review-graph` (Structural Analysis)**
+0.  **0순위: `Semble` (Code Search & Discovery)**
+    - Use for hybrid (semantic + keyword) search across the local codebase.
+    - Highly effective for finding candidates without consuming large amounts of tokens.
+    - Tools: `mcp_semble_search`, `mcp_semble_find_related`.
+1.  **1순위: `code-review-graph` (Structural Analysis)**
     - Use for high-level codebase understanding, blast-radius, and dependency maps.
     - Tools: `detect_changes`, `get_impact_radius`, `list_communities`.
-2.  **Priority 2: `Serena` (LSP Precision)**
+2.  **2순위: `Serena` (LSP Precision)**
     - Use for real-time symbol resolution, finding callers, and surgical edits.
     - Tools: `find_symbol`, `find_referencing_symbols`, `get_symbols_overview`.
-3.  **Priority 3: `Grep / Read` (Text & Non-code)**
+3.  **3순위: `Grep / Read` (Text & Non-code)**
     - Use for searching strings in non-code files (YAML, JSON, Markdown) or simple text matches.
     - Tools: `grep_search`, `view_file`.
-4.  **Priority 4: `git` (History)**
+4.  **4순위: `git` (History)**
     - Use for understanding *why* a change was made or tracking evolution.
     - Tools: `git log`, `git show`.
 
