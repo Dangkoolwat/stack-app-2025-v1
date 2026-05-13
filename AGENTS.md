@@ -66,7 +66,6 @@ When exploring and modifying code, tools MUST be used according to the prioritie
 | Utility | Role | Execution Method |
 | :--- | :--- | :--- |
 | **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
-| **LLMLingua** | Token compression | `/usr/bin/python3 -c "import llmlingua; ..."` |
 | **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
 
 - **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.

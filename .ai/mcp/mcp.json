@@ -2,7 +2,9 @@
   "mcpServers": {
     "serena": {
       "command": "/Users/sanghyoukjin/.local/bin/serena",
-      "args": ["start-mcp-server"]
+      "args": [
+        "start-mcp-server"
+      ]
     },
     "code-review-graph": {
       "command": "npx",
@@ -14,7 +16,10 @@
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     },
     "semble": {
       "command": "/Users/sanghyoukjin/.local/bin/semble",

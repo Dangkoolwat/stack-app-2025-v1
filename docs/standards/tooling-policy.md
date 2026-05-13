@@ -10,7 +10,6 @@ This document defines how to use MCP, CLI, and advanced workflows in this reposi
 ## 2. Token Economy Utilities (CLI)
 Agents SHOULD use these CLI tools to minimize token consumption:
 - **Repomix:** Batch file packing for folder-level analysis.
-- **LLMLingua:** Compressing long logs/discussions for permanent docs.
 - **code-review-graph:** Structural impact analysis via `npx caveman-shrink code-review-graph`. (Summarize to <30 lines).
 
 ## 3. Superpower Workflow
