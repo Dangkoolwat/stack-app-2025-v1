@@ -147,7 +147,7 @@ Must read (search `docs/` for keywords matching the target file path/domain):
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
 - cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools.
 - semantic navigation & editing: `docs/standards/serena-guide.md`
-- code search & discovery: `docs/standards/semble-operation-guide.md`
+- code search & discovery: `docs/standards/semble-operation-guide.md`, `docs/standards/semble-troubleshooting.md`
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
@@ -328,7 +328,7 @@ Do not rely on outdated reports. Serena provides real-time, IDE-level understand
 
 Semble is the primary tool for fast, token-efficient code search. It should be used at the beginning of any task to narrow down relevant files and code blocks.
 
-Refer to the full guide: `docs/standards/semble-operation-guide.md`
+Refer to the full guide: `docs/standards/semble-operation-guide.md`, `docs/standards/semble-troubleshooting.md`
 
 Operating Principles:
 1. **Search First**: Before reading files or analyzing structure, use `semble_search` with natural language or code queries to find candidates.

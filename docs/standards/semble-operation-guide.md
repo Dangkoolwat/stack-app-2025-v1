@@ -51,7 +51,8 @@ Ensure the `mcp_config.json` uses the **patched local binary path** instead of t
 ### Antigravity (`mcp_config.json`)
 ```json
 "semble": {
-  "command": "/Users/sanghyoukjin/.local/bin/semble"
+  "command": "/Users/sanghyoukjin/.local/bin/semble",
+  "args": ["."]
 }
 ```
 
