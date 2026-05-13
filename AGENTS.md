@@ -42,8 +42,9 @@ When exploring and modifying code, tools MUST be used according to the prioritie
 - **Step 0: [Semble]** - First obtain relevant code snippets for narrow/local discovery or literal prose search.
     - **Boundary:** "Where is specific logic?" (Keyword/Intent-focused search)
     - **Note:** Pass the project root or local path as `repo` to index and search on demand.
-- **Step 1: [code-review-graph (CLI)]** - Use first when the task is Non-trivial, the blast radius is unclear, or structural dependencies matter. Run via `npx caveman-shrink code-review-graph`.
+- **Step 1: [code-review-graph]** - Use first when the task is Non-trivial, the blast radius is unclear, or structural dependencies matter.
     - **Boundary:** "What breaks if I change this file?" (Dependency & Blast Radius Analysis)
+    - **Connection order:** MCP tools first → CLI (`npx caveman-shrink code-review-graph`) fallback. CLI takes priority only on hosts with MCP limits (antigravity, 50-cap).
     - **Maintenance:** Must run `code-review-graph update` after major refactoring to maintain analysis accuracy.
 - **Step 1B: [Open API Docs Skills]** - If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
 - **Step 1.5: [File Skeleton]** - Verify file maps using Serena's `get_symbols_overview`.

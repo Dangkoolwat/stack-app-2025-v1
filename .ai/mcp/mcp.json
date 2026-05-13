@@ -4,6 +4,14 @@
       "command": "/Users/sanghyoukjin/.local/bin/serena",
       "args": ["start-mcp-server"]
     },
+    "code-review-graph": {
+      "command": "npx",
+      "args": [
+        "caveman-shrink",
+        "/usr/local/bin/code-review-graph",
+        "serve"
+      ]
+    },
     "sequential-thinking": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
