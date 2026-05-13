@@ -1,25 +1,12 @@
 {
   "mcpServers": {
-    "graphify": {
-      "command": "python3",
-      "args": [
-        "/Users/sanghyoukjin/.gemini/antigravity/graphify_dynamic_serve.py"
-      ]
-    },
-    "code-review-graph": {
-      "command": "npx",
-      "args": [
-        "caveman-shrink",
-        "/usr/local/bin/code-review-graph",
-        "serve"
-      ]
+    "serena": {
+      "command": "/Users/sanghyoukjin/.local/bin/serena",
+      "args": ["start-mcp-server"]
     },
     "sequential-thinking": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },
     "semble": {
       "command": "/Users/sanghyoukjin/.local/bin/semble",
