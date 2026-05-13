@@ -34,19 +34,41 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
 
-## 2A. Code Exploration & Token Efficiency Rules
+## 2A. Tool Hierarchy & Efficiency Rules (Token Guard)
 
 When exploring and modifying code, tools MUST be used according to the priorities below to minimize token consumption. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
 
-- **Step 0: [Semble]** - First obtain relevant code snippets via natural language search.
-- **Step 1: [code-review-graph]** - Understand high/low-level module structures and dependencies.
+### 🏆 Tool Hierarchy (Priority)
+- **Step 0: [Semble]** - First obtain relevant code snippets for narrow/local discovery or literal prose search.
+    - **Boundary:** "Where is specific logic?" (Keyword/Intent-focused search)
+    - **Note:** Pass the project root or local path as `repo` to index and search on demand.
+- **Step 1: [code-review-graph (CLI)]** - Use first when the task is Non-trivial, the blast radius is unclear, or structural dependencies matter. Run via `npx caveman-shrink code-review-graph`.
+    - **Boundary:** "What breaks if I change this file?" (Dependency & Blast Radius Analysis)
+    - **Maintenance:** Must run `code-review-graph update` after major refactoring to maintain analysis accuracy.
+- **Step 1B: [Open API Docs Skills]** - If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
 - **Step 1.5: [File Skeleton]** - Verify file maps using Serena's `get_symbols_overview`.
 - **Step 2: [Serena (LSP)]** - Perform precision navigation to specific symbol definitions and references.
-- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (Surgical Read: Strictly limit reading to specific Line Ranges containing the necessary functions or logic).
+- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (**Surgical Read**: Strictly limit reading to specific Line Ranges containing the necessary functions or logic).
 - **Step 4: [Git]** - Review change history and perform final verification.
 
-- **Principle**: Follow the "Hypothesis -> Locate -> Confirm -> Precision Read" sequence.
-- **Gating Principle**: Prohibit calling the next tool if the current step satisfies the search goal.
+### 🛡️ Efficiency Constraints
+- **Gating Principle**: Proceed to the next priority tool only if current results are insufficient. Unnecessary tool calls are forbidden.
+- **Minimal Context**: Do not include unrelated code in the context. Use `semble find-related` to collect only necessary chunks.
+- **Selective Reading**: Do not read files over 500 lines in their entirety. Use Skeleton analysis first, then read specific function ranges.
+- **Incremental Output**: Use diff/patch formats instead of rewriting entire files.
+- **Trivial Exception**: Step 0-1 can be skipped for typos or simple comment edits with no logic changes.
+
+### 💡 Workflow Principle
+> **"Formulate a hypothesis first (Semble for narrow search, Graph for blast radius), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated with Graph."**
+
+### 🛠️ Advanced Token Utilities & Fallbacks (Token Shield)
+| Utility | Role | Execution Method |
+| :--- | :--- | :--- |
+| **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
+| **LLMLingua** | Token compression | `/usr/bin/python3 -c "import llmlingua; ..."` |
+| **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
+
+- **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.
 
 ---
 
@@ -125,7 +147,7 @@ Must read (search `docs/` for keywords matching the target file path/domain):
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
 - cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools.
 - semantic navigation & editing: `docs/standards/serena-guide.md`
-- code search & discovery: `docs/standards/semble-guide.md`
+- code search & discovery: `docs/standards/semble-operation-guide.md`
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
@@ -264,8 +286,9 @@ Prefer existing project patterns over new abstractions.
 
 ## 12. Code Review Graph (Structural Analysis)
 
-`code-review-graph` is for dependency/blast-radius checks only.
-It is not a source of truth. Code, tests, and current docs win.
+`code-review-graph` is for dependency/blast-radius checks only. It is not a source of truth. Code, tests, and current docs win.
+
+Refer to the full guide: `docs/standards/code-review-graph-guide.md`
 
 Use `code-review-graph` tools when:
 - changing services/managers/stores/workflow state
@@ -276,12 +299,12 @@ Use `code-review-graph` tools when:
 - planning large refactors, renames, or moves
 
 Tool usage:
-1. Run `detect_changes` or `get_impact_radius` for blast-radius analysis.
-2. Use `get_architecture_overview` or `list_communities` for high-level structure.
-3. Do NOT rely on static reports; use the tools to query the current graph state.
+1. All commands MUST be prefixed with `npx caveman-shrink` for optimized output (e.g., `npx caveman-shrink code-review-graph status`).
+2. Run `detect-changes` or `get-impact-radius` for blast-radius analysis before proposing a plan.
+3. Do NOT rely on static reports; use the CLI to query the current graph state.
+4. Run `code-review-graph update` after significant structural changes to maintain accuracy.
 
-Do not treat tool output as proof that a change is safe.
-Use it to decide what else to inspect with Serena.
+Do not treat tool output as proof that a change is safe. Use it to decide what else to inspect with Serena.
 
 ---
 
@@ -292,20 +315,20 @@ Serena is the primary tool for semantic code navigation, impact analysis, and pr
 Refer to the full guide: `docs/standards/serena-guide.md`
 
 Operating Principles:
-1. **Precision First**: 오타 수정이나 단순 텍스트 변경 외의 모든 **Non-trivial** 작업은 Serena의 심볼 분석(`find_symbol`, `find_referencing_symbols`)을 우선 수행한다.
-2. **Memory-Driven**: 새로운 아키텍처 결정이나 복잡한 비즈니스 로직 수정 시 반드시 `write_memory`를 통해 기록을 남긴다.
-3. **Zero Assumption**: 코드를 읽기 전 Serena의 `get_symbols_overview`를 통해 파일 구조를 먼저 파악한다.
-4. **Surgical Edits**: 대규모 파일 치환 대신 `replace_symbol_body` 또는 `insert_after_symbol`을 사용하여 정밀하게 수정한다.
+1. **Precision First**: For all **Non-trivial** tasks (excluding typos or text changes), prioritize Serena's symbol analysis (`find_symbol`, `find_referencing_symbols`).
+2. **Memory-Driven**: Record architectural decisions or complex business logic changes via `write_memory`.
+3. **Zero Assumption**: Use `get_symbols_overview` to understand file structure before reading code.
+4. **Surgical Edits**: Use `replace_symbol_body` or `insert_after_symbol` for precise modifications instead of full file overwrites.
 
-Do not rely on outdated Graphify reports for implementation details. Serena provides real-time, IDE-level understanding of the code.
+Do not rely on outdated reports. Serena provides real-time, IDE-level understanding of the codebase.
 
 ---
 
-## 19. Semble (Code Search & Discovery)
+## 14. Semble (Code Search & Discovery)
 
 Semble is the primary tool for fast, token-efficient code search. It should be used at the beginning of any task to narrow down relevant files and code blocks.
 
-Refer to the full guide: `docs/standards/semble-guide.md`
+Refer to the full guide: `docs/standards/semble-operation-guide.md`
 
 Operating Principles:
 1. **Search First**: Before reading files or analyzing structure, use `semble_search` with natural language or code queries to find candidates.
@@ -314,7 +337,7 @@ Operating Principles:
 
 ---
 
-## 14. Skills
+## 15. Skills
 
 - Prefer `.agents/skills/`.
 - Local skills override global guidance.
@@ -325,7 +348,7 @@ Operating Principles:
 
 ---
 
-## 15. Docs and Logs
+## 16. Docs and Logs
 
 Guide docs under `docs/standards/`, `docs/workflow/`, and `docs/operations/` are authoritative.
 
@@ -343,7 +366,7 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 16. Handoff
+## 17. Handoff
 
 For paused or handed-off work, report:
 - changed files
@@ -356,7 +379,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 17. Git
+## 18. Git
 
 - do not run `git add`, `git commit`, or `git push` without approval
 - use Conventional Commits when preparing commit messages
@@ -365,7 +388,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 18. Response
+## 19. Response
 
 - start with the core point
 - be concise but complete
@@ -377,7 +400,7 @@ Keep handoffs short and factual.
 ---
 
 
-## 21. Golden Rule
+## 20. Golden Rule
 
 Make it correct, safe, small, and understandable.
 
