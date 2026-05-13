@@ -52,7 +52,7 @@ Ensure the `mcp_config.json` uses the **patched local binary path** instead of t
 ```json
 "semble": {
   "command": "/Users/sanghyoukjin/.local/bin/semble",
-  "args": ["."]
+  "args": []
 }
 ```
 
