@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {
+      "name": "stack-app-2025-v1",
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "mcp.currentWorkspace": "${workspaceFolder}",
+    "java.compile.nullAnalysis.mode": "automatic",
+  },
+}
