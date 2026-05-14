@@ -14,7 +14,9 @@
       "args": [
         "uvx",
         "code-review-graph",
-        "serve"
+        "serve",
+        "--tools",
+        "query_graph_tool,semantic_search_nodes_tool,detect_changes_tool,get_review_context_tool,get_impact_radius_tool,get_architecture_overview_tool"
       ]
     },
     "sequential-thinking": {
