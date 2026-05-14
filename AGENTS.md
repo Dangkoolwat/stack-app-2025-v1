@@ -62,13 +62,13 @@ When exploring and modifying code, tools MUST be used according to the prioritie
 ### 💡 Workflow Principle
 > **"Formulate a hypothesis first (Semble for narrow search, Graph for blast radius), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated with Graph."**
 
-### 🛠️ Advanced Token Utilities & Fallbacks (Token Shield)
-| Utility | Role | Execution Method |
-| :--- | :--- | :--- |
-| **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
-| **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
-
 - **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.
+
+### 🛡️ MCP Optimization & Token Utilities (Caveman Protocol)
+- **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters to save input tokens.
+- **Shrink-First**: Large responses (e.g., graph data, file content) MUST undergo semantic compression via `caveman-shrink` proxy before agent interpretation.
+- **Token Shield**: Prioritize `caveman-shrink` wrapped tools for all structural and semantic analysis.
+- **Utility - Repomix**: Use `npx repomix --include "path/*"` for folder/scope filtering when needed.
 
 ---
 
@@ -421,6 +421,11 @@ Keep handoffs short and factual.
 - report verification clearly
 - do not dump long logs unless requested
 
+### ⚡ Performance & Style (Caveman Mode)
+- **English Protocol**: Use 'Smart Caveman' style (drop articles `a/an/the`, conjunctions, filler) to minimize token usage while maintaining 100% technical accuracy.
+- **Korean Protocol**: 모든 한국어 응답은 명사형/종결형 업무 문체로 작성한다. (예: '~ 완료', '~ 확인', '~ 수정'). 존칭 종결어미(~입니다, ~겠습니다), 미사여구, 주관적 추측 배제.
+- **Tone**: Professional, technical, no filler (Lite mode per `./.agents/skills/caveman/SKILL.md`).
+
 ---
 
 
@@ -433,3 +438,32 @@ When unsure:
 2. reduce scope
 3. state assumptions
 4. ask before changing high-risk areas
+
+---
+
+# AI Agent Operating Guideline (v4.3-caveman)
+
+This document defines the behavioral and technical standards for agents operating in this repository, focusing on token efficiency and professional communication.
+
+## 1. Persona & Communication (via Skill)
+- **Base Style:** Follow `./.agents/skills/caveman/SKILL.md` strictly.
+- **Tone:** Professional, technical, no filler (Lite mode).
+- **Tagging:** Maintain ✅ Facts, ⚠️ Uncertain, 💡 Deduction. Do not compress tags.
+
+## 2. Infrastructure & Tools (via MCP)
+- **MCP Optimization**:
+  - **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters.
+  - **Shrink-First**: All MCP responses must undergo raw data summarization via `caveman-shrink` before agent analysis.
+- **Priority**: Reduce input tokens by 50% using MCP-based tool descriptions.
+
+### 2.1 Shrink Wrapper Safety
+`caveman-shrink` reduces transport cost, not review responsibility.
+
+Compressed output may be used for navigation, handoff, and tool-call overhead reduction, but MUST NOT remove failed command names, first meaningful errors, changed file paths, policy triggers, scope deviations, protected-area touches, skipped verification, High-Risk warnings, or release blockers.
+
+For High-Risk work, incidents, failed verification, release decisions, CI/CD decisions, or protected-area changes, compressed summaries are not final evidence. Preserve or request exact output when full context is required.
+
+## 3. Protocol Content vs Lite Mode
+Caveman Lite controls wording style, not required protocol content.
+
+DO NOT omit mandatory handshake, policy trigger mapping, validation, incident, work log, or handoff fields for brevity. Keep required content short, but complete.
