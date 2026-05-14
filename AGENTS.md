@@ -145,9 +145,9 @@ Open linked/local rules when their trigger matches. Do not rely on memory.
 Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
-- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools.
-- semantic navigation & editing: `docs/standards/serena-guide.md`
-- code search & discovery: `docs/standards/semble-operation-guide.md`, `docs/standards/semble-troubleshooting.md`
+- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools. Read [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md).
+- semantic navigation & editing: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
+- code search & discovery: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
 
@@ -183,7 +183,19 @@ Never edit from filename or memory alone.
 
 ---
 
-## 7. Monorepo Boundaries
+## 7. Mandatory Lazy-Loaded Policy Triggers
+
+Agents MUST read the required policy file when the following triggers are present in the task or tool intent:
+
+| Trigger | Required policy file |
+|---|---|
+| `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md) |
+| `semble`, code search, semantic search, vector index, zombie processes | [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md) |
+| `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md) |
+
+---
+
+## 8. Monorepo Boundaries
 
 Before editing, identify the affected area:
 
@@ -200,7 +212,7 @@ Shared API/DTO/validation/auth changes require checking both sides when practica
 
 ---
 
-## 8. Implementation
+## 9. Implementation
 
 - make the smallest safe change
 - prefer targeted edits; avoid rewriting whole files/functions unless necessary
@@ -217,7 +229,7 @@ Revert accidental unrelated edits.
 
 ---
 
-## 9. Data Safety
+## 10. Data Safety
 
 - never delete, overwrite, move, or migrate user data (including local DB seed/test data and `.env`) without approval
 - use temp paths, backups, or separate outputs for risky operations
@@ -227,7 +239,7 @@ Revert accidental unrelated edits.
 
 ---
 
-## 10. Verification
+## 11. Verification
 
 Use the strongest practical scoped verification. Do not invent commands.
 
@@ -265,7 +277,7 @@ If verification cannot run, explain why and give the best static check.
 
 ---
 
-## 11. Architecture Risk
+## 12. Architecture Risk
 
 For risky changes, check:
 
@@ -284,12 +296,24 @@ Prefer existing project patterns over new abstractions.
 
 ---
 
-## 12. Code Review Graph (Structural Analysis)
+## 13. Code Review Graph (Structural Analysis)
 
 `code-review-graph` is for dependency/blast-radius checks only. It is not a source of truth. Code, tests, and current docs win.
 
-Refer to the full guide: `docs/standards/code-review-graph-guide.md`
+Refer to the full guide: [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md)
 
+### Tool Usage Standards
+1. **Unified MCP Mode**: All agents MUST use the MCP server wrapped with `caveman-shrink` for structural analysis.
+2. **Whitelisted Tools**: Only the following core tools are exposed to stay within the 50-tool execution limit:
+   - `query_graph_tool`
+   - `semantic_search_nodes_tool`
+   - `detect_changes_tool`
+   - `get_review_context_tool`
+   - `get_impact_radius_tool`
+   - `get_architecture_overview_tool`
+3. **CLI Fallback**: If the MCP server fails, use `npx caveman-shrink code-review-graph <subcommand>` as a fallback (e.g., `detect-changes`).
+
+### Trigger Scenarios
 Use `code-review-graph` tools when:
 - changing services/managers/stores/workflow state
 - changing module/package dependencies
@@ -298,21 +322,21 @@ Use `code-review-graph` tools when:
 - changing auth, DB, cache, deploy, or other cross-cutting infra
 - planning large refactors, renames, or moves
 
-Tool usage:
-1. All commands MUST be prefixed with `npx caveman-shrink` for optimized output (e.g., `npx caveman-shrink code-review-graph status`).
-2. Run `detect-changes` or `get-impact-radius` for blast-radius analysis before proposing a plan.
-3. Do NOT rely on static reports; use the CLI to query the current graph state.
-4. Run `code-review-graph update` after significant structural changes to maintain accuracy.
+### Operating Principles
+1. All commands (CLI fallback) MUST be prefixed with `npx caveman-shrink` for optimized output.
+2. Run `detect_changes_tool` or `get_impact_radius_tool` for blast-radius analysis before proposing a plan.
+3. Do NOT rely on static reports; query the current graph state.
+4. Run `code-review-graph update` (CLI) after significant structural changes to maintain accuracy.
 
 Do not treat tool output as proof that a change is safe. Use it to decide what else to inspect with Serena.
 
 ---
 
-## 13. Serena (LSP Semantic Agent)
+## 14. Serena (LSP Semantic Agent)
 
 Serena is the primary tool for semantic code navigation, impact analysis, and precise editing. It leverages the Language Server Protocol (LSP) for 100% accurate symbol resolution.
 
-Refer to the full guide: `docs/standards/serena-guide.md`
+Refer to the full guide: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
 
 Operating Principles:
 1. **Precision First**: For all **Non-trivial** tasks (excluding typos or text changes), prioritize Serena's symbol analysis (`find_symbol`, `find_referencing_symbols`).
@@ -324,11 +348,11 @@ Do not rely on outdated reports. Serena provides real-time, IDE-level understand
 
 ---
 
-## 14. Semble (Code Search & Discovery)
+## 15. Semble (Code Search & Discovery)
 
 Semble is the primary tool for fast, token-efficient code search. It should be used at the beginning of any task to narrow down relevant files and code blocks.
 
-Refer to the full guide: `docs/standards/semble-operation-guide.md`, `docs/standards/semble-troubleshooting.md`
+Refer to the full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
 
 Operating Principles:
 1. **Search First**: Before reading files or analyzing structure, use `semble_search` with natural language or code queries to find candidates.
@@ -337,7 +361,7 @@ Operating Principles:
 
 ---
 
-## 15. Skills
+## 16. Skills
 
 - Prefer `.agents/skills/`.
 - Local skills override global guidance.
@@ -348,7 +372,7 @@ Operating Principles:
 
 ---
 
-## 16. Docs and Logs
+## 17. Docs and Logs
 
 Guide docs under `docs/standards/`, `docs/workflow/`, and `docs/operations/` are authoritative.
 
@@ -366,7 +390,7 @@ Use full logs only for high-risk or requested work.
 
 ---
 
-## 17. Handoff
+## 18. Handoff
 
 For paused or handed-off work, report:
 - changed files
@@ -379,7 +403,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 18. Git
+## 19. Git
 
 - do not run `git add`, `git commit`, or `git push` without approval
 - use Conventional Commits when preparing commit messages
@@ -388,7 +412,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 19. Response
+## 20. Response
 
 - start with the core point
 - be concise but complete
@@ -400,7 +424,7 @@ Keep handoffs short and factual.
 ---
 
 
-## 20. Golden Rule
+## 21. Golden Rule
 
 Make it correct, safe, small, and understandable.
 

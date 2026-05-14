@@ -1,0 +1,1 @@
+python /Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/test_mcp.py
