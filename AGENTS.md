@@ -34,33 +34,43 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
 
-## 2A. Tool Hierarchy & Efficiency Rules (Token Guard)
+## 2A. AI Agent Workflow Rules (3-Stage Pipeline & Token Guard)
 
-When exploring and modifying code, tools MUST be used according to the priorities below to minimize token consumption. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
+You have three specialized tools: `semble_rs` (Search/Deps), `code-review-graph` (Architecture), and `serena` (Review). Follow this strict pipeline to minimize token usage. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
 
-### 🏆 Tool Hierarchy (Priority)
-- **Step 0: [Semble]** - First obtain relevant code snippets for narrow/local discovery or literal prose search.
-    - **Boundary:** "Where is specific logic?" (Keyword/Intent-focused search)
-    - **Note:** Pass the project root or local path as `repo` to index and search on demand.
-- **Step 1: [code-review-graph]** - Use first when the task is Non-trivial, the blast radius is unclear, or structural dependencies matter.
-    - **Boundary:** "What breaks if I change this file?" (Dependency & Blast Radius Analysis)
-    - **Connection order:** MCP tools first → CLI (`npx caveman-shrink code-review-graph`) fallback. CLI takes priority only on hosts with MCP limits (antigravity, 50-cap).
-    - **Maintenance:** Must run `code-review-graph update` after major refactoring to maintain analysis accuracy.
-- **Step 1B: [Open API Docs Skills]** - If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
-- **Step 1.5: [File Skeleton]** - Verify file maps using Serena's `get_symbols_overview`.
-- **Step 2: [Serena (LSP)]** - Perform precision navigation to specific symbol definitions and references.
-- **Step 3: [Grep/Read]** - Conduct deep, precision reading only within confirmed scopes (**Surgical Read**: Strictly limit reading to specific Line Ranges containing the necessary functions or logic).
-- **Step 4: [Git]** - Review change history and perform final verification.
+### Stage 1. Discovery & Search (Strictly use `semble_rs`)
+- NEVER use `cat`, `read`, or `grep` to find or read code blocks.
+- For structural overview, use: `semble_rs search "query" . --outline`
+- For targeted line-by-line context, use: `semble_rs search "query" . --compact`
+- DO NOT use `--json` unless integrating with other tools, as it consumes 50x more tokens.
+- **Open API Docs Skills:** If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
+
+### Stage 2. Impact Analysis
+- Before modifying any file, check its dependencies and ripple effects:
+  - `semble_rs deps <file> . --json`
+  - `semble_rs impact <file> . --json`
+- Use `code-review-graph` only if you need a macro-level visual breakdown of the change scope.
+  - **Connection order:** MCP tools first → CLI (`npx caveman-shrink code-review-graph`) fallback.
+  - **Maintenance:** Run `code-review-graph update` after major refactoring to maintain analysis accuracy.
+
+### Stage 3. Code Generation & Final Review
+- Modify the code based on the accurate snippets found. Use surgical precision (e.g. diff/patch formats); do not rewrite entire files unless necessary.
+- Once modifications are done, pass the final diff or code logic to `serena` for prompt refinement and comprehensive code-review validation before committing.
+- Use `Serena (LSP)` (e.g., `get_symbols_overview`) for precision navigation to specific symbol definitions and references before editing.
 
 ### 🛡️ Efficiency Constraints
 - **Gating Principle**: Proceed to the next priority tool only if current results are insufficient. Unnecessary tool calls are forbidden.
-- **Minimal Context**: Do not include unrelated code in the context. Use `semble find-related` to collect only necessary chunks.
-- **Selective Reading**: Do not read files over 500 lines in their entirety. Use Skeleton analysis first, then read specific function ranges.
-- **Incremental Output**: Use diff/patch formats instead of rewriting entire files.
-- **Trivial Exception**: Step 0-1 can be skipped for typos or simple comment edits with no logic changes.
+- **Selective Reading**: Do not read files over 500 lines in their entirety. Use `semble_rs` outline or Serena's Skeleton analysis first, then read specific function ranges.
+- **Trivial Exception**: Stage 1-2 can be skipped for typos or simple comment edits with no logic changes.
 
 ### 💡 Workflow Principle
-> **"Formulate a hypothesis first (Semble for narrow search, Graph for blast radius), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated with Graph."**
+> **"Formulate a hypothesis first (semble_rs for narrow search and impact), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated."**
+
+### 🛠️ Advanced Token Utilities & Fallbacks (Token Shield)
+| Utility | Role | Execution Method |
+| :--- | :--- | :--- |
+| **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
+| **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
 
 - **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.
 
@@ -68,7 +78,17 @@ When exploring and modifying code, tools MUST be used according to the prioritie
 - **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters to save input tokens.
 - **Shrink-First**: Large responses (e.g., graph data, file content) MUST undergo semantic compression via `caveman-shrink` proxy before agent interpretation.
 - **Token Shield**: Prioritize `caveman-shrink` wrapped tools for all structural and semantic analysis.
-- **Utility - Repomix**: Use `npx repomix --include "path/*"` for folder/scope filtering when needed.
+
+---
+
+## 2B. Core Policy Document Defense (Surgical Edit Rules)
+
+Editing core policy documents (like `AGENTS.md`) is considered a **Highest Difficulty and Highest Risk** operation. You MUST adhere to these 5 procedures:
+1. **Mandatory History Audit & Sequential Thinking**: Before modifying, you must review `docs/history.md` (or git history) and previous logs. You must use the `[Reasoning]` block to formulate your logic before executing changes.
+2. **Zero Context Contamination**: Arbitrary deletion or "clean-up" is strictly prohibited. 100% of existing context must be preserved.
+3. **Lazy-Loading Architecture**: Keep `AGENTS.md` lightweight. Move detailed guidelines to the `docs/standards/` directory.
+4. **Token-Efficient & Unambiguous**: Use short, decisive English to prevent misinterpretation by other agents.
+5. **Detailed Accountability Report**: Explicitly report all additions, modifications, and deletions immediately after the task.
 
 ---
 
@@ -190,7 +210,7 @@ Agents MUST read the required policy file when the following triggers are presen
 | Trigger | Required policy file |
 |---|---|
 | `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md) |
-| `semble`, code search, semantic search, vector index, zombie processes | [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md) |
+| `semble_rs`, `semble`, code search, semantic search, vector index | [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md) |
 | `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md) |
 
 ---
@@ -277,6 +297,16 @@ If verification cannot run, explain why and give the best static check.
 
 ---
 
+## 11B. High-Risk & Integrity Guardrails
+
+To prevent model runaways, the following 3 hard guardrails apply universally to all agents:
+
+- **[Sequential Thinking / Stop-and-Think]**: Before modifying any code (e.g., via `replace_file_content`), you MUST output a `[Reasoning]` block in text, explicitly declaring: *"Why am I changing this line, and how is the existing logic preserved?"*
+- **[Compile-Gated Verification]**: Before declaring a task complete, you MUST execute the project build command (e.g., `./mvnw verify` or `npm run build`) and attach the successful log containing 'Exit code 0' to your report. Claiming success via text without log proof is a critical violation. For critical architecture or security modifications, a human reviewer MUST cross-check the CI pipeline (e.g., GitHub Actions) to prevent agent log hallucinations.
+- **[Atomic Rollback Protocol]**: If your code modification breaks the build, you are granted exactly ONE additional attempt to fix it. If the second attempt fails, you MUST immediately execute `git checkout -- <file>` to rollback to the original state before reporting to the user. Leaving the codebase in a broken state is a critical violation.
+
+---
+
 ## 12. Architecture Risk
 
 For risky changes, check:
@@ -348,16 +378,16 @@ Do not rely on outdated reports. Serena provides real-time, IDE-level understand
 
 ---
 
-## 15. Semble (Code Search & Discovery)
+## 15. semble_rs (Code Search & Discovery)
 
-Semble is the primary tool for fast, token-efficient code search. It should be used at the beginning of any task to narrow down relevant files and code blocks.
+`semble_rs` is the primary tool for fast, token-efficient code search and impact analysis. It should be used at the beginning of any task to narrow down relevant files, check dependencies, and analyze ripple effects.
 
 Refer to the full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
 
 Operating Principles:
-1. **Search First**: Before reading files or analyzing structure, use `semble_search` with natural language or code queries to find candidates.
-2. **Explore Related**: Use `semble_find_related` to discover similar patterns or implementations across the codebase.
-3. **Token Economy**: Use Semble to avoid reading large files or traversing deep directory structures when a targeted search can identify the correct location.
+1. **Search First**: Before reading files or analyzing structure, use `semble_rs search` with `--outline` or `--compact` to find candidates without consuming excessive tokens. NEVER use `cat`, `read`, or `grep`.
+2. **Impact Analysis**: Use `semble_rs deps` and `semble_rs impact` with `--json` to check dependencies before making any modifications.
+3. **Token Economy**: ALWAYS prioritize `semble_rs`. Do not use `--json` for search unless integrating with other tools, as it consumes 50x more tokens.
 
 ---
 
@@ -386,7 +416,7 @@ For non-trivial implementation work, write a concise agent log in the relevant b
 For failed or paused non-trivial work, record useful findings when appropriate.
 
 Use lightweight logs by default.
-Use full logs only for high-risk or requested work.
+Use full logs only for high-risk or requested work (e.g., changes to core policy documents like `AGENTS.md` require detailed accountability reports as per Rule 2B).
 
 ---
 
@@ -421,11 +451,6 @@ Keep handoffs short and factual.
 - report verification clearly
 - do not dump long logs unless requested
 
-### ⚡ Performance & Style (Caveman Mode)
-- **English Protocol**: Use 'Smart Caveman' style (drop articles `a/an/the`, conjunctions, filler) to minimize token usage while maintaining 100% technical accuracy.
-- **Korean Protocol**: 모든 한국어 응답은 명사형/종결형 업무 문체로 작성한다. (예: '~ 완료', '~ 확인', '~ 수정'). 존칭 종결어미(~입니다, ~겠습니다), 미사여구, 주관적 추측 배제.
-- **Tone**: Professional, technical, no filler (Lite mode per `./.agents/skills/caveman/SKILL.md`).
-
 ---
 
 
@@ -438,32 +463,3 @@ When unsure:
 2. reduce scope
 3. state assumptions
 4. ask before changing high-risk areas
-
----
-
-# AI Agent Operating Guideline (v4.3-caveman)
-
-This document defines the behavioral and technical standards for agents operating in this repository, focusing on token efficiency and professional communication.
-
-## 1. Persona & Communication (via Skill)
-- **Base Style:** Follow `./.agents/skills/caveman/SKILL.md` strictly.
-- **Tone:** Professional, technical, no filler (Lite mode).
-- **Tagging:** Maintain ✅ Facts, ⚠️ Uncertain, 💡 Deduction. Do not compress tags.
-
-## 2. Infrastructure & Tools (via MCP)
-- **MCP Optimization**:
-  - **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters.
-  - **Shrink-First**: All MCP responses must undergo raw data summarization via `caveman-shrink` before agent analysis.
-- **Priority**: Reduce input tokens by 50% using MCP-based tool descriptions.
-
-### 2.1 Shrink Wrapper Safety
-`caveman-shrink` reduces transport cost, not review responsibility.
-
-Compressed output may be used for navigation, handoff, and tool-call overhead reduction, but MUST NOT remove failed command names, first meaningful errors, changed file paths, policy triggers, scope deviations, protected-area touches, skipped verification, High-Risk warnings, or release blockers.
-
-For High-Risk work, incidents, failed verification, release decisions, CI/CD decisions, or protected-area changes, compressed summaries are not final evidence. Preserve or request exact output when full context is required.
-
-## 3. Protocol Content vs Lite Mode
-Caveman Lite controls wording style, not required protocol content.
-
-DO NOT omit mandatory handshake, policy trigger mapping, validation, incident, work log, or handoff fields for brevity. Keep required content short, but complete.

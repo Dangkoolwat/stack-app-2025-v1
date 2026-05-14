@@ -26,10 +26,6 @@
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ]
-    },
-    "semble": {
-      "command": "caveman-shrink",
-      "args": ["uvx", "--from", "semble[mcp]", "semble"]
     }
   }
 }
