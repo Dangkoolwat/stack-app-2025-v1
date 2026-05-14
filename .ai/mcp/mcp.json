@@ -1,29 +1,33 @@
 {
   "mcpServers": {
     "serena": {
-      "command": "/Users/sanghyoukjin/.local/bin/serena",
+      "command": "caveman-shrink",
       "args": [
-        "start-mcp-server"
+        "serena",
+        "start-mcp-server",
+        "--context=jb-ai-assistant",
+        "--project-from-cwd"
       ]
     },
     "code-review-graph": {
-      "command": "npx",
+      "command": "caveman-shrink",
       "args": [
-        "caveman-shrink",
-        "/usr/local/bin/code-review-graph",
+        "uvx",
+        "code-review-graph",
         "serve"
       ]
     },
     "sequential-thinking": {
-      "command": "npx",
+      "command": "caveman-shrink",
       "args": [
+        "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
       ]
     },
     "semble": {
-      "command": "/Users/sanghyoukjin/.local/bin/semble",
-      "args": []
+      "command": "caveman-shrink",
+      "args": ["uvx", "--from", "semble[mcp]", "semble"]
     }
   }
 }
