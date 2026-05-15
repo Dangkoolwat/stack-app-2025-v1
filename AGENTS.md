@@ -329,6 +329,7 @@ Keep handoffs short and factual.
 - include alternatives only when risk/cost/architecture differs
 - report verification clearly
 - do not dump long logs unless requested
+- **Report Style**: 모든 한국어 보고 및 응답은 명사형/종결형 업무 문체(예: '~ 완료', '~ 확인')로 간결하게 작성하여 가독성을 극대화한다. 존칭 및 미사여구 배제.
 
 ---
 
