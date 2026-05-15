@@ -252,22 +252,7 @@ Prefer existing project patterns over new abstractions.
 
 ---
 
-## 13. Code Review Graph (Structural Analysis)
-Read full guide: [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md)
-
----
-
-## 14. Serena (LSP Semantic Agent)
-Read full guide: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
-
----
-
-## 15. semble_rs (Code Search & Discovery)
-Read full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md)
-
----
-
-## 16. Skills
+## 13. Skills
 
 - Prefer `.agents/skills/`.
 - Local skills override global guidance.
@@ -281,7 +266,7 @@ Read full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoo
 
 ---
 
-## 17. Docs and Logs
+## 14. Docs and Logs
 
 Guide docs under `docs/standards/`, `docs/workflow/`, and `docs/operations/` are authoritative.
 
@@ -299,7 +284,7 @@ Use full logs only for high-risk or requested work (e.g., changes to core policy
 
 ---
 
-## 18. Handoff
+## 15. Handoff
 
 For paused or handed-off work, report:
 - changed files
@@ -312,7 +297,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 19. Git
+## 16. Git
 
 - do not run `git add`, `git commit`, or `git push` without approval
 - use Conventional Commits when preparing commit messages
@@ -321,7 +306,7 @@ Keep handoffs short and factual.
 
 ---
 
-## 20. Response
+## 17. Response
 
 - start with the core point
 - be concise but complete
@@ -334,7 +319,7 @@ Keep handoffs short and factual.
 ---
 
 
-## 21. Golden Rule
+## 18. Golden Rule
 
 Make it correct, safe, small, and understandable.
 
