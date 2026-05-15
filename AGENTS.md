@@ -168,8 +168,9 @@ Must read (search `docs/` for keywords matching the target file path/domain):
 - cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools. Read [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md).
 - semantic navigation & editing: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
 - code search & discovery: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
-- backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns)
-- frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines)
+- execution engine: read `.agents/skills/superpower/SKILL.md` (BPI workflow) for all non-trivial tasks
+- backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns, `spring-security-oauth2`, `liquibase-migration`)
+- frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines, `pinia-state-management`)
 
 If a required file is missing, say so and continue with the best available repo context.
 
@@ -212,6 +213,12 @@ Agents MUST read the required policy file when the following triggers are presen
 | `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md) |
 | `semble_rs`, `semble`, code search, semantic search, vector index | [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md) |
 | `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md) |
+| handshake, approval, refactor proposal, blast radius proposal | [handshake-protocol.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/handshake-protocol.md) |
+| surgical edit, file modification, refactoring integrity, write_to_file | [surgical-edit-rules.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/surgical-edit-rules.md) |
+| validation, build verification, recovery, handoff, task completion | [validation-standard.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/validation-standard.md) |
+| agent capability, protocol design, cross-model, token economy | [protocol-design-intent.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/protocol-design-intent.md) |
+| non-trivial, high-risk, complex implementation, task planning | `.agents/skills/superpower/SKILL.md` |
+| code style, LLM mistakes, behavioral guidelines | `.agents/skills/karpathy-guidelines/SKILL.md` |
 
 ---
 
@@ -244,6 +251,7 @@ Shared API/DTO/validation/auth changes require checking both sides when practica
 - do not add dependencies/frameworks without approval
 - do not remove compatibility behavior without approval
 - state assumptions when unclear
+- **Korean Comment Rule**: All business logic, safety guards, and security comments MUST be written in Korean.
 
 Revert accidental unrelated edits.
 
@@ -283,8 +291,8 @@ Backend:
 - Follow `docs/operations/testing-guideline.md` for Spring Boot 4 IT, JWT auth, DB cleanup, rate-limit, and cache tests.
 
 Frontend:
-- Use `package.json` scripts.
-- Run scoped tests/lint/typecheck/build according to impact.
+- Use `package.json` scripts: `npm run lint`, `npm run type-check`, `npm run test:unit`, `npm run build`.
+- Run scoped checks according to impact.
 - Shared UI/API/auth/routing/build changes need broader checks.
 
 Report:
@@ -299,11 +307,13 @@ If verification cannot run, explain why and give the best static check.
 
 ## 11B. High-Risk & Integrity Guardrails
 
-To prevent model runaways, the following 3 hard guardrails apply universally to all agents:
+To prevent model runaways, the following hard guardrails apply universally to all agents:
 
 - **[Sequential Thinking / Stop-and-Think]**: Before modifying any code (e.g., via `replace_file_content`), you MUST output a `[Reasoning]` block in text, explicitly declaring: *"Why am I changing this line, and how is the existing logic preserved?"*
 - **[Compile-Gated Verification]**: Before declaring a task complete, you MUST execute the project build command (e.g., `./mvnw verify` or `npm run build`) and attach the successful log containing 'Exit code 0' to your report. Claiming success via text without log proof is a critical violation. For critical architecture or security modifications, a human reviewer MUST cross-check the CI pipeline (e.g., GitHub Actions) to prevent agent log hallucinations.
 - **[Atomic Rollback Protocol]**: If your code modification breaks the build, you are granted exactly ONE additional attempt to fix it. If the second attempt fails, you MUST immediately execute `git checkout -- <file>` to rollback to the original state before reporting to the user. Leaving the codebase in a broken state is a critical violation.
+- **[Anti-Truncation Rule]**: Fast/Flash models frequently and implicitly delete existing context when rewriting functions. To prevent this, you MUST NOT rewrite a whole function, class, or struct. Only patch the exact lines that need fixing using `replace_file_content` or `multi_replace_file_content` for non-contiguous edits.
+- **[No Implicit Deletion]**: NEVER delete, truncate, or simplify existing code (especially exception handling, safety guards, or UI elements) just to "clean it up". If you are not explicitly asked to change a line, LEAVE IT EXACTLY AS IS.
 
 ---
 
@@ -395,6 +405,9 @@ Operating Principles:
 
 - Prefer `.agents/skills/`.
 - Local skills override global guidance.
+- **Execution Engine**: Use `.agents/skills/superpower/SKILL.md` (Brainstorm -> Plan -> Implement) for all Non-trivial/High-risk tasks.
+- **Backend Core**: Refer to `spring-security-oauth2`, `liquibase-migration`, `jpa-expert`, `redis-expert`, etc.
+- **Frontend Core**: Refer to `pinia-state-management`, `jhipster-vue-standards`, `bootstrap-vue3`, `vitest`, etc.
 - If a task matches a local skill, read it before editing.
 - For non-trivial/high-risk coding, read `.agents/skills/karpathy-guidelines/SKILL.md`.
 - Follow surgical changes, simplicity, explicit assumptions, and minimal diffs.
