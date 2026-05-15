@@ -153,8 +153,9 @@ High-risk tasks require explicit approval before editing.
 
 ## 6. Read Before Write
 
-Before editing:
+Before editing or making architectural judgments:
 
+- **Zero-Trust File Verification**: Never assume a file or directory is missing. You MUST verify its existence using explicit file system tools (`list_dir`, `view_file`, or terminal `test`/`ls`) before reporting it as broken or missing.
 - inspect the target file
 - inspect nearby code
 - inspect direct callers/consumers when behavior may change

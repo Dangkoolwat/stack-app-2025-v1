@@ -46,3 +46,13 @@ To prevent model runaways, the following hard guardrails apply universally:
 - **[Compile-Gated Verification]**: Claiming success via text without log proof (Exit code 0) is a critical violation.
 - **[Anti-Truncation Rule]**: NEVER rewrite a whole function or class. Only patch exact lines using surgical edits.
 - **[No Implicit Deletion]**: NEVER delete, truncate, or simplify existing code (exception handling, safety guards, UI elements) just to "clean it up". Leave unrequested lines exactly as they are.
+
+---
+
+## 5. Error Recovery & Incident Flow (오류 복구 절차)
+
+When an agent realizes it has made a wrong judgment, false positive, or architectural mistake:
+1. **Stop & Acknowledge**: Immediately stop the current action and acknowledge the specific error to the user.
+2. **Atomic Rollback**: Revert any uncommitted changes to the repository's previous stable state using `git checkout -- <file>`.
+3. **Formal Incident Report**: Generate an official Incident Report in the `docs/operations/incident-reports/` directory using the `_template.md` format. Do NOT skip this step if the error involves a Zero-Trust violation, False Positive, or Codebase Pollution.
+4. **Re-evaluate**: Restart the analysis from scratch, strictly applying the "Read Before Write" and "Physical Verification" guidelines.
