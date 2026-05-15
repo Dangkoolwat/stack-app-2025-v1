@@ -36,48 +36,8 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ## 2A. AI Agent Workflow Rules (3-Stage Pipeline & Token Guard)
 
-You have three specialized tools: `semble_rs` (Search/Deps), `code-review-graph` (Architecture), and `serena` (Review). Follow this strict pipeline to minimize token usage. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
-
-### Stage 1. Discovery & Search (Strictly use `semble_rs`)
-- NEVER use `cat`, `read`, or `grep` to find or read code blocks.
-- For structural overview, use: `semble_rs search "query" . --outline`
-- For targeted line-by-line context, use: `semble_rs search "query" . --compact`
-- DO NOT use `--json` unless integrating with other tools, as it consumes 50x more tokens.
-- **Open API Docs Skills:** If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
-
-### Stage 2. Impact Analysis
-- Before modifying any file, check its dependencies and ripple effects:
-  - `semble_rs deps <file> . --json`
-  - `semble_rs impact <file> . --json`
-- Use `code-review-graph` only if you need a macro-level visual breakdown of the change scope.
-  - **Connection order:** MCP tools first → CLI (`npx caveman-shrink code-review-graph`) fallback.
-  - **Maintenance:** Run `code-review-graph update` after major refactoring to maintain analysis accuracy.
-
-### Stage 3. Code Generation & Final Review
-- Modify the code based on the accurate snippets found. Use surgical precision (e.g. diff/patch formats); do not rewrite entire files unless necessary.
-- Once modifications are done, pass the final diff or code logic to `serena` for prompt refinement and comprehensive code-review validation before committing.
-- Use `Serena (LSP)` (e.g., `get_symbols_overview`) for precision navigation to specific symbol definitions and references before editing.
-
-### 🛡️ Efficiency Constraints
-- **Gating Principle**: Proceed to the next priority tool only if current results are insufficient. Unnecessary tool calls are forbidden.
-- **Selective Reading**: Do not read files over 500 lines in their entirety. Use `semble_rs` outline or Serena's Skeleton analysis first, then read specific function ranges.
-- **Trivial Exception**: Stage 1-2 can be skipped for typos or simple comment edits with no logic changes.
-
-### 💡 Workflow Principle
-> **"Formulate a hypothesis first (semble_rs for narrow search and impact), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated."**
-
-### 🛠️ Advanced Token Utilities & Fallbacks (Token Shield)
-| Utility | Role | Execution Method |
-| :--- | :--- | :--- |
-| **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
-| **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
-
-- **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.
-
-### 🛡️ MCP Optimization & Token Utilities (Caveman Protocol)
-- **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters to save input tokens.
-- **Shrink-First**: Large responses (e.g., graph data, file content) MUST undergo semantic compression via `caveman-shrink` proxy before agent interpretation.
-- **Token Shield**: Prioritize `caveman-shrink` wrapped tools for all structural and semantic analysis.
+Detailed 3-Stage Pipeline rules (`semble_rs` -> `code-review-graph` -> `serena`) and efficiency constraints have been moved to:
+- **Read:** [agent-workflow-pipeline.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/workflow/agent-workflow-pipeline.md)
 
 ---
 
@@ -267,53 +227,9 @@ Revert accidental unrelated edits.
 
 ---
 
-## 11. Verification
-
-Use the strongest practical scoped verification. Do not invent commands.
-
-Pre-change tests are optional.
-Run them first for high-risk work, unknown repo state, bug reproduction, failing CI/tests, or shared DB/cache/auth/API/refactor changes.
-
-Post-change verification is required when practical.
-Do not claim success without it.
-
-Discover commands from:
-- `README.md`
-- `pom.xml`
-- `package.json`
-- existing scripts
-- `docs/operations/`
-
-Backend:
-- Load `.env` when running Maven tests.
-- Unit/non-IT: `./mvnw test`
-- Full/IT: `./mvnw verify`
-- Follow `docs/operations/testing-guideline.md` for Spring Boot 4 IT, JWT auth, DB cleanup, rate-limit, and cache tests.
-
-Frontend:
-- Use `package.json` scripts: `npm run lint`, `npm run type-check`, `npm run test:unit`, `npm run build`.
-- Run scoped checks according to impact.
-- Shared UI/API/auth/routing/build changes need broader checks.
-
-Report:
-- commands run
-- pass/fail
-- key errors only
-- skipped checks and why
-
-If verification cannot run, explain why and give the best static check.
-
----
-
-## 11B. High-Risk & Integrity Guardrails
-
-To prevent model runaways, the following hard guardrails apply universally to all agents:
-
-- **[Sequential Thinking / Stop-and-Think]**: Before modifying any code (e.g., via `replace_file_content`), you MUST output a `[Reasoning]` block in text, explicitly declaring: *"Why am I changing this line, and how is the existing logic preserved?"*
-- **[Compile-Gated Verification]**: Before declaring a task complete, you MUST execute the project build command (e.g., `./mvnw verify` or `npm run build`) and attach the successful log containing 'Exit code 0' to your report. Claiming success via text without log proof is a critical violation. For critical architecture or security modifications, a human reviewer MUST cross-check the CI pipeline (e.g., GitHub Actions) to prevent agent log hallucinations.
-- **[Atomic Rollback Protocol]**: If your code modification breaks the build, you are granted exactly ONE additional attempt to fix it. If the second attempt fails, you MUST immediately execute `git checkout -- <file>` to rollback to the original state before reporting to the user. Leaving the codebase in a broken state is a critical violation.
-- **[Anti-Truncation Rule]**: Fast/Flash models frequently and implicitly delete existing context when rewriting functions. To prevent this, you MUST NOT rewrite a whole function, class, or struct. Only patch the exact lines that need fixing using `replace_file_content` or `multi_replace_file_content` for non-contiguous edits.
-- **[No Implicit Deletion]**: NEVER delete, truncate, or simplify existing code (especially exception handling, safety guards, or UI elements) just to "clean it up". If you are not explicitly asked to change a line, LEAVE IT EXACTLY AS IS.
+## 11. Verification & Integrity Guardrails
+Use evidence-based success criteria (e.g., Exit code 0) and strict atomic rollback protocols.
+- **Read required validation rules:** [validation-standard.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/validation-standard.md)
 
 ---
 
@@ -337,67 +253,17 @@ Prefer existing project patterns over new abstractions.
 ---
 
 ## 13. Code Review Graph (Structural Analysis)
-
-`code-review-graph` is for dependency/blast-radius checks only. It is not a source of truth. Code, tests, and current docs win.
-
-Refer to the full guide: [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md)
-
-### Tool Usage Standards
-1. **Unified MCP Mode**: All agents MUST use the MCP server wrapped with `caveman-shrink` for structural analysis.
-2. **Whitelisted Tools**: Only the following core tools are exposed to stay within the 50-tool execution limit:
-   - `query_graph_tool`
-   - `semantic_search_nodes_tool`
-   - `detect_changes_tool`
-   - `get_review_context_tool`
-   - `get_impact_radius_tool`
-   - `get_architecture_overview_tool`
-3. **CLI Fallback**: If the MCP server fails, use `npx caveman-shrink code-review-graph <subcommand>` as a fallback (e.g., `detect-changes`).
-
-### Trigger Scenarios
-Use `code-review-graph` tools when:
-- changing services/managers/stores/workflow state
-- changing module/package dependencies
-- touching more than 3 modules
-- changing backend/frontend contracts
-- changing auth, DB, cache, deploy, or other cross-cutting infra
-- planning large refactors, renames, or moves
-
-### Operating Principles
-1. All commands (CLI fallback) MUST be prefixed with `npx caveman-shrink` for optimized output.
-2. Run `detect_changes_tool` or `get_impact_radius_tool` for blast-radius analysis before proposing a plan.
-3. Do NOT rely on static reports; query the current graph state.
-4. Run `code-review-graph update` (CLI) after significant structural changes to maintain accuracy.
-
-Do not treat tool output as proof that a change is safe. Use it to decide what else to inspect with Serena.
+Read full guide: [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md)
 
 ---
 
 ## 14. Serena (LSP Semantic Agent)
-
-Serena is the primary tool for semantic code navigation, impact analysis, and precise editing. It leverages the Language Server Protocol (LSP) for 100% accurate symbol resolution.
-
-Refer to the full guide: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
-
-Operating Principles:
-1. **Precision First**: For all **Non-trivial** tasks (excluding typos or text changes), prioritize Serena's symbol analysis (`find_symbol`, `find_referencing_symbols`).
-2. **Memory-Driven**: Record architectural decisions or complex business logic changes via `write_memory`.
-3. **Zero Assumption**: Use `get_symbols_overview` to understand file structure before reading code.
-4. **Surgical Edits**: Use `replace_symbol_body` or `insert_after_symbol` for precise modifications instead of full file overwrites.
-
-Do not rely on outdated reports. Serena provides real-time, IDE-level understanding of the codebase.
+Read full guide: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
 
 ---
 
 ## 15. semble_rs (Code Search & Discovery)
-
-`semble_rs` is the primary tool for fast, token-efficient code search and impact analysis. It should be used at the beginning of any task to narrow down relevant files, check dependencies, and analyze ripple effects.
-
-Refer to the full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
-
-Operating Principles:
-1. **Search First**: Before reading files or analyzing structure, use `semble_rs search` with `--outline` or `--compact` to find candidates without consuming excessive tokens. NEVER use `cat`, `read`, or `grep`.
-2. **Impact Analysis**: Use `semble_rs deps` and `semble_rs impact` with `--json` to check dependencies before making any modifications.
-3. **Token Economy**: ALWAYS prioritize `semble_rs`. Do not use `--json` for search unless integrating with other tools, as it consumes 50x more tokens.
+Read full guide: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md)
 
 ---
 

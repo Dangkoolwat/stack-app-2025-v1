@@ -35,3 +35,14 @@ For paused or transferred work, provide a compact, state-oriented handoff (~100 
 - Assumptions / prerequisites.
 - Verification status and remaining risks.
 - Next steps.
+
+---
+
+## 4. High-Risk & Integrity Guardrails
+
+To prevent model runaways, the following hard guardrails apply universally:
+
+- **[Sequential Thinking / Stop-and-Think]**: Before modifying any code, output a `[Reasoning]` block declaring: *"Why am I changing this line, and how is the existing logic preserved?"*
+- **[Compile-Gated Verification]**: Claiming success via text without log proof (Exit code 0) is a critical violation.
+- **[Anti-Truncation Rule]**: NEVER rewrite a whole function or class. Only patch exact lines using surgical edits.
+- **[No Implicit Deletion]**: NEVER delete, truncate, or simplify existing code (exception handling, safety guards, UI elements) just to "clean it up". Leave unrequested lines exactly as they are.
