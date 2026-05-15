@@ -179,6 +179,7 @@ Agents MUST read the required policy file when the following triggers are presen
 | agent capability, protocol design, cross-model, token economy | [protocol-design-intent.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/protocol-design-intent.md) |
 | non-trivial, high-risk, complex implementation, task planning | `.agents/skills/superpower/SKILL.md` |
 | code style, LLM mistakes, behavioral guidelines | `.agents/skills/karpathy-guidelines/SKILL.md` |
+| incident report, false positive, hallucination, policy violation | [incident-reports/_template.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/operations/incident-reports/_template.md) |
 
 ---
 

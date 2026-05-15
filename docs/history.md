@@ -11,6 +11,7 @@
 - 2026-05-15 | skills-inventory-update | 미사용 스킬(oracle, caveman, sequential-thinking) 3종 삭제 및 핵심 스킬(liquibase-migration, spring-security-oauth2, pinia-state-management) 3종 신규 생성. AGENTS.md Section 4 & 16 에 신규 스킬 트리거 및 superpower 레퍼런스 명시
 - 2026-05-15 | agents-md-refinement | AGENTS.md 3대 미비점 보완: Section 7 superpower/karpathy 스킬 트리거 매핑 추가, Section 9 한글 주석(Korean Comment Rule) 글로벌 의무화 명시, Section 11 Frontend 구체적 검증 명령어(npm run build 등) 명시
 - 2026-05-15 | agents-md-lazy-loading | AGENTS.md 파일 경량화(Lazy-Loading 아키텍처 완벽 적용): Section 2A(3-Stage Pipeline) 분리, Section 3(Task Levels) 분리, Section 11 및 11B 가드레일을 `validation-standard.md`로 통합. 핵심 도구 가이드 링크 중복(기존 13~15) 제거 및 하위 번호 재정렬(16->13)로 파일 길이 대폭 압축.
+- 2026-05-15 | incident-report-template | 에이전트 오작동(False Positive, Zero-Trust 위반 등) 대응을 위한 공식 사고 보고서 템플릿(`docs/operations/incident-reports/_template.md`) 생성 및 `AGENTS.md` Section 7 트리거에 매핑 추가.
 
 ---
-*마지막 업데이트: 2026-05-15 (v1.4.1)*
+*마지막 업데이트: 2026-05-15 (v1.4.2)*
