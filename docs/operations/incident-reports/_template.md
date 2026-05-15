@@ -1,5 +1,12 @@
-# 🚨 AI Agent Incident Report Template
+<!-- 
+[저장 규칙 (Save Protocol)]
+에이전트는 사고 보고서 작성 시 반드시 아래 규칙을 따라 전용 폴더를 생성하고 저장해야 합니다.
+1. 저장 위치: `docs/operations/incident-reports/[YYYY-MM-DD]-[TaskName]-[ModelName]/`
+2. 파일명: `report.md`
+(예시: docs/operations/incident-reports/2026-05-15-agents-md-review-mistake-minimax/report.md)
+-->
 
+# 🚨 AI Agent Incident Report Template
 **문서 번호 (Incident ID):** IR-YYYYMMDD-XX
 **작성 일자 (Date):** YYYY-MM-DD
 **보고자 (Reporter):** [에이전트 페르소나 또는 사용자 이름]
