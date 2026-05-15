@@ -7,6 +7,7 @@
 ---
 
 - 2026-05-15 | agents-md-hardening | AGENTS.md에 Core Policy Document Defense(2B) 및 High-Risk Integrity Guardrails(11B) 섹션 적용 완료 확인, docs/history.md 신규 생성
+- 2026-05-15 | agents-md-portability-routing | AGENTS.md의 절대경로 링크를 repo-relative로 정리하고 docs/config/cross-cutting 작업의 agent-log 라우팅 문구를 보강
 - 2026-05-15 | policy-adoption-from-fcpx | fcpx-auto-captions에서 6가지 기법 차용: protocol-design-intent, handshake-protocol, surgical-edit-rules, validation-standard 신규 생성, java-class-comment-guideline 확장(Vue 3/TS 통합), AGENTS.md Section 7 트리거 4행 추가 + Section 11B Anti-Truncation/No Implicit Deletion 추가
 - 2026-05-15 | skills-inventory-update | 미사용 스킬(oracle, caveman, sequential-thinking) 3종 삭제 및 핵심 스킬(liquibase-migration, spring-security-oauth2, pinia-state-management) 3종 신규 생성. AGENTS.md Section 4 & 16 에 신규 스킬 트리거 및 superpower 레퍼런스 명시
 - 2026-05-15 | agents-md-refinement | AGENTS.md 3대 미비점 보완: Section 7 superpower/karpathy 스킬 트리거 매핑 추가, Section 9 한글 주석(Korean Comment Rule) 글로벌 의무화 명시, Section 11 Frontend 구체적 검증 명령어(npm run build 등) 명시

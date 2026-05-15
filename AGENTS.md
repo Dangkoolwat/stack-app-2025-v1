@@ -37,7 +37,7 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 ## 2A. AI Agent Workflow Rules (3-Stage Pipeline & Token Guard)
 
 Detailed 3-Stage Pipeline rules (`semble_rs` -> `code-review-graph` -> `serena`) and efficiency constraints have been moved to:
-- **Read:** [agent-workflow-pipeline.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/workflow/agent-workflow-pipeline.md)
+- **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
 
 ---
 
@@ -47,7 +47,7 @@ Editing core policy documents (like `AGENTS.md`) is considered a **Highest Diffi
 1. **Mandatory History Audit & Sequential Thinking**: Before modifying, you must review `docs/history.md` (or git history) and previous logs. You must use the `[Reasoning]` block to formulate your logic before executing changes.
 2. **Zero Context Contamination**: Arbitrary deletion or "clean-up" is strictly prohibited. 100% of existing context must be preserved.
 3. **Lazy-Loading Architecture**: Keep `AGENTS.md` lightweight. Move detailed guidelines to the `docs/standards/` directory.
-4. **Token-Efficient & Unambiguous**: Use short, decisive English to prevent misinterpretation by other agents.
+4. **Token-Efficient & Unambiguous**: Use short, decisive English for policy text inside `AGENTS.md` and other agent-facing guidance to prevent misinterpretation by other agents.
 5. **Detailed Accountability Report**: Explicitly report all additions, modifications, and deletions immediately after the task.
 
 ---
@@ -125,9 +125,9 @@ Open linked/local rules when their trigger matches. Do not rely on memory.
 Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
-- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools. Read [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md).
-- semantic navigation & editing: [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md)
-- code search & discovery: [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md)
+- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools. Read [code-review-graph-guide.md](docs/standards/code-review-graph-guide.md).
+- semantic navigation & editing: [serena-guide.md](docs/standards/serena-guide.md)
+- code search & discovery: [semble-operation-guide.md](docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](docs/standards/semble-troubleshooting.md)
 - execution engine: read `.agents/skills/superpower/SKILL.md` (BPI workflow) for all non-trivial tasks
 - backend changes: backend config and standards (e.g., JPA, REST, Spring Boot patterns, `spring-security-oauth2`, `liquibase-migration`)
 - frontend changes: frontend config and standards (e.g., Vue standards, styling guidelines, `pinia-state-management`)
@@ -155,7 +155,7 @@ High-risk tasks require explicit approval before editing.
 
 Before editing or making architectural judgments:
 
-- **Zero-Trust File Verification**: Never assume a file or directory is missing. You MUST verify its existence using explicit file system tools (`list_dir`, `view_file`, or terminal `test`/`ls`) before reporting it as broken or missing.
+- **Zero-Trust File Verification**: Never assume a file or directory is missing. You MUST verify its existence using explicit filesystem checks such as terminal `test`/`ls` before reporting it as broken or missing.
 - inspect the target file
 - inspect nearby code
 - inspect direct callers/consumers when behavior may change
@@ -171,16 +171,16 @@ Agents MUST read the required policy file when the following triggers are presen
 
 | Trigger | Required policy file |
 |---|---|
-| `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/code-review-graph-guide.md) |
-| `semble_rs`, `semble`, code search, semantic search, vector index | [semble-operation-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/semble-troubleshooting.md) |
-| `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/serena-guide.md) |
-| handshake, approval, refactor proposal, blast radius proposal | [handshake-protocol.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/handshake-protocol.md) |
-| surgical edit, file modification, refactoring integrity, write_to_file | [surgical-edit-rules.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/surgical-edit-rules.md) |
-| validation, build verification, recovery, handoff, task completion | [validation-standard.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/validation-standard.md) |
-| agent capability, protocol design, cross-model, token economy | [protocol-design-intent.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/protocol-design-intent.md) |
+| `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](docs/standards/code-review-graph-guide.md) |
+| `semble_rs`, `semble`, code search, semantic search, vector index | [semble-operation-guide.md](docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](docs/standards/semble-troubleshooting.md) |
+| `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](docs/standards/serena-guide.md) |
+| handshake, approval, refactor proposal, blast radius proposal | [handshake-protocol.md](docs/standards/handshake-protocol.md) |
+| surgical edit, file modification, refactoring integrity, write_to_file | [surgical-edit-rules.md](docs/standards/surgical-edit-rules.md) |
+| validation, build verification, recovery, handoff, task completion | [validation-standard.md](docs/standards/validation-standard.md) |
+| agent capability, protocol design, cross-model, token economy | [protocol-design-intent.md](docs/standards/protocol-design-intent.md) |
 | non-trivial, high-risk, complex implementation, task planning | `.agents/skills/superpower/SKILL.md` |
 | code style, LLM mistakes, behavioral guidelines | `.agents/skills/karpathy-guidelines/SKILL.md` |
-| incident report, false positive, hallucination, policy violation | [incident-reports/_template.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/operations/incident-reports/_template.md) |
+| incident report, false positive, hallucination, policy violation | [incident-reports/_template.md](docs/operations/incident-reports/_template.md) |
 
 ---
 
@@ -231,7 +231,8 @@ Revert accidental unrelated edits.
 
 ## 11. Verification & Integrity Guardrails
 Use evidence-based success criteria (e.g., Exit code 0) and strict atomic rollback protocols.
-- **Read required validation rules:** [validation-standard.md](file:///Users/sanghyoukjin/daangcoolProject/stack-app-2025-v1/docs/standards/validation-standard.md)
+- **Read required validation rules:** [validation-standard.md](docs/standards/validation-standard.md)
+- **Quick reference:** Backend `./mvnw verify` or `./mvnw test`; Frontend `npm run build` or `npm run test`.
 
 ---
 
@@ -278,7 +279,12 @@ If a guide seems wrong/outdated, report:
 - issue
 - suggested fix
 
-For non-trivial implementation work, write a concise agent log in the relevant backend/frontend log path.
+For non-trivial implementation work, write a concise agent log in the matching domain path:
+- Backend: `docs/backend/agent-log/YYYY-MM-DD-<task-name>/`
+- Frontend: `docs/frontend/agent-log/YYYY-MM-DD-<task-name>/`
+- Docs/config/cross-cutting work: use the nearest owning domain log path and note every affected domain in the log.
+- Required files: `proposal.md`, `problem-analysis.md`, `implementation-plan.md`, `walkthrough.md`, `self-check.md`, `final-report.md`
+- Use the matching template file in that domain folder as the source of truth.
 For failed or paused non-trivial work, record useful findings when appropriate.
 
 Use lightweight logs by default.
@@ -316,7 +322,7 @@ Keep handoffs short and factual.
 - include alternatives only when risk/cost/architecture differs
 - report verification clearly
 - do not dump long logs unless requested
-- **Report Style**: 모든 한국어 보고 및 응답은 명사형/종결형 업무 문체(예: '~ 완료', '~ 확인')로 간결하게 작성하여 가독성을 극대화한다. 존칭 및 미사여구 배제.
+- **Report Style**: User-facing Korean reports and responses should use concise nominal/final business style (e.g. `~ 완료`, `~ 확인`). Keep policy text in concise English.
 
 ---
 
