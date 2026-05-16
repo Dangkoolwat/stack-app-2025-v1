@@ -34,10 +34,15 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
 
-## 2A. AI Agent Workflow Rules (3-Stage Pipeline & Token Guard)
+## 2A. AI Agent Workflow Rules (Conditional Search Order & Token Guard)
 
-Detailed 3-Stage Pipeline rules (`semble_rs` -> `code-review-graph` -> `serena`) and efficiency constraints have been moved to:
+Detailed search and review workflow now lives in:
 - **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
+
+Short order:
+- Target unclear: `rg --files` / `rg` first.
+- Target already a symbol: Serena directly.
+- Broad or unclear impact: add `code-review-graph`.
 
 ---
 
@@ -122,10 +127,15 @@ Procedure:
 
 Open linked/local rules when their trigger matches. Do not rely on memory.
 
+Search order:
+- Target unclear: `rg --files` / `rg` first.
+- Target already a symbol: Serena directly.
+- Broad or unclear impact: add `code-review-graph`.
+
 Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
 - non-trivial/high-risk coding: `.agents/skills/karpathy-guidelines/SKILL.md`
-- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` impact tools. Read [code-review-graph-guide.md](docs/standards/code-review-graph-guide.md).
+- cross-module changes: Serena impact analysis (`find_referencing_symbols`) and `code-review-graph` when the blast radius is broad or unclear. Read [code-review-graph-guide.md](docs/standards/code-review-graph-guide.md).
 - semantic navigation & editing: [serena-guide.md](docs/standards/serena-guide.md)
 - code search & discovery: [semble-operation-guide.md](docs/standards/semble-operation-guide.md), [semble-troubleshooting.md](docs/standards/semble-troubleshooting.md)
 - execution engine: read `.agents/skills/superpower/SKILL.md` (BPI workflow) for all non-trivial tasks

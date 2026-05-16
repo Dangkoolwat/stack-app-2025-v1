@@ -1,44 +1,39 @@
-# AI Agent Workflow Rules (3-Stage Pipeline & Token Guard)
+# AI Agent Workflow Rules (Conditional Search & Token Guard)
 
-You have three specialized tools: `semble_rs` (Search/Deps), `code-review-graph` (Architecture), and `serena` (Review). Follow this strict pipeline to minimize token usage. **If the results of any step sufficiently meet the objective, stop the search immediately and do not proceed to the next step.**
+Use the lightest tool that fits the task. Stop as soon as the current step answers the question.
 
-## Stage 1. Discovery & Search (Strictly use `semble_rs`)
-- NEVER use `cat`, `read`, or `grep` to find or read code blocks.
-- For structural overview, use: `semble_rs search "query" . --outline`
-- For targeted line-by-line context, use: `semble_rs search "query" . --compact`
-- DO NOT use `--json` unless integrating with other tools, as it consumes 50x more tokens.
-- **Open API Docs Skills:** If external specifications (Next.js, Spring Boot, etc.) are required, use dedicated skills or standard browsing. Do not perform broad web scraping.
+## Stage 1. Discovery & Search
+- If the target is unclear, use `rg --files` / `rg` first.
+- If the target already looks like a symbol, use `Serena` or the closest symbol tool directly.
+- Use `semble_rs` when semantic search is cheaper than plain text search.
+- Avoid `--json` unless another tool needs it.
+- Do not use `cat`, `read`, or `grep` as the first pass for broad discovery.
+- If external specifications are required, use the dedicated docs or standard browsing. Do not scrape broadly.
 
 ## Stage 2. Impact Analysis
-- Before modifying any file, check its dependencies and ripple effects:
-  - `semble_rs deps <file> . --json`
-  - `semble_rs impact <file> . --json`
-- Use `code-review-graph` only if you need a macro-level visual breakdown of the change scope.
-  - **Connection order:** MCP tools first → CLI (`npx caveman-shrink code-review-graph`) fallback.
-  - **Maintenance:** Run `code-review-graph update` after major refactoring to maintain analysis accuracy.
+- Add `code-review-graph` only when the blast radius is broad or unclear.
+- Use `code-review-graph` when the change may cross modules, change architecture, or affect many callers.
+- Connection order: MCP tools first, then CLI (`npx caveman-shrink code-review-graph`) if needed.
+- Run `code-review-graph update` after major refactoring to keep analysis accurate.
 
 ## Stage 3. Code Generation & Final Review
-- Modify the code based on the accurate snippets found. Use surgical precision (e.g. diff/patch formats); do not rewrite entire files unless necessary.
-- Once modifications are done, pass the final diff or code logic to `serena` for prompt refinement and comprehensive code-review validation before committing.
-- Use `Serena (LSP)` (e.g., `get_symbols_overview`) for precision navigation to specific symbol definitions and references before editing.
+- Modify code with surgical precision. Do not rewrite whole files unless necessary.
+- Use `Serena (LSP)` for symbol definitions, references, and precise edits before writing.
+- Re-check the final diff if the scope changed or if the impact step found a wide blast radius.
 
-## 🛡️ Efficiency Constraints
-- **Gating Principle**: Proceed to the next priority tool only if current results are insufficient. Unnecessary tool calls are forbidden.
-- **Selective Reading**: Do not read files over 500 lines in their entirety. Use `semble_rs` outline or Serena's Skeleton analysis first, then read specific function ranges.
-- **Trivial Exception**: Stage 1-2 can be skipped for typos or simple comment edits with no logic changes.
+## Efficiency Constraints
+- Proceed to the next tool only if the current result is not enough.
+- Do not read large files in full when a narrow symbol or line range is enough.
+- Skip Stage 1-2 for typos or simple comment edits with no logic change.
 
-## 💡 Workflow Principle
-> **"Formulate a hypothesis first (semble_rs for narrow search and impact), verify the location (Skeleton/LSP), and read only when certain (Read). Critical modifications must be re-validated."**
+## Workflow Principle
+> "Start with the smallest useful search, verify the exact location, and read only what is needed. Re-validate any change with wide impact."
 
-## 🛠️ Advanced Token Utilities & Fallbacks (Token Shield)
+## Token Utilities & Fallbacks
 | Utility | Role | Execution Method |
 | :--- | :--- | :--- |
 | **Repomix** | Folder/Scope filtering | `npx repomix --include "path/*"` |
 | **Graph** | Impact analysis | `npx caveman-shrink code-review-graph` |
 
-- **CLI Failure Fallback:** If CLI tools fail due to environment issues, fallback to traditional `grep` and `find`. **CRITICAL:** Limit the search range extremely narrowly to minimize token waste.
-
-## 🛡️ MCP Optimization & Token Utilities (Caveman Protocol)
-- **Schema Aggression**: Omit verbose descriptions and redundant types during tool schema loading; map only core parameters to save input tokens.
-- **Shrink-First**: Large responses (e.g., graph data, file content) MUST undergo semantic compression via `caveman-shrink` proxy before agent interpretation.
-- **Token Shield**: Prioritize `caveman-shrink` wrapped tools for all structural and semantic analysis.
+- If CLI tools fail due to environment issues, fall back to the narrowest possible `rg`/`find` search.
+- Keep large outputs compressed before review when possible.

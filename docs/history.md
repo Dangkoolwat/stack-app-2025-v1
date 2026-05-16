@@ -6,6 +6,8 @@
 
 ---
 
+- 2026-05-16 | legacy-guidance-prune | Semble Operation Guide에서 설치/환경설정 중복 설명을 삭제하고 운영 순서만 남김
+- 2026-05-16 | agents-md-search-order | AGENTS.md와 연결 정책 문서를 조건형 검색 순서로 정리: 대상 불명확 시 `rg --files` / `rg` 선행, 심볼이 명확하면 Serena 직접, blast radius가 큰 경우에만 `code-review-graph` 추가
 - 2026-05-15 | agents-md-hardening | AGENTS.md에 Core Policy Document Defense(2B) 및 High-Risk Integrity Guardrails(11B) 섹션 적용 완료 확인, docs/history.md 신규 생성
 - 2026-05-15 | agents-md-portability-routing | AGENTS.md의 절대경로 링크를 repo-relative로 정리하고 docs/config/cross-cutting 작업의 agent-log 라우팅 문구를 보강
 - 2026-05-15 | policy-adoption-from-fcpx | fcpx-auto-captions에서 6가지 기법 차용: protocol-design-intent, handshake-protocol, surgical-edit-rules, validation-standard 신규 생성, java-class-comment-guideline 확장(Vue 3/TS 통합), AGENTS.md Section 7 트리거 4행 추가 + Section 11B Anti-Truncation/No Implicit Deletion 추가
@@ -16,4 +18,4 @@
 - 2026-05-15 | error-recovery-protocol | 에이전트 오판(False Positive) 방지를 위한 2대 방어 조치 추가: 1) `AGENTS.md` Section 6에 물리적 파일 검증 의무(Zero-Trust File Verification) 명문화. 2) `validation-standard.md` 에 오판 발생 시 즉각적인 롤백 및 사고 보고서 작성을 강제하는 오류 복구 절차(Error Recovery Flow) 신설.
 
 ---
-*마지막 업데이트: 2026-05-15 (v1.5.0)*
+*마지막 업데이트: 2026-05-16 (v1.5.2)*

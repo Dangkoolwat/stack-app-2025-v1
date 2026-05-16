@@ -45,5 +45,5 @@ Periodic maintenance ensures graph accuracy. These do not require the `caveman-s
 
 ## 5. Mandatory Policy
 1. **Read First:** Agents MUST read this guide before using any `code-review-graph` tools.
-2. **Surgical Analysis:** Use `detect_changes_tool` or `get_impact_radius_tool` before proposing any Non-trivial or High-Risk plan.
+2. **Surgical Analysis:** Use `detect_changes_tool` or `get_impact_radius_tool` before proposing any plan when the change may cross modules, change architecture, or has an unclear blast radius.
 3. **Verification:** Re-run impact analysis after implementation to verify 0% regression in unrelated modules.
