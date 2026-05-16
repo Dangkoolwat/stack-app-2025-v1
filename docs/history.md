@@ -10,6 +10,7 @@
 - 2026-05-16 | stack-app-semble-rs-default-rules | AGENTS.md, workflow, and standards docs에 plan/search/digest 기본값과 Java/Vue deps fallback을 반영
 - 2026-05-16 | semble-rs-java-vue-support | AGENTS.md와 semble_rs 운영 문서에 Java/Vue용 `tree --symbols`, `deps`, `search --outline` 흐름과 `impact` caveat를 반영
 - 2026-05-16 | agents-md-search-order | AGENTS.md와 연결 정책 문서를 조건형 검색 순서로 정리: 대상 불명확 시 `rg --files` / `rg` 선행, 심볼이 명확하면 Serena 직접, blast radius가 큰 경우에만 `code-review-graph` 추가
+- 2026-05-16 | stack-app-docs-routing-cache | added a docs-analysis cache and repo-local sync script for the docs layout
 - 2026-05-15 | agents-md-hardening | AGENTS.md에 Core Policy Document Defense(2B) 및 High-Risk Integrity Guardrails(11B) 섹션 적용 완료 확인, docs/history.md 신규 생성
 - 2026-05-15 | agents-md-portability-routing | AGENTS.md의 절대경로 링크를 repo-relative로 정리하고 docs/config/cross-cutting 작업의 agent-log 라우팅 문구를 보강
 - 2026-05-15 | policy-adoption-from-fcpx | fcpx-auto-captions에서 6가지 기법 차용: protocol-design-intent, handshake-protocol, surgical-edit-rules, validation-standard 신규 생성, java-class-comment-guideline 확장(Vue 3/TS 통합), AGENTS.md Section 7 트리거 4행 추가 + Section 11B Anti-Truncation/No Implicit Deletion 추가

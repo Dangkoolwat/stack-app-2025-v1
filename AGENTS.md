@@ -48,7 +48,14 @@ Short order:
 
 ---
 
-## 2B. Core Policy Document Defense (Surgical Edit Rules)
+## 2B. Docs Cache
+
+- `docs/analysis/2026-05-16-stack-app-docs-routing-cache/report.md` is a fast folder map only, not source of truth.
+- When `docs/standards/`, `docs/workflow/`, or `docs/operations/` change, run `scripts/sync-docs-routing-cache.sh` to refresh the cache, then rerun `--check` before closing the task.
+
+---
+
+## 2C. Core Policy Document Defense (Surgical Edit Rules)
 
 Editing core policy documents (like `AGENTS.md`) is considered a **Highest Difficulty and Highest Risk** operation. You MUST adhere to these 5 procedures:
 1. **Mandatory History Audit & Sequential Thinking**: Before modifying, you must review `docs/history.md` (or git history) and previous logs. You must use the `[Reasoning]` block to formulate your logic before executing changes.
