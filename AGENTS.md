@@ -42,6 +42,7 @@ Detailed search and review workflow now lives in:
 Short order:
 - Target unclear: `rg --files` / `rg` first.
 - Target already a symbol: Serena directly.
+- For Java/Vue source, use `tree --symbols`, `deps`, or `search --outline` when the structure is still unclear.
 - Broad or unclear impact: add `code-review-graph`.
 
 ---

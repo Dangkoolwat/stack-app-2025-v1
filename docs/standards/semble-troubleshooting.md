@@ -83,3 +83,11 @@ args = []
    pkill -f "semble"
    ```
 3. **필요 시 호출**: 에이전트가 `search` 도구를 호출할 때만 특정 경로(예: `repo="."`)를 전달하여 필요한 시점에만 인덱싱을 수행하도록 유도합니다.
+
+---
+
+## 5. Java/Vue Discovery Note
+
+- Java/Vue 작업에서는 `tree --symbols`, `deps`, `search --outline`을 먼저 확인할 수 있습니다.
+- `impact`는 빠른 reverse-dependency probe로만 사용하고, 결과가 비어 있으면 blast radius가 없다는 뜻으로 해석하지 않습니다.
+- 구조가 충분히 좁혀지지 않으면 CRG 또는 Serena로 넘어갑니다.
