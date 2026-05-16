@@ -40,9 +40,10 @@ Detailed search and review workflow now lives in:
 - **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
 
 Short order:
-- Target unclear: `rg --files` / `rg` first.
-- Target already a symbol: Serena directly.
-- For Java/Vue source, use `tree --symbols`, `deps`, or `search --outline` when the structure is still unclear.
+- Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
+- Target already a symbol: `search --outline` or `search --compact` first, then Serena for exact refs.
+- For Java/Vue source, use `tree --symbols` for structure and `deps` for file dependencies. If `deps` does not cover a Vue file, fall back to `tree --symbols` plus `search --outline` or Serena.
+- For noisy build or test logs, use `semble_rs digest`.
 - Broad or unclear impact: add `code-review-graph`.
 
 ---
@@ -129,8 +130,9 @@ Procedure:
 Open linked/local rules when their trigger matches. Do not rely on memory.
 
 Search order:
-- Target unclear: `rg --files` / `rg` first.
-- Target already a symbol: Serena directly.
+- Target unclear: `semble_rs plan` first.
+- Target already a symbol: `search --outline` or `search --compact` first, then Serena.
+- For Java/Vue files: use `tree --symbols` and `deps` before deeper reads.
 - Broad or unclear impact: add `code-review-graph`.
 
 Must read (search `docs/` for keywords matching the target file path/domain):

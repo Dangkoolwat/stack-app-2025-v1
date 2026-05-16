@@ -3,9 +3,10 @@
 Use the lightest tool that fits the task. Stop as soon as the current step answers the question.
 
 ## Stage 1. Discovery & Search
-- If the target is unclear, use `rg --files` / `rg` first.
-- If the target already looks like a symbol, use `Serena` or the closest symbol tool directly.
-- Use `semble_rs` when semantic search is cheaper than plain text search.
+- If the target is unclear, use `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
+- If the target already looks like a symbol, use `search --outline` or `search --compact` first, then Serena for exact refs.
+- Use `tree --symbols` for Java/Vue structure, and `deps` when file dependency context is needed.
+- Use `semble_rs digest` for noisy build or test logs.
 - Avoid `--json` unless another tool needs it.
 - Do not use `cat`, `read`, or `grep` as the first pass for broad discovery.
 - If external specifications are required, use the dedicated docs or standard browsing. Do not scrape broadly.
@@ -13,12 +14,14 @@ Use the lightest tool that fits the task. Stop as soon as the current step answe
 ## Stage 2. Impact Analysis
 - Add `code-review-graph` only when the blast radius is broad or unclear.
 - Use `code-review-graph` when the change may cross modules, change architecture, or affect many callers.
+- Use `impact` only as a quick reverse-dependency probe; empty output is inconclusive.
 - Connection order: MCP tools first, then CLI (`npx caveman-shrink code-review-graph`) if needed.
 - Run `code-review-graph update` after major refactoring to keep analysis accurate.
 
 ## Stage 3. Code Generation & Final Review
 - Modify code with surgical precision. Do not rewrite whole files unless necessary.
 - Use `Serena (LSP)` for symbol definitions, references, and precise edits before writing.
+- For Java/Vue files, prefer `deps` before deeper reads when the graph covers the target.
 - Re-check the final diff if the scope changed or if the impact step found a wide blast radius.
 
 ## Efficiency Constraints
