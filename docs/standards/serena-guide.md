@@ -71,7 +71,7 @@ For efficient context management, use tools in the following priority:
 
 1. **1st Priority: `rg --files` / `rg`**: Use this when the target is still unclear.
 2. **2nd Priority: `Serena` (LSP Precision)**: Use this directly when the target already looks like a symbol.
-3. **3rd Priority: `Semble` (Discovery)**: Use natural language search when text search is too broad.
+3. **3rd Priority: `semble_rs` (Discovery)**: Use natural language search when text search is too broad.
 4. **4th Priority: `code-review-graph` (Structural Analysis)**: Use this when the blast radius is broad or unclear.
 5. **5th Priority: `Grep/Read` (Textual Analysis)**: Use this for non-code files and simple text matching after the target is known.
 6. **6th Priority: `git` (History Analysis)**: Use this for change history and prior decisions.

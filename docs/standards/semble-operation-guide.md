@@ -1,6 +1,6 @@
-# Semble Operation Guide
+# semble_rs Operation Guide
 
-This guide covers Semble operational order only. Installation and environment-specific fixes live in [Semble Troubleshooting](docs/standards/semble-troubleshooting.md).
+This guide covers `semble_rs` operational order only. Installation and environment-specific fixes live in [semble_rs Troubleshooting](docs/standards/semble-troubleshooting.md).
 
 ---
 
@@ -28,6 +28,6 @@ Agents MUST follow the search order defined in `AGENTS.md` (Section 2A).
 
 ## 3. Troubleshooting Boundary
 
-- Installation, MCP setup, and environment-specific fixes live in [Semble Troubleshooting](docs/standards/semble-troubleshooting.md).
+- Installation, MCP setup, and environment-specific fixes live in [semble_rs Troubleshooting](docs/standards/semble-troubleshooting.md).
 - If `mcp_semble_search` is unavailable, fall back to `rg` and Serena.
 - Keep this guide short. Do not put environment-specific patch steps here.

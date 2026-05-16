@@ -13,7 +13,7 @@
 ## Steps
 - [x] Verify `semble_rs` `tree --symbols`, `deps`, and `impact` on a Java file in this repo.
 - [x] Update `semble-operation-guide.md` to describe Java/Vue structure mapping and the `impact` caveat.
-- [x] Update `AGENTS.md` so the repo-level search order reflects the same Semble guidance.
+- [x] Update `AGENTS.md` so the repo-level search order reflects the same `semble_rs` guidance.
 - [x] Update troubleshooting and history/report records.
 - [x] Run `git diff --check` and confirm the staged scope is limited to the intended docs.
 

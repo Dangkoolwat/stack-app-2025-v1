@@ -183,7 +183,7 @@ Agents MUST read the required policy file when the following triggers are presen
 | Trigger | Required policy file |
 |---|---|
 | `code-review-graph`, knowledge graph, structural analysis, impact radius, blast radius | [code-review-graph-guide.md](docs/standards/code-review-graph-guide.md) |
-| `semble_rs`, `semble`, code search, semantic search, vector index | [semble-operation-guide.md](docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](docs/standards/semble-troubleshooting.md) |
+| `semble_rs`, code search, semantic search, vector index | [semble-operation-guide.md](docs/standards/semble-operation-guide.md) and [semble-troubleshooting.md](docs/standards/semble-troubleshooting.md) |
 | `serena`, LSP, semantic navigation, symbol analysis | [serena-guide.md](docs/standards/serena-guide.md) |
 | handshake, approval, refactor proposal, blast radius proposal | [handshake-protocol.md](docs/standards/handshake-protocol.md) |
 | surgical edit, file modification, refactoring integrity, write_to_file | [surgical-edit-rules.md](docs/standards/surgical-edit-rules.md) |

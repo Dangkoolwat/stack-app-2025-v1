@@ -1,6 +1,6 @@
-# Semble Troubleshooting
+# semble_rs Troubleshooting
 
-이 문서는 Semble 설치와 환경별 수정이 필요한 경우에만 참고하는 운영 노트입니다.
+이 문서는 `semble_rs` 설치와 환경별 수정이 필요한 경우에만 참고하는 운영 노트입니다.
 
 ---
 
@@ -9,7 +9,7 @@
 시스템 파이썬을 오염시키지 않는 `uv`를 사용하는 것을 권장합니다.
 
 ```bash
-# Semble 및 MCP 지원 패키지 설치
+# `semble_rs` 및 MCP 지원 패키지 설치
 uv tool install "semble[mcp]" --force
 ```
 
