@@ -6,6 +6,7 @@
 
 ---
 
+- 2026-05-17 | agents-md-search-order-clarity | AGENTS.md Section 4의 중복 search order 문장을 Section 2A 참조로 압축하고 policy read 목록만 유지
 - 2026-05-16 | legacy-guidance-prune | semble_rs Operation Guide에서 설치/환경설정 중복 설명을 삭제하고 운영 순서만 남김
 - 2026-05-16 | stack-app-semble-rs-default-rules | AGENTS.md, workflow, and standards docs에 plan/search/digest 기본값과 Java/Vue deps fallback을 반영
 - 2026-05-16 | semble-rs-java-vue-support | AGENTS.md와 semble_rs 운영 문서에 Java/Vue용 `tree --symbols`, `deps`, `search --outline` 흐름과 `impact` caveat를 반영
@@ -22,4 +23,4 @@
 - 2026-05-17 | agents-md-discovery-clarity | AGENTS.md 2A에 discovery pipeline 역할을 다시 적고 후속 targeted read/shell 사용 가능 범위를 명시
 
 ---
-*마지막 업데이트: 2026-05-17 (v1.5.3)*
+*마지막 업데이트: 2026-05-17 (v1.5.4)*

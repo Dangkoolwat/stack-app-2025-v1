@@ -137,11 +137,7 @@ Procedure:
 
 Open linked/local rules when their trigger matches. Do not rely on memory.
 
-Search order:
-- Target unclear: `semble_rs plan` first.
-- Target already a symbol: `search --outline` or `search --compact` first, then Serena.
-- For Java/Vue files: use `tree --symbols` and `deps` before deeper reads.
-- Broad or unclear impact: add `code-review-graph`.
+Search order lives in Section 2A. Section 4 only lists the policy files that must be read once a trigger matches.
 
 Must read (search `docs/` for keywords matching the target file path/domain):
 - high-risk: relevant impact/standard docs
