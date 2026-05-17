@@ -5,7 +5,7 @@ This document defines how to use MCP, CLI, and advanced workflows in this reposi
 ## 1. MCP / Serena Rules
 - `semble_rs plan` is the first pass when the target is unclear.
 - `rg --files` / `rg` is the next pass when more candidate narrowing is still needed.
-- `search --outline` or `search --compact` is the direct choice when the target already looks like a symbol.
+- `search --outline` or `search --compact` is the direct choice when the target already looks like a symbol; use `ast-grep` when the pattern is already known and syntax-aware narrowing helps.
 - `Serena` is the exact-reference tool after the symbol is known.
 - `tree --symbols` and `deps` are the Java/Vue structure tools.
 - `semble_rs digest` is the default for long or noisy logs.

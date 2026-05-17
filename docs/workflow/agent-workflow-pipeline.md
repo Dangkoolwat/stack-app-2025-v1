@@ -4,7 +4,7 @@ Use the lightest tool that fits the task. Stop as soon as the current step answe
 
 ## Stage 1. Discovery & Search
 - If the target is unclear, use `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
-- If the target already looks like a symbol, use `search --outline` or `search --compact` first, then Serena for exact refs.
+- If the target already looks like a symbol, use `search --outline` or `search --compact` first; use `ast-grep` when the pattern is already known and syntax-aware narrowing helps, then Serena for exact refs.
 - Use `tree --symbols` for Java/Vue structure, and `deps` when file dependency context is needed.
 - Use `semble_rs digest` for noisy build or test logs.
 - Avoid `--json` unless another tool needs it.

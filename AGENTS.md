@@ -42,7 +42,7 @@ This section is the discovery pipeline; keep later targeted reads and shell use 
 
 Short order:
 - Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
-- Target already a symbol: `search --outline` or `search --compact` first, then Serena for exact refs.
+- Target already a symbol: `search --outline` or `search --compact` first; use `ast-grep` when the pattern is already known and syntax-aware narrowing helps, then Serena for exact refs.
 - For Java/Vue source, use `tree --symbols` for structure and `deps` for file dependencies. If `deps` does not cover a Vue file, fall back to `tree --symbols` plus `search --outline` or Serena.
 - For noisy build or test logs, use `semble_rs digest`.
 - Broad or unclear impact: add `code-review-graph`.
