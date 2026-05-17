@@ -38,6 +38,7 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 Detailed search and review workflow now lives in:
 - **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
+This section is the discovery pipeline; keep later targeted reads and shell use for when the scope is already known.
 
 Short order:
 - Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
