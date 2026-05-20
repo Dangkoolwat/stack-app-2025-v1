@@ -39,6 +39,7 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 Detailed search and review workflow now lives in:
 - **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
 This section is the discovery pipeline; keep later targeted reads and shell use for when the scope is already known.
+If a preferred tool is unavailable in the current environment, fall back to the narrowest safe alternative in the linked workflow guide.
 
 Short order:
 - Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
@@ -70,6 +71,7 @@ Editing core policy documents (like `AGENTS.md`) is considered a **Highest Diffi
 ## 2D. Model-Specific Execution Guidelines (Gemini 3.5 Flash & 3.1 Pro)
 
 To maximize performance under the upgraded Gemini engines while preventing token waste and attention distraction, apply the following routing rules:
+These are example execution profiles, not exclusive requirements; other models should follow the same intent with equivalent local tools and judgment.
 
 ### 1. Gemini 3.5 Flash (Diagnostic & Operational Velocity)
 - **Primary Role**: Discovery, log diagnostics, high-speed execution, and Trivial fixes (Fast Track).
@@ -317,16 +319,15 @@ If a guide seems wrong/outdated, report:
 - issue
 - suggested fix
 
-For non-trivial implementation work, write a concise agent log in the matching domain path:
+For non-trivial implementation work, write a concise agent log as a single Markdown file in the matching domain path:
 - Backend: `docs/backend/agent-log/YYYY-MM-DD-<task-name>/`
 - Frontend: `docs/frontend/agent-log/YYYY-MM-DD-<task-name>/`
 - Docs/config/cross-cutting work: use the nearest owning domain log path and note every affected domain in the log.
-- Required files: `proposal.md`, `problem-analysis.md`, `implementation-plan.md`, `walkthrough.md`, `self-check.md`, `final-report.md`
-- Use the matching template file in that domain folder as the source of truth.
-For failed or paused non-trivial work, record useful findings when appropriate.
-
+Default format: `WORK_REPORT.md` with short sections such as `Summary`, `Files Changed`, `Verification`, and `Notes`.
+Use the matching template file in that domain folder only when the work is high-risk or explicitly requested.
 Use lightweight logs by default.
-Use full logs only for high-risk or requested work (e.g., changes to core policy documents like `AGENTS.md` require detailed accountability reports as per Rule 2B).
+Use full logs only for high-risk or requested work.
+For failed or paused non-trivial work, record useful findings when appropriate.
 
 ---
 
