@@ -27,6 +27,10 @@ Use the lightest tool that fits the task. Stop as soon as the current step answe
 ## Efficiency Constraints
 - Proceed to the next tool only if the current result is not enough.
 - Do not read large files in full when a narrow symbol or line range is enough.
+- **Context Economy Limit**: Strictly forbid reading files > 500 lines entirely. Read specific symbols or 200-line chunks.
+- **Model-Specific Discovery (Two-Speed Tooling)**:
+  - **Gemini 3.5 Flash**: Utilize low-latency advantage to perform rapid, sequential tool probes (e.g., nesting `tree --symbols` and `search --compact`).
+  - **Gemini 3.1 Pro**: Prioritize `semble_rs plan` for semantic grouping and `code-review-graph` to map dependencies.
 - Skip Stage 1-2 for typos or simple comment edits with no logic change.
 
 ## Workflow Principle

@@ -22,6 +22,7 @@
 - 2026-05-15 | incident-report-template | 에이전트 오작동(False Positive, Zero-Trust 위반 등) 대응을 위한 공식 사고 보고서 템플릿(`docs/operations/incident-reports/_template.md`) 생성 및 `AGENTS.md` Section 7 트리거에 매핑 추가.
 - 2026-05-15 | error-recovery-protocol | 에이전트 오판(False Positive) 방지를 위한 2대 방어 조치 추가: 1) `AGENTS.md` Section 6에 물리적 파일 검증 의무(Zero-Trust File Verification) 명문화. 2) `validation-standard.md` 에 오판 발생 시 즉각적인 롤백 및 사고 보고서 작성을 강제하는 오류 복구 절차(Error Recovery Flow) 신설.
 - 2026-05-17 | agents-md-discovery-clarity | AGENTS.md 2A에 discovery pipeline 역할을 다시 적고 후속 targeted read/shell 사용 가능 범위를 명시
+- 2026-05-20 | guideline-model-optimization-gemini-3.5-flash | Gemini 3.5 Flash 및 3.1 Pro 업그레이드 반영 모델 가이드라인 개정 및 두 엔진 이원화 운용 수칙 명시
 
 ---
-*마지막 업데이트: 2026-05-17 (v1.5.4)*
+*마지막 업데이트: 2026-05-20 (v1.6.0)*

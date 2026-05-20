@@ -67,6 +67,27 @@ Editing core policy documents (like `AGENTS.md`) is considered a **Highest Diffi
 
 ---
 
+## 2D. Model-Specific Execution Guidelines (Gemini 3.5 Flash & 3.1 Pro)
+
+To maximize performance under the upgraded Gemini engines while preventing token waste and attention distraction, apply the following routing rules:
+
+### 1. Gemini 3.5 Flash (Diagnostic & Operational Velocity)
+- **Primary Role**: Discovery, log diagnostics, high-speed execution, and Trivial fixes (Fast Track).
+- **Context Guard & Token Economy**:
+  - Never read files > 500 lines entirely. Use targeted symbol searches or read in 200-line chunks.
+  - Compress compilation or build logs with `semble_rs digest` rather than parsing large text dumps directly.
+- **Two-Speed Tooling**: Use latency advantage to perform rapid, sequential tool probes (e.g., chain multiple list/search commands).
+
+### 2. Gemini 3.1 Pro (Architectural Rigor & Standard Planning)
+- **Primary Role**: Complex logic, multi-module dependency tracking, and High-Risk changes.
+- **High-Risk Defense**:
+  - Always enforce BPI workflow (`.agents/skills/superpower/SKILL.md`) for Standard Planning.
+  - Utilize `code-review-graph` to analyze cross-boundary blast radius before proposing the implementation plan.
+  - Maintain absolute compliance with security (OAuth2), JPA, and JHipster standards.
+
+---
+
+
 ## 3. Task Levels
 
 Classify before acting.
