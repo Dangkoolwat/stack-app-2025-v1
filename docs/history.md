@@ -25,6 +25,7 @@
 - 2026-05-20 | guideline-model-optimization-gemini-3.5-flash | Gemini 3.5 Flash 및 3.1 Pro 업그레이드 반영 모델 가이드라인 개정 및 두 엔진 이원화 운용 수칙 명시
 - 2026-05-20 | agents-md-policy-clarity | AGENTS.md 2A fallback, 2D model applicability, 14 logs burden를 완화하고 history entry를 추가
 - 2026-05-20 | agents-md-log-format-simplification | AGENTS.md Section 14를 단일 Markdown 로그 + 섹션 구조로 단순화
+- 2026-05-31 | stack-app-oss-support | added LICENSE, CONTRIBUTING.md, ROADMAP.md, and a README audience intro for OSS onboarding
 
 ---
-*마지막 업데이트: 2026-05-20 (v1.6.2)*
+*마지막 업데이트: 2026-05-31 (v1.6.3)*

@@ -1,5 +1,9 @@
 # 🚀 Stack App 2025 v1
 
+## Who is this project for?
+
+This project is for individual developers, small teams, and learners who want to start a production-oriented full-stack application without rebuilding the same backend and frontend foundation every time. It provides a practical starter structure based on Spring Boot 4 and Vue 3, including authentication, database migration, API documentation, caching, Docker-based local development, and cloud deployment readiness. The goal is to help developers move faster while keeping the project structure maintainable, testable, and suitable for real-world services.
+
 Spring Boot 4.x 기반 REST API 서버 프레임워크입니다. 개발자가 온프레미스 (On-Prem) 나 클라우드 (OCI/Azure) 환경에서 빠르게 확장 가능한 백엔드 서비스를 구축할 수 있도록 설계한 Full-Stack Starter Project(Spring Boot 4 + Vue 3) 입니다.
 
 현재 Oracle Cloud VM 환경에서 운영 중인 구조를 최신 트렌드에 맞게 개편하고 있으며, 실제 프로젝트 경험을 기반으로 생산성과 유지보수성을 극대화하도록 설계했습니다.
