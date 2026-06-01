@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Minimum rules for agents working in this repo.
-Keep changes correct, safe, small, and reversible.
+Keep AGENTS as a router. Keep changes correct, safe, small, and reversible.
 
 ---
 
@@ -12,9 +12,10 @@ When rules conflict, follow this order:
 1. User instructions
 2. Nearest `AGENTS.md`
 3. `docs/standards/`, `docs/workflow/`, `docs/operations/`
-4. Other docs
-5. Code, tests, config
-6. General knowledge
+4. `docs/history.md`
+5. Other docs
+6. Code, tests, config
+7. General knowledge
 
 Higher source wins. Ask before acting on risky conflicts.
 
@@ -34,16 +35,16 @@ Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
 
-## 2A. AI Agent Workflow Rules (Conditional Search Order & Token Guard)
+## 2A. AI Agent Workflow Router
 
-Detailed search and review workflow now lives in:
+Detailed workflow:
 - **Read:** [agent-workflow-pipeline.md](docs/workflow/agent-workflow-pipeline.md)
-This section is the discovery pipeline; keep later targeted reads and shell use for when the scope is already known.
-If a preferred tool is unavailable in the current environment, fall back to the narrowest safe alternative in the linked workflow guide.
+- Use this section as the discovery router. Keep later targeted reads and shell use for when the scope is already known.
+- If a preferred tool is unavailable, fall back to the narrowest safe alternative in the linked workflow guide.
 
-Short order:
-- Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more candidate narrowing is still needed.
-- Target already a symbol: `search --outline` or `search --compact` first; use `ast-grep` when the pattern is already known and syntax-aware narrowing helps, then Serena for exact refs.
+Router order:
+- Target unclear: `semble_rs plan` first. Use `rg --files` / `rg` only if more narrowing is still needed.
+- Target already known: `search --outline` or `search --compact` first; use `ast-grep` when the pattern is already known and syntax-aware narrowing helps, then Serena for exact refs.
 - For Java/Vue source, use `tree --symbols` for structure and `deps` for file dependencies. If `deps` does not cover a Vue file, fall back to `tree --symbols` plus `search --outline` or Serena.
 - For noisy build or test logs, use `semble_rs digest`.
 - Broad or unclear impact: add `code-review-graph`.
@@ -60,11 +61,11 @@ Short order:
 ## 2C. Core Policy Document Defense (Surgical Edit Rules)
 
 Editing core policy documents (like `AGENTS.md`) is considered a **Highest Difficulty and Highest Risk** operation. You MUST adhere to these 5 procedures:
-1. **Mandatory History Audit & Sequential Thinking**: Before modifying, you must review `docs/history.md` (or git history) and previous logs. You must use the `[Reasoning]` block to formulate your logic before executing changes.
+1. **Mandatory History Audit & Sequential Thinking**: Before modifying, review `docs/history.md` or git history, plus recent agent logs. Use a `[Reasoning]` block before executing changes.
 2. **Zero Context Contamination**: Arbitrary deletion or "clean-up" is strictly prohibited. 100% of existing context must be preserved.
 3. **Lazy-Loading Architecture**: Keep `AGENTS.md` lightweight. Move detailed guidelines to the `docs/standards/` directory.
 4. **Token-Efficient & Unambiguous**: Use short, decisive English for policy text inside `AGENTS.md` and other agent-facing guidance to prevent misinterpretation by other agents.
-5. **Detailed Accountability Report**: Explicitly report all additions, modifications, and deletions immediately after the task.
+5. **Detailed Accountability Report**: Explicitly report additions, modifications, and deletions immediately after the task.
 
 ---
 
