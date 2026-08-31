@@ -27,5 +27,7 @@
 - 2026-05-20 | agents-md-log-format-simplification | AGENTS.md Section 14를 단일 Markdown 로그 + 섹션 구조로 단순화
 - 2026-05-31 | stack-app-oss-support | added LICENSE, CONTRIBUTING.md, ROADMAP.md, and a README audience intro for OSS onboarding
 - 2026-06-01 | agents-md-router-refine | AGENTS.md를 라우터 중심으로 정리하고 source order에 docs/history.md를 추가하며 중복/모호 문구를 축소
+- 2026-08-31 | verification-independent-pass-guard | Independent Higher-Tier와 Self Compensatory 검증 경계 및 explicit override 조건 정렬, Discovery Bootstrap 예외 추가
+
 ---
-*마지막 업데이트: 2026-06-01 (v1.6.4)*
+*마지막 업데이트: 2026-08-31 (v1.6.5)*
