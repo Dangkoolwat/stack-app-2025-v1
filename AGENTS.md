@@ -92,34 +92,11 @@ These are example execution profiles, not exclusive requirements; other models s
 
 ## 2E. Pre-Task Model Suitability Gate & Risk-Based Routing
 
-- **Pre-Task Suitability Analysis:** Analyze task risk, blast radius, and reasoning complexity before planning or implementation. Determine required model tier upfront.
-- Minimal read-only inspection is permitted to judge suitability, but NEVER modify files before suitability assessment.
-- **High-Risk Prohibitions for Baseline Models:** High-risk tasks MUST NOT be designed or implemented solely by cost-efficient baseline models:
-  - Architecture, data flow, or Spring Boot / Vue state management changes
-  - Multi-module or cross-boundary modifications (Java backend + Vue frontend)
-  - API, DTO, schema, security (OAuth2/JWT), database/JPA, or build config changes
-  - Common UI layout, global theme, or system-wide shared components
-  - Performance, concurrency, data integrity, or deployment pipeline changes
-  - Complex bugs with uncertain root causes
-- **Mandatory High-Reasoning Gate:** High-risk tasks MUST NOT begin substantive modification without prior analysis from a higher-tier reasoning model.
-- **Mandatory High-Tier Verification:** Substantive changes MUST be verified by a higher-tier verification model using actual diff, build (`./mvnw clean compile`, `npm run build`), and test outputs.
-- **Low-Risk Fast Track:** Low-risk tasks (read-only discovery, comments, typos, isolated local UI tweaks) may be handled by cost-efficient models. Model suitability warning block may be omitted for low-risk tasks, but standard user approval is still required.
-- **Model Mismatch Warning Format:** If the active model is insufficient for the task, report the following before modifying any files:
-  ```text
-  [Model Suitability Assessment]
-  - Task Risk: High / Medium / Low
-  - Current Model Tier: (Current model or tier)
-  - Recommended Implementation Model: Cost-Efficient / Standard / High-Reasoning
-  - Recommended Verification Model: Standard Verification / High Verification
-  - Reason: (e.g., Cross-module Java/Vue change & OAuth2 security impact)
-  - Risk with Current Model: (e.g., Regression risk & build breakage)
-  - Recommended Options:
-    1) Switch to higher-tier model for analysis/implementation/verification (Recommended)
-    2) Perform read-only exploration / PoC analysis with current model only
-    3) Proceed with current model upon explicit user approval
-  ```
-- **PoC Containment:** Option 2 (PoC findings) is treated as advisory reference only and MUST NOT be merged/deployed without approval.
-- **Model Neutrality:** Model tiers are abstract (Cost-Efficient, Standard, High-Reasoning) and neutral to specific AI vendors.
+- **Mandatory Assessment:** Analyze task risk (High/Medium/Low) and reasoning complexity before planning or implementation. (Detailed Policy: [`docs/standards/model-routing.md`](docs/standards/model-routing.md))
+- **High-Risk Modification Prohibition (Critical):** High-risk tasks (Spring Boot backend, JPA, security/OAuth2, Vue state/Pinia, cross-boundary API contracts) MUST NOT begin substantive modification without prior analysis from a higher-tier reasoning model.
+- **Fallback & Explicit Override:** In environments where higher-tier models are unavailable, agents MUST report constraints transparently and MUST NOT begin modification without explicit user override.
+- **Evidence-Based Post-Verification:** Substantive changes MUST be verified by a higher-tier verification model with objective diff, build (`./mvnw clean compile`, `npm run build`), and test outputs (`PASS` status) before completion.
+
 
 ---
 
