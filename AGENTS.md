@@ -31,6 +31,8 @@ For substantial discussion, architecture decisions, migrations, or implementatio
 - Read relevant frontend config, e.g. `package.json`, `vite.config.*`
 - Read nearby code before editing
 
+**Discovery Bootstrap Exception:** Minimal discovery operations to identify target file paths (strictly limited to: `pwd`, `rg --files`, `semble_rs plan "<task>"`, `semble_rs search --compact`, Serena project activation, and inspecting files explicitly specified in user prompts) are permitted before full policy loading. This exception applies strictly to initial path identification and NEVER permits builds, tests, file modifications, or external writes.
+
 Do not invent build, test, lint, or run commands. Discover them from repo files.
 
 ---
@@ -93,9 +95,9 @@ These are example execution profiles, not exclusive requirements; other models s
 ## 2E. Pre-Task Model Suitability Gate & Risk-Based Routing
 
 - **Mandatory Assessment:** Analyze task risk (High/Medium/Low) and reasoning complexity before planning or implementation. (Detailed Policy: [`docs/standards/model-routing.md`](docs/standards/model-routing.md))
-- **High-Risk Modification Prohibition (Critical):** High-risk tasks (Spring Boot backend, JPA, security/OAuth2, Vue state/Pinia, cross-boundary API contracts) MUST NOT begin substantive modification without prior analysis from a higher-tier reasoning model.
+- **High-Risk Modification Prohibition (Critical):** High-risk tasks (e.g., Spring Boot backend, JPA, security/OAuth2, Vue state/Pinia, cross-boundary API contracts, database migrations, build scripts; see [`docs/standards/model-routing.md`](docs/standards/model-routing.md) for full scope) MUST NOT begin substantive modification without prior analysis from a higher-tier reasoning model.
 - **Fallback & Explicit Override:** In environments where higher-tier models are unavailable, agents MUST report constraints transparently and MUST NOT begin modification without explicit user override.
-- **Evidence-Based Post-Verification:** Substantive changes MUST be verified by a higher-tier verification model with objective diff, build (`./mvnw clean compile`, `npm run build`), and test outputs (`PASS` status) before completion.
+- **Evidence-Based Post-Verification:** Substantive changes MUST be verified by an independent higher-tier verification model. If unavailable, completion may proceed only after explicit user override and documented Self Compensatory Verification. Self Compensatory PASS MUST NOT be reported as Independent Higher-Tier PASS.
 
 
 ---

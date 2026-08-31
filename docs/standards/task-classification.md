@@ -11,7 +11,7 @@ Small local changes with no shared impact.
 - static text
 - one-component styling
 - isolated tests
-- clearly local fixes
+- clearly local fixes in standard documentation (excluding `AGENTS.md`, `docs/standards/`, `docs/workflow/`, `docs/operations/`, `docs/agent-log/`)
 
 **Not trivial if it touches:**
 - shared state
@@ -24,6 +24,7 @@ Small local changes with no shared impact.
 - file I/O
 - destructive ops
 - workflow/state flow (e.g. Pinia/Vuex actions)
+- operational contracts (`AGENTS.md`, `docs/standards/`, `docs/workflow/`, `docs/operations/`) or agent logs (`docs/agent-log/`)
 
 **Procedure:**
 - implement directly
@@ -33,6 +34,8 @@ Small local changes with no shared impact.
 ## 2. Non-trivial
 
 Behavior, flow, integration, or multi-file changes.
+- **Operational Contract Documents (`AGENTS.md`, `docs/standards/`, `docs/workflow/`, `docs/operations/`):** Classified as Non-trivial and strictly subject to Handshake / Two-Step High-Risk Lock.
+- **Agent Logs & Records (`docs/agent-log/`):** Classified as at least Non-trivial and subject to Logging Policy (`docs/agent-log/LOGGING_POLICY.md`).
 
 **Procedure:**
 - analyze first
